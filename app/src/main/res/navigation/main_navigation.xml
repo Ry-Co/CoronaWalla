@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_navigation"
+    app:startDestination="@id/profile">
+
+    <activity
+        android:id="@+id/mainActivity"
+        android:name="com.example.coronawalla.main.MainActivity"
+        android:label="activity_main"
+        tools:layout="@layout/activity_main" />
+    <fragment
+        android:id="@+id/profile"
+        android:name="com.example.coronawalla.main.ui.profile.ProfileFragment"
+        android:label="fragment_profile"
+        tools:layout="@layout/fragment_profile" />
+    <fragment
+        android:id="@+id/roam"
+        android:name="com.example.coronawalla.main.ui.roam.RoamFragment"
+        android:label="fragment_roam"
+        tools:layout="@layout/fragment_roam" />
+    <fragment
+        android:id="@+id/local"
+        android:name="com.example.coronawalla.main.ui.local.LocalFragment"
+        android:label="fragment_local"
+        tools:layout="@layout/fragment_local" />
+</navigation>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/login_navigation"
+    app:startDestination="@id/coverFragment">
+
+    <activity
+        android:id="@+id/loginActivity"
+        android:name="com.example.coronawalla.login.LoginActivity"
+        android:label="fragment_cover"
+        tools:layout="@layout/fragment_cover" />
+    <fragment
+        android:id="@+id/signUpFragment"
+        android:name="com.example.coronawalla.login.ui.SignUpFragment"
+        android:label="SignUpFragment" >
+        <action
+            android:id="@+id/action_signUpFragment_to_signInFragment"
+            app:destination="@id/signInFragment" />
+        <action
+            android:id="@+id/action_signUpFragment_to_passwordFragment"
+            app:destination="@id/passwordFragment" />
+        <action
+            android:id="@+id/action_signUpFragment_to_numberFormatFragment"
+            app:destination="@id/numberFormatFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/signInFragment"
+        android:name="com.example.coronawalla.login.ui.SignInFragment"
+        android:label="SignInFragment" >
+        <action
+            android:id="@+id/action_signInFragment_to_signUpFragment"
+            app:destination="@id/signUpFragment" />
+        <action
+            android:id="@+id/action_signInFragment_to_passwordFragment"
+            app:destination="@id/passwordFragment" />
+        <action
+            android:id="@+id/action_signInFragment_to_numberFormatFragment"
+            app:destination="@id/numberFormatFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/coverFragment"
+        android:name="com.example.coronawalla.login.ui.CoverFragment"
+        android:label="CoverFragment" >
+        <action
+            android:id="@+id/action_coverFragment_to_signInFragment"
+            app:destination="@id/signInFragment" />
+        <action
+            android:id="@+id/action_coverFragment_to_signUpFragment"
+            app:destination="@id/signUpFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/passwordFragment"
+        android:name="com.example.coronawalla.login.ui.PasswordFragment"
+        android:label="fragment_password"
+        tools:layout="@layout/fragment_password" />
+    <fragment
+        android:id="@+id/numberFormatFragment"
+        android:name="com.example.coronawalla.login.ui.NumberFormatFragment"
+        android:label="fragment_number_format"
+        tools:layout="@layout/fragment_number_format" >
+        <action
+            android:id="@+id/action_numberFormatFragment_to_phoneVerification"
+            app:destination="@id/phoneVerification" />
+    </fragment>
+    <fragment
+        android:id="@+id/phoneVerification"
+        android:name="com.example.coronawalla.login.ui.PhoneVerification"
+        android:label="PhoneVerification" />
+</navigation>

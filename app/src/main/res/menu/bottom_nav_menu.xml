@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/profile"
+        android:icon="@drawable/ic_person_black_24dp"
+        android:title="Profile" />
+
+    <item
+        android:id="@+id/local"
+        android:icon="@drawable/ic_location_local_black_24dp"
+        android:title="Local" />
+
+    <item
+        android:id="@+id/roam"
+        android:icon="@drawable/ic_directions_run_black_24dp"
+        android:title="Roam" />
+</menu>

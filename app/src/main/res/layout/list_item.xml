@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardView"
+    app:cardCornerRadius="0dp"
+    app:cardElevation="4dp"
+    app:cardUseCompatPadding="true"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/upvote_IV"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            app:layout_constraintBottom_toTopOf="@+id/voteCounter_TV"
+            app:layout_constraintEnd_toEndOf="@+id/voteCounter_TV"
+            app:layout_constraintStart_toStartOf="@+id/voteCounter_TV"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.5"
+            tools:srcCompat="@tools:sample/avatars" />
+
+        <ImageView
+            android:id="@+id/downvote_IV"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            app:layout_constraintBottom_toTopOf="@+id/topOfDuration"
+            app:layout_constraintEnd_toEndOf="@+id/voteCounter_TV"
+            app:layout_constraintStart_toStartOf="@+id/voteCounter_TV"
+            app:layout_constraintTop_toBottomOf="@+id/voteCounter_TV"
+            app:layout_constraintVertical_bias="0.5"
+            tools:srcCompat="@tools:sample/avatars" />
+        <!--
+    , consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Libero id faucibus nisl tincidunt eget nullam non. In egestas sollicitudin
+    -->
+
+        <TextView
+            android:id="@+id/postText_TV"
+            android:layout_width="325dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:inputType="textMultiLine"
+            android:minHeight="110dp"
+            android:scrollHorizontally="false"
+            android:text="Lorem ipsum ducib labore et dolore magna aliqua. Libero id faucibus "
+            android:textSize="22sp"
+            app:layout_constraintBottom_toTopOf="@+id/topOfDuration"
+            app:layout_constraintLeft_toRightOf="@+id/leftOfPost"
+            app:layout_constraintRight_toLeftOf="@+id/rightOfPost"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/topOfPost"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0" />
+
+        <TextView
+            android:id="@+id/voteCounter_TV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            android:text="150"
+            android:textSize="30sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/topOfDuration"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.5" />
+
+        <TextView
+            android:id="@+id/duration_TV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="12h"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/postText_TV" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/topOfDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="top"
+            app:constraint_referenced_ids="duration_TV"
+            tools:layout_editor_absoluteX="24dp"
+            tools:layout_editor_absoluteY="148dp" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/rightOfPost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="left"
+            app:constraint_referenced_ids="upvote_IV,downvote_IV,voteCounter_TV"
+            tools:layout_editor_absoluteX="403dp" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/leftOfPost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="left"
+            app:constraint_referenced_ids="duration_TV"
+            tools:layout_editor_absoluteX="403dp" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/topOfPost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="top"
+            app:constraint_referenced_ids="upvote_IV"
+            tools:layout_editor_absoluteY="130dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</androidx.cardview.widget.CardView>
