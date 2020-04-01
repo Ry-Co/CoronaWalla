@@ -31,8 +31,7 @@ class LocalFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val exampleList = genDummyList(50)
-        recyclerView.adapter =
-            RecyclerViewAdapter(exampleList)
+        recyclerView.adapter = RecyclerViewAdapter(exampleList)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         val time = System.currentTimeMillis()
@@ -46,7 +45,7 @@ class LocalFragment : Fragment() {
         val list = ArrayList<PostClass>()
         for(i in 0 until size){
             val item =
-                PostClass("This is some sample text","243", 1585550623000,null)
+                PostClass("This is some sample text for the posts in the test area","243", 1585550623000,null)
             list+=item
         }
         return list
