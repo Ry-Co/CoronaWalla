@@ -62,11 +62,11 @@ class SignUpFragment : Fragment() {
             Toast.makeText(context, "Please input a valid phone number or email", Toast.LENGTH_SHORT).show()
         } else {
             // format the phone number
-            var tempNum = "";
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                tempNum = PhoneNumberUtils.formatNumber(phoneNumber, Locale.getDefault().country)
+
+            val tempNum = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                PhoneNumberUtils.formatNumber(phoneNumber, Locale.getDefault().country)
             } else {
-                tempNum = PhoneNumberUtils.formatNumber(phoneNumber) //Deprecated method
+                PhoneNumberUtils.formatNumber(phoneNumber) //Deprecated method
             }
             // update the view model
             viewModel?.phoneNumber = tempNum

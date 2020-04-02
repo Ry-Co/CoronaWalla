@@ -67,9 +67,7 @@ class PhoneVerification : Fragment() {
     private val phoneAuthCallbacks =
         object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             override fun onVerificationCompleted(p0: PhoneAuthCredential) {
-                p0?.let {
-                    addPhoneNumber(p0)
-                }
+                addPhoneNumber(p0)
             }
 
             override fun onVerificationFailed(p0: FirebaseException) {

@@ -4,9 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.coronawalla.R
+import com.example.coronawalla.main.MainActivityViewModel
 import kotlinx.android.synthetic.main.fragment_local.*
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -21,6 +24,15 @@ import kotlin.collections.ArrayList
 
 class LocalFragment : Fragment() {
 
+    private val viewModel by lazy{
+        activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel?.toolbarMode?.value = 0
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
@@ -33,6 +45,11 @@ class LocalFragment : Fragment() {
         val exampleList = genDummyList(50)
         recyclerView.adapter = RecyclerViewAdapter(exampleList)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        fetchNewList()
+        refreshLayout.setOnRefreshListener {
+            fetchNewList()
+        }
+
 
         val time = System.currentTimeMillis()
         println("############"+time)
@@ -50,4 +67,16 @@ class LocalFragment : Fragment() {
         }
         return list
     }
+    private fun fetchNewList(){
+        //todo:
+        refreshLayout.isRefreshing = true
+        refreshLayout.isRefreshing = false
+        Toast.makeText(context, "REFRESHING", Toast.LENGTH_SHORT).show()
+        return
+    }
+    override fun onStart() {
+        super.onStart()
+        //TODO: contact server and update data
+    }
+
 }

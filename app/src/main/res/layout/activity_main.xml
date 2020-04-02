@@ -15,28 +15,32 @@
         app:itemTextColor="@color/colorWhite"
         app:layout_constraintBottom_toBottomOf="parent"
         app:menu="@menu/bottom_nav_menu" />
+    <include
+        android:id="@+id/toolbar_main"
+        layout="@layout/toolbar" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar_main"
         tools:layout_editor_absoluteX="28dp">
 
         <LinearLayout
             android:id="@+id/main_fragment_container"
-            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:orientation="vertical"
             tools:layout_editor_absoluteX="1dp"
             tools:layout_editor_absoluteY="1dp">
+
             <fragment
                 android:id="@+id/main_nav_host_fragment"
+                android:name="androidx.navigation.fragment.NavHostFragment"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:name="androidx.navigation.fragment.NavHostFragment"
-                app:navGraph ="@navigation/main_navigation"
-                app:defaultNavHost = "true"/>
+                app:defaultNavHost="true"
+                app:navGraph="@navigation/main_navigation" />
 
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
