@@ -30,6 +30,7 @@ class MainActivity : AppCompatActivity() {
                  1 -> roamToolbar() //roam
                  0 -> localToolbar() //local
                 -1 -> profileToolbar() //profile
+                 2 -> postToolbar() //post creation toolbar
             }
         })
     }
@@ -48,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         bottomNavigation.visibility = View.VISIBLE
         post_IV.visibility = View.VISIBLE
         post_IV.setOnClickListener{
-            //todo
+            findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_local_to_postFragment)
             Toast.makeText(this, "POST", Toast.LENGTH_SHORT).show()
         }
     }
@@ -58,5 +59,18 @@ class MainActivity : AppCompatActivity() {
         toolbar_cancel_tv.visibility = View.INVISIBLE
         post_IV.visibility = View.INVISIBLE
         bottomNavigation.visibility = View.VISIBLE
+    }
+    private fun postToolbar(){
+        toolbar_title_tv.text = "Post"
+        post_IV.visibility = View.INVISIBLE
+        bottomNavigation.visibility = View.INVISIBLE
+        toolbar_send_tv.visibility = View.VISIBLE
+        toolbar_cancel_tv.visibility = View.VISIBLE
+        toolbar_cancel_tv.setOnClickListener {
+            findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_postFragment_to_local)
+        }
+
+
+
     }
 }

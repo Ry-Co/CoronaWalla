@@ -1,5 +1,6 @@
 package com.example.coronawalla.main.ui.local
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -28,11 +29,11 @@ class LocalFragment : Fragment() {
         activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+
+    override fun onResume() {
+        super.onResume()
         viewModel?.toolbarMode?.value = 0
     }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {

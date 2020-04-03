@@ -16,8 +16,8 @@ class ProfileFragment : Fragment() {
         activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onResume() {
+        super.onResume()
         viewModel?.toolbarMode?.value = -1
     }
     override fun onCreateView(

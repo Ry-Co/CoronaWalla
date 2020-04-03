@@ -24,5 +24,30 @@
         android:id="@+id/local"
         android:name="com.example.coronawalla.main.ui.local.LocalFragment"
         android:label="fragment_local"
-        tools:layout="@layout/fragment_local" />
+        tools:layout="@layout/fragment_local" >
+        <action
+            android:id="@+id/action_local_to_postFragment"
+            app:destination="@id/postFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/postFragment"
+        android:name="com.example.coronawalla.main.ui.local.PostFragment"
+        android:label="fragment_post"
+        tools:layout="@layout/fragment_post" >
+        <action
+            android:id="@+id/action_postFragment_to_local"
+            app:destination="@id/local" />
+        <action
+            android:id="@+id/action_postFragment_to_postPreviewFragment"
+            app:destination="@id/postPreviewFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/postPreviewFragment"
+        android:name="com.example.coronawalla.main.ui.local.PostPreviewFragment"
+        android:label="fragment_post_preview"
+        tools:layout="@layout/fragment_post_preview" >
+        <action
+            android:id="@+id/action_postPreviewFragment_to_local"
+            app:destination="@id/local" />
+    </fragment>
 </navigation>
