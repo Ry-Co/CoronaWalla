@@ -26,18 +26,18 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) :
         val ageHours = (System.currentTimeMillis() - currentItem.postDateLong) / 3600000 // milliseconds per hour
         holder.postTextTV.text = currentItem.mPostText
         holder.postAgeTV.text = ageHours.toString() + "h"
-        holder.voteCountTV.text = currentItem.mVoteCount
+        holder.voteCountTV.text = currentItem.mVoteCount.toString()
         voteVisual(holder, currentItem.userVote)
-        holder.voteCountTV.text = updateVoteCount(currentItem.mVoteCount, currentItem.userVote)
+        holder.voteCountTV.text = updateVoteCount(currentItem.mVoteCount.toString(), currentItem.userVote)
 
         holder.upvoteIV.setOnClickListener {
             currentItem.userVote = vote(currentItem.userVote, true, holder)
-            holder.voteCountTV.text = updateVoteCount(currentItem.mVoteCount,currentItem.userVote)
+            holder.voteCountTV.text = updateVoteCount(currentItem.mVoteCount.toString(),currentItem.userVote)
         }
 
         holder.downvoteIV.setOnClickListener {
             currentItem.userVote =  vote(currentItem.userVote, false, holder)
-            holder.voteCountTV.text = updateVoteCount(currentItem.mVoteCount,currentItem.userVote)
+            holder.voteCountTV.text = updateVoteCount(currentItem.mVoteCount.toString(),currentItem.userVote)
         }
     }
 

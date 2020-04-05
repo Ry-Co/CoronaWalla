@@ -1,6 +1,5 @@
 package com.example.coronawalla.main.ui.local
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,19 +11,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivityViewModel
 import kotlinx.android.synthetic.main.fragment_local.*
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.time.Clock
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
 
-
 class LocalFragment : Fragment() {
-
+    //TODO: add location tracking
     private val viewModel by lazy{
         activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
@@ -34,10 +25,9 @@ class LocalFragment : Fragment() {
         super.onResume()
         viewModel?.toolbarMode?.value = 0
     }
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
+
         return inflater.inflate(R.layout.fragment_local, container, false)
     }
 
@@ -61,18 +51,18 @@ class LocalFragment : Fragment() {
 
     private fun genDummyList(size:Int): List<PostClass>{
         val list = ArrayList<PostClass>()
-        for(i in 0 until size){
-            val item =
-                PostClass("This is some sample text for the posts in the test area","243", 1585550623000,null)
-            list+=item
-        }
+//        for(i in 0 until size){
+//            val item =
+//                PostClass("This is some sample text for the posts in the test area","243", 1585550623000,null)
+//            list+=item
+//        }
         return list
     }
     private fun fetchNewList(){
         //todo:
         refreshLayout.isRefreshing = true
         refreshLayout.isRefreshing = false
-        Toast.makeText(context, "REFRESHING", Toast.LENGTH_SHORT).show()
+        //Toast.makeText(context, "REFRESHING", Toast.LENGTH_SHORT).show()
         return
     }
     override fun onStart() {
