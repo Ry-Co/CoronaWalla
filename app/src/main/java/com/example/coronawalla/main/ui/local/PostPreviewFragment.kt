@@ -16,6 +16,8 @@ import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivityViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
+import org.imperiumlabs.geofirestore.GeoFirestore
 
 
 class PostPreviewFragment : Fragment() {
@@ -61,16 +63,29 @@ class PostPreviewFragment : Fragment() {
         }
 
         postButton.setOnClickListener {
+            val postTime = System.currentTimeMillis()
+            val upvotes = ArrayList<String>()
+            upvotes.add(mAuth.currentUser!!.uid)
+            val downvotes = ArrayList<String>()
+            val currentGeoPoint = GeoPoint(viewModel!!.currentLocation.value!!.latitude, viewModel!!.currentLocation.value!!.longitude)
             val post = HashMap<String, Any>()
-            post["posterID"] = mAuth.currentUser!!.uid
-            post["postText"] = postViewModel?.postText?.value.toString()
-            post["Key"] = "Value"
-            post["Key"] = "Value"
-            post["Key"] = "Value"
+            post["mPostText"] = postViewModel?.postText?.value.toString()
+            post["mPosterID"] = mAuth.currentUser!!.uid
+            post["mPostGeoPoint"] = currentGeoPoint
+            post["mVoteCount"] = 1
+            post["mPostDateLong"] = postTime
+            post["mMultiplier"] = 1
+            post["mPayoutDateLong"] = postTime + 3600000*24
+            post["mUpvoteIDs"] = upvotes
+            post["mDownvoteIDs"] = downvotes
+            post["mUserVote"] =  ""
 
             db.collection("posts").add(post).addOnCompleteListener{
                 if (it.isSuccessful){
                     Log.d("Post Sent:: ", "Post Sent!")
+                    val geoFirestore = GeoFirestore(db.collection("posts"))
+                    db.collection("posts").document(it.result!!.id).update("mPostID", it.result!!.id)
+                    geoFirestore.setLocation(it!!.result!!.id,currentGeoPoint)
                 }else{
                     Log.e("error pushing:: ", it.exception.toString())
                 }

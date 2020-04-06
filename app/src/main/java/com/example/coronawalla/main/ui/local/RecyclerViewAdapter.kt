@@ -23,21 +23,21 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) :
 
     override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {
         val currentItem = postList[position]
-        val ageHours = (System.currentTimeMillis() - currentItem.postDateLong) / 3600000 // milliseconds per hour
+        val ageHours = (System.currentTimeMillis() - currentItem.mPostDateLong) / 3600000 // milliseconds per hour
         holder.postTextTV.text = currentItem.mPostText
         holder.postAgeTV.text = ageHours.toString() + "h"
         holder.voteCountTV.text = currentItem.mVoteCount.toString()
-        voteVisual(holder, currentItem.userVote)
-        holder.voteCountTV.text = updateVoteCount(currentItem.mVoteCount.toString(), currentItem.userVote)
+        voteVisual(holder, currentItem.mUserVote)
+        holder.voteCountTV.text = updateVoteCount(currentItem.mVoteCount.toString(), currentItem.mUserVote)
 
         holder.upvoteIV.setOnClickListener {
-            currentItem.userVote = vote(currentItem.userVote, true, holder)
-            holder.voteCountTV.text = updateVoteCount(currentItem.mVoteCount.toString(),currentItem.userVote)
+            currentItem.mUserVote = vote(currentItem.mUserVote, true, holder)
+            holder.voteCountTV.text = updateVoteCount(currentItem.mVoteCount.toString(),currentItem.mUserVote)
         }
 
         holder.downvoteIV.setOnClickListener {
-            currentItem.userVote =  vote(currentItem.userVote, false, holder)
-            holder.voteCountTV.text = updateVoteCount(currentItem.mVoteCount.toString(),currentItem.userVote)
+            currentItem.mUserVote =  vote(currentItem.mUserVote, false, holder)
+            holder.voteCountTV.text = updateVoteCount(currentItem.mVoteCount.toString(),currentItem.mUserVote)
         }
     }
 
@@ -112,6 +112,7 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) :
     }
 
     private fun updateVoteCount(postVoteCount:String, usersVote:Boolean?): String{
+        //TODO: need to accoutn for the user having already voted
         var pvNum = postVoteCount.toInt()
         return when(usersVote){
             null ->{

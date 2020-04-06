@@ -1,21 +1,18 @@
 package com.example.coronawalla.main.ui.local
 
-/*
-post text #
-poster id #
-post votes #
-post location
-post time #
-payout time  1hr = 3600000miliseconds so post time + 3600000*24
-list of userIDs who have upvoted #
-list of userIDs who have udownvoted #
- */
+import android.location.Location
+import com.google.firebase.firestore.GeoPoint
+
 
 data class PostClass(
+    val mPostID: String,
     val mPostText: String,
     val mPosterID : String,
+    val mPostGeoPoint: GeoPoint,
     val mVoteCount: Int,
-    val postDateLong: Long,
-    val upvoteIDs: HashSet<String>,
-    var downvoteIDs: HashSet<String>,
-    var userVote: Boolean?= null)
+    val mPostDateLong: Long,
+    val mMultiplier: Int,
+    val mPayoutDateLong: Long,
+    val mUpvoteIDs: HashSet<String>,
+    val mDownvoteIDs: HashSet<String>,
+    var mUserVote: Boolean?= null) // deal with the initial vote in the recycler view

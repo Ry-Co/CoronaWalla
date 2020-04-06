@@ -2,6 +2,7 @@ package com.example.coronawalla.main
 
 import android.Manifest
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -11,12 +12,20 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.coronawalla.R
 import com.google.android.gms.location.LocationServices
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import com.livinglifetechway.quickpermissions_kotlin.util.QuickPermissionsOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.toolbar.*
+import org.imperiumlabs.geofirestore.GeoFirestore
+import org.imperiumlabs.geofirestore.extension.getAtLocation
 
 class MainActivity : AppCompatActivity() {
+    private val GEO_QUERY_RADIUS_IN_KM = 5 * 1.60934 //5 miles
+
+
     private val viewModel by lazy{
         this.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
@@ -47,11 +56,39 @@ class MainActivity : AppCompatActivity() {
                  3 -> postPreviewToolbar()
             }
         })
+
+        viewModel.currentLocation.observe(this, Observer {
+            if(it != null){
+                //go get local posts
+                getLocalDocuments()
+            }
+        })
     }
 
+
+    private fun getLocalDocuments(){
+        val usersGP = GeoPoint(viewModel!!.currentLocation.value!!.latitude, viewModel!!.currentLocation.value!!.longitude)
+        val geoFirestore = GeoFirestore(FirebaseFirestore.getInstance().collection("posts"))
+        geoFirestore.getAtLocation(usersGP,GEO_QUERY_RADIUS_IN_KM){docs, ex ->
+            if(ex != null){
+                Log.e("TAGG::", ex.message)
+                return@getAtLocation
+            }else{
+                viewModel.localDocList.value = docs!!
+            }
+
+        }
+    }
     private fun getUsersCurrentLocation() = runWithPermissions(Manifest.permission.ACCESS_FINE_LOCATION, options = permOptions){
         val flp = LocationServices.getFusedLocationProviderClient(this)
-        viewModel.currentLocation.value = flp.lastLocation.result
+        flp.lastLocation.addOnCompleteListener{
+            if (it.isSuccessful){
+                viewModel.currentLocation.value = it.result
+
+            }else{
+                Log.e("TAG", it.exception.toString())
+            }
+        }
     }
     private fun profileToolbar(){
         toolbar_title_tv.text = "Profile"
