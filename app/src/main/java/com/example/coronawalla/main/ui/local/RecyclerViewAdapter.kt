@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coronawalla.R
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.list_item.view.*
 
 class RecyclerViewAdapter(private val postList: List<PostClass>) :
@@ -23,21 +24,39 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) :
 
     override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {
         val currentItem = postList[position]
-        val ageHours = (System.currentTimeMillis() - currentItem.mPostDateLong) / 3600000 // milliseconds per hour
+        val uid = FirebaseAuth.getInstance().currentUser!!.uid
+        val ageHours =
+            (System.currentTimeMillis() - currentItem.mPostDateLong) / 3600000 // milliseconds per hour
+        var prevVote: Boolean? = null
+        prevVote = when {
+            currentItem.mUpvoteIDs.contains(uid) -> {
+                true
+            }
+            currentItem.mDownvoteIDs.contains(uid) -> {
+                false
+            }
+            else -> {
+                null
+            }
+        }
         holder.postTextTV.text = currentItem.mPostText
         holder.postAgeTV.text = ageHours.toString() + "h"
         holder.voteCountTV.text = currentItem.mVoteCount.toString()
         voteVisual(holder, currentItem.mUserVote)
-        holder.voteCountTV.text = updateVoteCount(currentItem.mVoteCount.toString(), currentItem.mUserVote)
+        holder.voteCountTV.text =
+            updateVoteCount(currentItem.mVoteCount.toString(), currentItem.mUserVote, prevVote)
+
 
         holder.upvoteIV.setOnClickListener {
             currentItem.mUserVote = vote(currentItem.mUserVote, true, holder)
-            holder.voteCountTV.text = updateVoteCount(currentItem.mVoteCount.toString(),currentItem.mUserVote)
+            holder.voteCountTV.text =
+                updateVoteCount(currentItem.mVoteCount.toString(), currentItem.mUserVote, prevVote)
         }
 
         holder.downvoteIV.setOnClickListener {
-            currentItem.mUserVote =  vote(currentItem.mUserVote, false, holder)
-            holder.voteCountTV.text = updateVoteCount(currentItem.mVoteCount.toString(),currentItem.mUserVote)
+            currentItem.mUserVote = vote(currentItem.mUserVote, false, holder)
+            holder.voteCountTV.text =
+                updateVoteCount(currentItem.mVoteCount.toString(), currentItem.mUserVote, prevVote)
         }
     }
 
@@ -51,10 +70,10 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) :
         val downvoteIV: ImageView = itemView.downvote_IV
     }
 
-    private fun vote(state: Boolean?, action: Boolean, holder:RecyclerViewHolder): Boolean?{
+    private fun vote(state: Boolean?, action: Boolean, holder: RecyclerViewHolder): Boolean? {
         when (state) {
             null -> return when (action) {
-                true ->{
+                true -> {
                     //upvote +1
                     voteVisual(holder, true)
                     true
@@ -94,7 +113,7 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) :
     }
 
     private fun voteVisual(holder: RecyclerViewHolder, vote: Boolean?) {
-        println("Vote status:: "+vote)
+        println("Vote status:: " + vote)
         when (vote) {
             null -> {
                 holder.upvoteIV.setImageResource(R.drawable.ic_arrow_upward_black_24dp)
@@ -111,20 +130,69 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) :
         }
     }
 
-    private fun updateVoteCount(postVoteCount:String, usersVote:Boolean?): String{
-        //TODO: need to accoutn for the user having already voted
+    private fun updateVoteCount(
+        postVoteCount: String,
+        usersVote: Boolean?,
+        usersPreviousVote: Boolean?
+    ): String {
         var pvNum = postVoteCount.toInt()
-        return when(usersVote){
-            null ->{
-                postVoteCount
+
+        return when (usersVote) {
+            null -> {
+                when (usersPreviousVote) {
+                    null -> {
+                        //user hasn't voted on post previously
+                        postVoteCount
+                    }
+                    true -> {
+                        //user previously upvoted post
+                        pvNum -= 1
+                        pvNum.toString()
+                    }
+                    else -> {
+                        //user previously downvoted post
+                        pvNum += 1
+                        postVoteCount
+                    }
+                }
             }
-            true ->{
-                pvNum += 1
-                pvNum.toString()
+            true -> {
+                when (usersPreviousVote) {
+                    null -> {
+                        //user hasn't voted on post previously
+                        pvNum += 1
+                        pvNum.toString()
+                    }
+                    true -> {
+                        //user previously upvoted post
+                        //pvNum += 1
+                        pvNum.toString()
+                    }
+                    else -> {
+                        //user previously downvoted post
+                        pvNum += 2
+                        pvNum.toString()
+                    }
+                }
             }
-            false ->{
-                pvNum -= 1
-                pvNum.toString()
+            false -> {
+                when (usersPreviousVote) {
+                    null -> {
+                        //user hasn't voted on post previously
+                        pvNum -= 1
+                        pvNum.toString()
+                    }
+                    true -> {
+                        //user previously upvoted post
+                        pvNum -= 2
+                        pvNum.toString()
+                    }
+                    else -> {
+                        //user previously downvoted post
+                        //pvNum += 2
+                        pvNum.toString()
+                    }
+                }
             }
         }
     }

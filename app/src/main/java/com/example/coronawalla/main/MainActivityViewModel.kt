@@ -10,5 +10,4 @@ class MainActivityViewModel: ViewModel(){
     var toolbarMode = MutableLiveData<Int>()
     var currentLocation = MutableLiveData<Location>()
     var localDocList = MutableLiveData<List<DocumentSnapshot>>()
-
 }

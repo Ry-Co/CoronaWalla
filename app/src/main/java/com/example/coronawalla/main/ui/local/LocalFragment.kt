@@ -28,7 +28,6 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class LocalFragment : Fragment() {
-    private val GEO_QUERY_RADIUS_IN_KM = 5 * 1.60934 //5 miles
     private var posts = ArrayList<PostClass>()
     private val viewModel by lazy{
         activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
@@ -52,6 +51,7 @@ class LocalFragment : Fragment() {
             override fun onChanged(t: List<DocumentSnapshot>?) {
                 //TODO: we need to add a loading screen somewhere in here
                 Log.e("LIST UPDATED:: ", t.toString())
+                posts = buildPostList(t!!)
                 recyclerView.adapter = RecyclerViewAdapter(buildPostList(t!!))
             }
         })
@@ -59,15 +59,13 @@ class LocalFragment : Fragment() {
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         //TODO: need to implement proper refresh functionality, maybe viewmodel switches
-        refreshLayout.setOnRefreshListener { recyclerView.adapter = RecyclerViewAdapter(fetchPosts()) }
+        refreshLayout.setOnRefreshListener {
+            recyclerView.adapter = RecyclerViewAdapter(fetchPosts()) }
     }
-
-
 
     private fun fetchPosts():ArrayList<PostClass>{
         return posts
     }
-
     private fun buildPostList(input:List<DocumentSnapshot>): ArrayList<PostClass>{
         val out = ArrayList<PostClass>()
         for(d in input){
@@ -76,9 +74,6 @@ class LocalFragment : Fragment() {
         }
         return out
     }
-
-
-
     private fun buildPostObject(docSnap : DocumentSnapshot): PostClass {
         val mAuth = FirebaseAuth.getInstance()
         var userVote : Boolean? = null

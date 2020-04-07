@@ -56,13 +56,14 @@ class MainActivity : AppCompatActivity() {
                  3 -> postPreviewToolbar()
             }
         })
-
         viewModel.currentLocation.observe(this, Observer {
             if(it != null){
                 //go get local posts
                 getLocalDocuments()
             }
         })
+
+
     }
 
 
