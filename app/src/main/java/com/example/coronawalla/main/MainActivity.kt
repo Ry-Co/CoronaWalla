@@ -23,22 +23,10 @@ import org.imperiumlabs.geofirestore.GeoFirestore
 import org.imperiumlabs.geofirestore.extension.getAtLocation
 
 class MainActivity : AppCompatActivity() {
-    private val GEO_QUERY_RADIUS_IN_KM = 5 * 1.60934 //5 miles
-
-
     private val viewModel by lazy{
         this.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
-    private val permOptions = QuickPermissionsOptions(
-        handleRationale = true,
-        rationaleMessage = "Location permissions are required for core functionality!",
-        handlePermanentlyDenied = true,
-        permanentlyDeniedMessage = "Location permissions are needed for the core functionality of this app. Please enable these permissions to continue")
 
-    override fun onStart() {
-        super.onStart()
-        getUsersCurrentLocation()
-    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -56,41 +44,8 @@ class MainActivity : AppCompatActivity() {
                  3 -> postPreviewToolbar()
             }
         })
-        viewModel.currentLocation.observe(this, Observer {
-            if(it != null){
-                //go get local posts
-                getLocalDocuments()
-            }
-        })
-
-
     }
 
-
-    private fun getLocalDocuments(){
-        val usersGP = GeoPoint(viewModel!!.currentLocation.value!!.latitude, viewModel!!.currentLocation.value!!.longitude)
-        val geoFirestore = GeoFirestore(FirebaseFirestore.getInstance().collection("posts"))
-        geoFirestore.getAtLocation(usersGP,GEO_QUERY_RADIUS_IN_KM){docs, ex ->
-            if(ex != null){
-                Log.e("TAGG::", ex.message)
-                return@getAtLocation
-            }else{
-                viewModel.localDocList.value = docs!!
-            }
-
-        }
-    }
-    private fun getUsersCurrentLocation() = runWithPermissions(Manifest.permission.ACCESS_FINE_LOCATION, options = permOptions){
-        val flp = LocationServices.getFusedLocationProviderClient(this)
-        flp.lastLocation.addOnCompleteListener{
-            if (it.isSuccessful){
-                viewModel.currentLocation.value = it.result
-
-            }else{
-                Log.e("TAG", it.exception.toString())
-            }
-        }
-    }
     private fun profileToolbar(){
         toolbar_title_tv.text = "Profile"
         post_IV.visibility = View.INVISIBLE

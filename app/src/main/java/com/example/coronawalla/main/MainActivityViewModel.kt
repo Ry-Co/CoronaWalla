@@ -9,5 +9,5 @@ import com.google.firebase.firestore.DocumentSnapshot
 class MainActivityViewModel: ViewModel(){
     var toolbarMode = MutableLiveData<Int>()
     var currentLocation = MutableLiveData<Location>()
-    var localDocList = MutableLiveData<List<DocumentSnapshot>>()
+    var localPostList = MutableLiveData<ArrayList<PostClass>>()
 }

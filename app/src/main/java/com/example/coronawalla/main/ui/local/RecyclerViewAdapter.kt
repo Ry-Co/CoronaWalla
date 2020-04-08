@@ -196,4 +196,6 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) :
             }
         }
     }
+
+
 }
