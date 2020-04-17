@@ -27,6 +27,10 @@ class PostPreviewFragment : Fragment() {
     private val postViewModel by lazy{
         activity?.let { ViewModelProviders.of(it).get(PostViewModel::class.java) }
     }
+    private val mAuth = FirebaseAuth.getInstance()
+    private val db = FirebaseFirestore.getInstance()
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,13 +47,12 @@ class PostPreviewFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val db = FirebaseFirestore.getInstance()
-        val mAuth = FirebaseAuth.getInstance()
         val postTextView = view.findViewById<TextView>(R.id.postTV)
         val multiplierTV = view.findViewById<TextView>(R.id.multiplierTV)
         val postAsText = view.findViewById<TextView>(R.id.postAsTV)
         val postAsSwitch = view.findViewById<Switch>(R.id.postAsSwitch)
         val postButton = view.findViewById<Button>(R.id.postButton)
+        val currentGeoPoint = GeoPoint(viewModel!!.currentLocation.value!!.latitude, viewModel!!.currentLocation.value!!.longitude)
         postTextView.text = postViewModel?.postText?.value.toString()
 
         postAsSwitch.setOnClickListener {
@@ -63,23 +66,7 @@ class PostPreviewFragment : Fragment() {
         }
 
         postButton.setOnClickListener {
-            val postTime = System.currentTimeMillis()
-            val upvotes = ArrayList<String>()
-            upvotes.add(mAuth.currentUser!!.uid)
-            val downvotes = ArrayList<String>()
-            val currentGeoPoint = GeoPoint(viewModel!!.currentLocation.value!!.latitude, viewModel!!.currentLocation.value!!.longitude)
-            val post = HashMap<String, Any>()
-            post["mPostText"] = postViewModel?.postText?.value.toString()
-            post["mPosterID"] = mAuth.currentUser!!.uid
-            post["mPostGeoPoint"] = currentGeoPoint
-            post["mVoteCount"] = 1
-            post["mPostDateLong"] = postTime
-            post["mMultiplier"] = 1
-            post["mPayoutDateLong"] = postTime + 3600000*24
-            post["mUpvoteIDs"] = upvotes
-            post["mDownvoteIDs"] = downvotes
-            post["mUserVote"] =  ""
-
+            val post = getPostMap()
             db.collection("posts").add(post).addOnCompleteListener{
                 if (it.isSuccessful){
                     Log.d("Post Sent:: ", "Post Sent!")
@@ -94,8 +81,25 @@ class PostPreviewFragment : Fragment() {
             //send post to server
             findNavController().navigate(R.id.action_postPreviewFragment_to_local)
         }
-
-
     }
 
+    private fun getPostMap(): HashMap<String, Any>{
+        val postTime = System.currentTimeMillis()
+        val upvotes = ArrayList<String>()
+        upvotes.add(mAuth.currentUser!!.uid)
+        val downvotes = ArrayList<String>()
+        val currentGeoPoint = GeoPoint(viewModel!!.currentLocation.value!!.latitude, viewModel!!.currentLocation.value!!.longitude)
+        val post = HashMap<String, Any>()
+        post["mPostText"] = postViewModel?.postText?.value.toString()
+        post["mPosterID"] = mAuth.currentUser!!.uid
+        post["mPostGeoPoint"] = currentGeoPoint
+        post["mVoteCount"] = 1
+        post["mPostDateLong"] = postTime
+        post["mMultiplier"] = 1
+        post["mPayoutDateLong"] = postTime + 3600000*24
+        post["mUpvoteIDs"] = upvotes
+        post["mDownvoteIDs"] = downvotes
+        post["mUserVote"] =  ""
+        return post
+    }
 }

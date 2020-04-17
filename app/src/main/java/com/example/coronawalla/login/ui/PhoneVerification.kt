@@ -1,6 +1,7 @@
 package com.example.coronawalla.login.ui
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,7 @@ import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthProvider
+import com.google.firebase.firestore.FirebaseFirestore
 import java.util.concurrent.TimeUnit
 
 
@@ -85,12 +87,33 @@ class PhoneVerification : Fragment() {
         FirebaseAuth.getInstance().signInWithCredential(p0).addOnCompleteListener {
             if (it.isSuccessful) {
                 Toast.makeText(context, "Signed in!", Toast.LENGTH_SHORT).show()
-                //TODO: Go to main activity
+                //TODO: Go to main activity build user
                 //update user info
                 FirebaseAuth.getInstance().currentUser?.updatePhoneNumber(p0)
                     ?.addOnCompleteListener {
                         if (it.isSuccessful) {
                             //Toast.makeText(context, "Phone added!", Toast.LENGTH_SHORT).show()
+                            val mAuth = FirebaseAuth.getInstance()
+                            val user = HashMap<String, Any>()
+                            user["mUserID"] = mAuth.currentUser!!.uid
+                            user["mAuthUser"] = mAuth.currentUser!!
+                            user["mHandle"] = "@NoHandle"
+                            user["mUserName"] = "Anonymous"
+                            user["mKarmaCount"] = 0
+                            user["mFollowersCount"] = 0
+                            user["mFollowingCount"] = 0
+                            user["mNamedPostCount"] = 0
+                            user["mAnonPostCount"] = 0
+                            user["mRatio"] = 0.0
+
+                            FirebaseFirestore.getInstance().collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
+                                if(it.isSuccessful){
+                                    Log.d("User Created" , "Post Sent!")
+                                }else{
+                                    Log.e("error pushing:: ", it.exception.toString())
+                                }
+                            }
+
                         } else {
                             Toast.makeText(
                                 context,
