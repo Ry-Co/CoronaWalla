@@ -26,6 +26,8 @@ import org.imperiumlabs.geofirestore.GeoFirestore
 import org.imperiumlabs.geofirestore.extension.getAtLocation
 
 class MainActivity : AppCompatActivity() {
+    private val TAG: String? = MainActivity::class.simpleName
+
     private val viewModel by lazy{
         this.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
@@ -117,7 +119,7 @@ class MainActivity : AppCompatActivity() {
             if (it.isSuccessful){
                 callback.invoke(it.result!!)
             }else{
-                Log.e("TAG", it.exception.toString())
+                Log.e(TAG, "Error:: "+it.exception.toString())
             }
         }
     }
@@ -128,7 +130,7 @@ class MainActivity : AppCompatActivity() {
         val geoFirestore = GeoFirestore(FirebaseFirestore.getInstance().collection("posts"))
         geoFirestore.getAtLocation(usersGP,radiusInKm){ docs, ex ->
             if(ex != null){
-                Log.e("TAGG::", ex.message)
+                Log.e(TAG, "Error:: "+ex.message)
                 return@getAtLocation
             }else{
                 callback.invoke(docs!!)

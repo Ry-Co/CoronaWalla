@@ -1,9 +1,6 @@
 package com.example.coronawalla.main.ui.local
 
-import android.Manifest
-import android.location.Location
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,17 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivity
 import com.example.coronawalla.main.MainActivityViewModel
-import com.google.android.gms.location.LocationServices
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.GeoPoint
-import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
-import com.livinglifetechway.quickpermissions_kotlin.util.QuickPermissionsOptions
 import kotlinx.android.synthetic.main.fragment_local.*
-import org.imperiumlabs.geofirestore.GeoFirestore
-import org.imperiumlabs.geofirestore.extension.getAtLocation
-import kotlin.collections.ArrayList
 
 class LocalFragment : Fragment() {
     private val viewModel by lazy{
@@ -36,7 +23,6 @@ class LocalFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         viewModel?.toolbarMode?.value = 0
-        //updatePostList()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

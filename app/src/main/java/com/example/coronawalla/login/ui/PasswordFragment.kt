@@ -17,6 +17,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 
 class PasswordFragment : Fragment() {
+    private val TAG: String? = PasswordFragment::class.simpleName
+
     private val viewModel by lazy {
         activity?.let { ViewModelProviders.of(it).get(LoginActivityViewModel::class.java) }
     }
@@ -35,8 +37,8 @@ class PasswordFragment : Fragment() {
         val passwordEditText = view.findViewById<EditText>(R.id.passwordEditText)
         val signInButton = view.findViewById<Button>(R.id.signInButton)
         signInButton.setOnClickListener {
-            var password = passwordEditText.text
-            var email = viewModel?.email
+            val password = passwordEditText.text
+            val email = viewModel?.email
 
             if (viewModel?.isSignIn!!) {
                 //sign in
@@ -79,9 +81,9 @@ class PasswordFragment : Fragment() {
 
                     FirebaseFirestore.getInstance().collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
                         if(it.isSuccessful){
-                            Log.d("User Created" , "Post Sent!")
+                            Log.d(TAG, "User created")
                         }else{
-                            Log.e("error pushing:: ", it.exception.toString())
+                            Log.e(TAG,"Error:: "+ it.exception.toString())
                         }
                     }
 

@@ -21,10 +21,12 @@ import java.util.concurrent.TimeUnit
 
 
 class PhoneVerification : Fragment() {
+    private val TAG: String? = PasswordFragment::class.simpleName
     private val viewModel by lazy {
         activity?.let { ViewModelProviders.of(it).get(LoginActivityViewModel::class.java) }
     }
     private var verificationID: String? = null
+
 
 
     override fun onCreateView(
@@ -56,7 +58,7 @@ class PhoneVerification : Fragment() {
     }
 
     private fun sendCode() {
-        var number = viewModel?.phoneNumber.toString().trim()
+        val number = viewModel?.phoneNumber.toString().trim()
         PhoneAuthProvider.getInstance().verifyPhoneNumber(
             number,
             60,
@@ -108,9 +110,9 @@ class PhoneVerification : Fragment() {
 
                             FirebaseFirestore.getInstance().collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
                                 if(it.isSuccessful){
-                                    Log.d("User Created" , "Post Sent!")
+                                    Log.d(TAG, "Post Sent!")
                                 }else{
-                                    Log.e("error pushing:: ", it.exception.toString())
+                                    Log.e(TAG, "Error:: "+it.exception.toString())
                                 }
                             }
 

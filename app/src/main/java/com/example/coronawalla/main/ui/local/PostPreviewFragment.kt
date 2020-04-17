@@ -21,6 +21,8 @@ import org.imperiumlabs.geofirestore.GeoFirestore
 
 
 class PostPreviewFragment : Fragment() {
+    private val TAG: String? = PostPreviewFragment::class.simpleName
+
     private val viewModel by lazy{
         activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
@@ -69,12 +71,12 @@ class PostPreviewFragment : Fragment() {
             val post = getPostMap()
             db.collection("posts").add(post).addOnCompleteListener{
                 if (it.isSuccessful){
-                    Log.d("Post Sent:: ", "Post Sent!")
+                    Log.d(TAG, "Post Sent!")
                     val geoFirestore = GeoFirestore(db.collection("posts"))
                     db.collection("posts").document(it.result!!.id).update("mPostID", it.result!!.id)
                     geoFirestore.setLocation(it!!.result!!.id,currentGeoPoint)
                 }else{
-                    Log.e("error pushing:: ", it.exception.toString())
+                    Log.e(TAG, "Error:: "+it.exception.toString())
                 }
             }
 
