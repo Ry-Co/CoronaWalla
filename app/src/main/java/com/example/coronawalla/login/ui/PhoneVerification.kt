@@ -1,5 +1,6 @@
 package com.example.coronawalla.login.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,6 +11,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import com.example.coronawalla.LauncherActivity
 import com.example.coronawalla.login.LoginActivityViewModel
 import com.example.coronawalla.R
 import com.google.firebase.FirebaseException
@@ -89,7 +91,6 @@ class PhoneVerification : Fragment() {
         FirebaseAuth.getInstance().signInWithCredential(p0).addOnCompleteListener {
             if (it.isSuccessful) {
                 Toast.makeText(context, "Signed in!", Toast.LENGTH_SHORT).show()
-                //TODO: Go to main activity build user
                 //update user info
                 FirebaseAuth.getInstance().currentUser?.updatePhoneNumber(p0)
                     ?.addOnCompleteListener {
@@ -97,6 +98,8 @@ class PhoneVerification : Fragment() {
                             //Toast.makeText(context, "Phone added!", Toast.LENGTH_SHORT).show()
                             val mAuth = FirebaseAuth.getInstance()
                             val user = HashMap<String, Any>()
+                            val activePostMap = HashMap<String, String>()
+                            user["mActivePosts"] = activePostMap
                             user["mUserID"] = mAuth.currentUser!!.uid
                             user["mAuthUser"] = mAuth.currentUser!!
                             user["mHandle"] = "@NoHandle"
@@ -110,7 +113,9 @@ class PhoneVerification : Fragment() {
 
                             FirebaseFirestore.getInstance().collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
                                 if(it.isSuccessful){
-                                    Log.d(TAG, "Post Sent!")
+                                    Log.d(TAG, "User added")
+                                    val intent = Intent(activity, LauncherActivity::class.java)
+                                    startActivity(intent)
                                 }else{
                                     Log.e(TAG, "Error:: "+it.exception.toString())
                                 }

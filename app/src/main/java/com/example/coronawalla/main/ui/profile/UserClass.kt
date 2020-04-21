@@ -1,17 +1,15 @@
 package com.example.coronawalla.main.ui.profile
 
-import com.google.firebase.auth.FirebaseUser
-
 data class UserClass(
-    val mHandle: String,
-    val mUsername: String,
-    val mUserID: String,
-    val mPostsCount: Int,
-    val mKarmaCount: Int,
-    val mFollowerCount: Int,
-    val mFollowingCount: Int,
-    val mNamedPostCount: Int,
-    val mAnonPostCount: Int,
-    val mRatio: Double,
-    val mAuthUserObject: FirebaseUser
+    val mHandle: String = "NoHandle",
+    val mUsername: String = "Anonymous",
+    val mUserID: String = "",
+    val mPostsCount: Int = 0,
+    val mKarmaCount: Int= 0,
+    val mFollowerCount: Int= 0,
+    val mFollowingCount: Int= 0,
+    val mNamedPostCount: Int= 0,
+    val mAnonPostCount: Int= 0,
+    val mRatio: Double = 0.0,
+    val mAuthUserObject: Map<*, *>? = null
 )

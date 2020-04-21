@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.coronawalla.LauncherActivity
 
@@ -21,9 +22,14 @@ class ProfileFragment : Fragment() {
         activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
 
+    lateinit var currentUser:UserClass
+
     override fun onResume() {
         super.onResume()
         viewModel?.toolbarMode?.value = -1
+        if(viewModel?.currentUser?.value != null){
+            currentUser = viewModel!!.currentUser.value!!
+        }
     }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,11 +49,36 @@ class ProfileFragment : Fragment() {
         val followersTV = view.findViewById<TextView>(R.id.followersTV)
         val postRatioTV = view.findViewById<TextView>(R.id.ratioTV)
         val followingTV = view.findViewById<TextView>(R.id.followingTV)
+
         profileImageview.setOnClickListener{
             FirebaseAuth.getInstance().signOut()
             val intent  = Intent(activity, LauncherActivity::class.java)
             startActivity(intent)
         }
+
+        if(this::currentUser.isInitialized){
+            handleTV.text = currentUser.mHandle
+            nicknameTV.text = currentUser.mUsername
+            postsCountTV.text = currentUser.mPostsCount.toString()
+            karamTV.text = currentUser.mKarmaCount.toString()
+            followersTV.text = currentUser.mFollowerCount.toString()
+            postRatioTV.text = currentUser.mRatio.toString()
+            followingTV.text = currentUser.mFollowingCount.toString()
+        }else{
+            viewModel!!.currentUser.observe(viewLifecycleOwner,Observer{
+                currentUser = it
+                handleTV.text = currentUser.mHandle
+                nicknameTV.text = currentUser.mUsername
+                postsCountTV.text = currentUser.mPostsCount.toString()
+                karamTV.text = currentUser.mKarmaCount.toString()
+                followersTV.text = currentUser.mFollowerCount.toString()
+                postRatioTV.text = currentUser.mRatio.toString()
+                followingTV.text = currentUser.mFollowingCount.toString()
+            })
+        }
+
+
     }
+
 
 }

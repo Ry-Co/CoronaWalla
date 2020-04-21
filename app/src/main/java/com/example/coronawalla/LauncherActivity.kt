@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth
 class LauncherActivity : AppCompatActivity() {
     private val TAG: String? = LauncherActivity::class.simpleName
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         val mAuth = FirebaseAuth.getInstance();
         if(mAuth.currentUser != null){

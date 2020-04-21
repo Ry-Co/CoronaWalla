@@ -13,6 +13,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.coronawalla.R
 import com.example.coronawalla.main.ui.local.PostClass
+import com.example.coronawalla.main.ui.profile.UserClass
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -46,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.main_nav_host_fragment)
         bottomNavigation.setupWithNavController(navController)
         updatePostList()
+        getCurrentUser()
         viewModel.toolbarMode.observe(this, Observer {
             when(viewModel.toolbarMode.value){
                  1 -> roamToolbar() //roam
@@ -55,11 +57,10 @@ class MainActivity : AppCompatActivity() {
                  3 -> postPreviewToolbar()
             }
         })
-
-
     }
 
     private fun profileToolbar(){
+        Log.d(TAG, "Setting Toolbar to Profile")
         toolbar_title_tv.text = "Profile"
         post_IV.visibility = View.INVISIBLE
         toolbar_send_tv.visibility = View.INVISIBLE
@@ -67,6 +68,7 @@ class MainActivity : AppCompatActivity() {
         bottomNavigation.visibility = View.VISIBLE
     }
     private fun localToolbar(){
+        Log.d(TAG, "Setting Toolbar to Local")
         toolbar_title_tv.text = "Local"
         toolbar_send_tv.visibility = View.INVISIBLE
         toolbar_cancel_tv.visibility = View.INVISIBLE
@@ -78,6 +80,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     private fun roamToolbar(){
+        Log.d(TAG, "Setting Toolbar to Roam")
         toolbar_title_tv.text = "Roam"
         toolbar_send_tv.visibility = View.INVISIBLE
         toolbar_cancel_tv.visibility = View.INVISIBLE
@@ -85,6 +88,7 @@ class MainActivity : AppCompatActivity() {
         bottomNavigation.visibility = View.VISIBLE
     }
     private fun postToolbar(){
+        Log.d(TAG, "Setting Toolbar to Post")
         toolbar_title_tv.text = "Post"
         post_IV.visibility = View.INVISIBLE
         bottomNavigation.visibility = View.INVISIBLE
@@ -95,6 +99,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     private fun postPreviewToolbar(){
+        Log.d(TAG, "Setting Toolbar to Post-Preview")
         toolbar_title_tv.text = "Post"
         toolbar_send_tv.visibility = View.INVISIBLE
         toolbar_cancel_tv.visibility = View.INVISIBLE
@@ -102,7 +107,18 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-     fun updatePostList(){
+    public fun getCurrentUser(){
+        val uid = FirebaseAuth.getInstance().currentUser!!.uid
+        FirebaseFirestore.getInstance().collection("users").document(uid).get().addOnCompleteListener{
+            if(it.isSuccessful){
+                viewModel.currentUser.value = buildUserObject(it.result!!)
+            }else{
+                Log.d(TAG, "Error:: "+it.exception)
+            }
+        }
+    }
+
+    public fun updatePostList(){
          getUsersCurrentLocation{loc ->
             getLocalDocs(loc){docs ->
                 val posts = buildPostList(docs)
@@ -111,7 +127,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
 
     private fun getUsersCurrentLocation(callback:(Location) -> Unit) = runWithPermissions(Manifest.permission.ACCESS_FINE_LOCATION, options = permOptions){
         val flp = LocationServices.getFusedLocationProviderClient(this)
@@ -162,7 +177,7 @@ class MainActivity : AppCompatActivity() {
         val voteCountLong:Long = docSnap.get("mVoteCount") as Long
         val mMultiplerLong:Long = docSnap.get("mMultiplier") as Long
 
-        var post = PostClass(
+        val post = PostClass(
             mPostID = docSnap.id,
             mPostText = docSnap.get("mPostText") as String,
             mPosterID = docSnap.get("mPosterID") as String,
@@ -177,5 +192,30 @@ class MainActivity : AppCompatActivity() {
         )
 
         return post
+    }
+
+    private fun buildUserObject(docSnap:DocumentSnapshot): UserClass? {
+        val namedPosts:Long = docSnap.get("mNamedPostCount") as Long
+        val anonPosts:Long = docSnap.get("mAnonPostCount") as Long
+        val followerCount:Long = docSnap.get("mFollowersCount") as Long
+        val followingCount:Long = docSnap.get("mFollowingCount") as Long
+        val karmaCount:Long = docSnap.get("mKarmaCount") as Long
+        val ratio = namedPosts.toDouble()/(namedPosts.toDouble()+anonPosts.toDouble()) as Double
+
+
+        val userObject = docSnap.get("mAuthUser") as Map<*, *>
+        return UserClass(
+            mHandle = docSnap.get("mHandle") as String,
+            mUsername = docSnap.get("mUserName") as String,
+            mUserID = docSnap.id as String,
+            mPostsCount = namedPosts.toInt()+anonPosts.toInt(),
+            mKarmaCount = karmaCount.toInt(),
+            mFollowerCount = followerCount.toInt(),
+            mFollowingCount = followingCount.toInt(),
+            mNamedPostCount = namedPosts.toInt(),
+            mAnonPostCount = anonPosts.toInt(),
+            mRatio = "%.3f".format(ratio).toDouble(),
+            mAuthUserObject = userObject
+        )
     }
 }
