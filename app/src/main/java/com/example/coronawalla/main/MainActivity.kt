@@ -59,13 +59,21 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+
+    //TODO: make profile edit toolbar, with check in top right and X in top left
+
     private fun profileToolbar(){
         Log.d(TAG, "Setting Toolbar to Profile")
         toolbar_title_tv.text = "Profile"
         post_IV.visibility = View.INVISIBLE
+        editProfile_IV.visibility = View.VISIBLE
         toolbar_send_tv.visibility = View.INVISIBLE
         toolbar_cancel_tv.visibility = View.INVISIBLE
         bottomNavigation.visibility = View.VISIBLE
+
+        editProfile_IV.setOnClickListener{
+            Log.e(TAG, "Edit Profile!!!!")
+        }
     }
     private fun localToolbar(){
         Log.d(TAG, "Setting Toolbar to Local")
@@ -73,6 +81,7 @@ class MainActivity : AppCompatActivity() {
         toolbar_send_tv.visibility = View.INVISIBLE
         toolbar_cancel_tv.visibility = View.INVISIBLE
         bottomNavigation.visibility = View.VISIBLE
+        editProfile_IV.visibility = View.INVISIBLE
         post_IV.visibility = View.VISIBLE
         post_IV.setOnClickListener{
             findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_local_to_postFragment)
@@ -86,6 +95,8 @@ class MainActivity : AppCompatActivity() {
         toolbar_cancel_tv.visibility = View.INVISIBLE
         post_IV.visibility = View.INVISIBLE
         bottomNavigation.visibility = View.VISIBLE
+        editProfile_IV.visibility = View.INVISIBLE
+
     }
     private fun postToolbar(){
         Log.d(TAG, "Setting Toolbar to Post")
@@ -94,6 +105,8 @@ class MainActivity : AppCompatActivity() {
         bottomNavigation.visibility = View.INVISIBLE
         toolbar_send_tv.visibility = View.VISIBLE
         toolbar_cancel_tv.visibility = View.VISIBLE
+        editProfile_IV.visibility = View.INVISIBLE
+
         toolbar_cancel_tv.setOnClickListener {
             findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_postFragment_to_local)
         }
@@ -104,6 +117,8 @@ class MainActivity : AppCompatActivity() {
         toolbar_send_tv.visibility = View.INVISIBLE
         toolbar_cancel_tv.visibility = View.INVISIBLE
         post_IV.visibility = View.INVISIBLE
+        editProfile_IV.visibility = View.INVISIBLE
+
 
     }
 
@@ -177,7 +192,7 @@ class MainActivity : AppCompatActivity() {
         val voteCountLong:Long = docSnap.get("mVoteCount") as Long
         val mMultiplerLong:Long = docSnap.get("mMultiplier") as Long
 
-        val post = PostClass(
+        return PostClass(
             mPostID = docSnap.id,
             mPostText = docSnap.get("mPostText") as String,
             mPosterID = docSnap.get("mPosterID") as String,
@@ -190,8 +205,6 @@ class MainActivity : AppCompatActivity() {
             mDownvoteIDs = downvotes,
             mUserVote = userVote
         )
-
-        return post
     }
 
     private fun buildUserObject(docSnap:DocumentSnapshot): UserClass? {
