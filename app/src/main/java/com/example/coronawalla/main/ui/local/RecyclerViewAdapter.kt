@@ -22,22 +22,10 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) : RecyclerView.
     }
 
     override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {
-        val currentItem = postList[position]
+        var currentItem = postList[position]
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
         val ageHours = (System.currentTimeMillis() - currentItem.mPostDateLong) / 3600000 // milliseconds per hour
-        var prevVote: Boolean? = null
-
-        prevVote = when {
-            currentItem.mUpvoteIDs.contains(uid) -> {
-                true
-            }
-            currentItem.mDownvoteIDs.contains(uid) -> {
-                false
-            }
-            else -> {
-                null
-            }
-        }
+        var prevVote = getPrevVote(currentItem,uid)
 
         holder.postTextTV.text = currentItem.mPostText
         holder.postAgeTV.text = ageHours.toString() + "h"
@@ -48,38 +36,20 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) : RecyclerView.
         holder.upvoteIV.setOnClickListener {
             currentItem.mUserVote = vote(currentItem.mUserVote, true, holder)
             val voteCountString = updateVoteCount(currentItem.mVoteCount.toString(), currentItem.mUserVote, prevVote)
+            holder.voteCountTV.text = voteCountString
             prevVote = currentItem.mUserVote
             currentItem.mVoteCount = voteCountString.toInt()
-            if(currentItem.mUserVote == null){
-                if(currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.remove(uid)}
-                if(currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.remove(uid)}
-            }else if(currentItem.mUserVote == true){
-                if(!currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.add(uid)}
-                if(currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.remove(uid)}
-            }else{
-                if(currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.remove(uid)}
-                if(!currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.add(uid)}
-            }
-            holder.voteCountTV.text = voteCountString
+            currentItem = updatePostLists(currentItem,uid)
             changedPosts.add(currentItem)
         }
 
         holder.downvoteIV.setOnClickListener {
             currentItem.mUserVote = vote(currentItem.mUserVote, false, holder)
             val voteCountString = updateVoteCount(currentItem.mVoteCount.toString(), currentItem.mUserVote, prevVote)
+            holder.voteCountTV.text = voteCountString
             prevVote = currentItem.mUserVote
             currentItem.mVoteCount = voteCountString.toInt()
-            if(currentItem.mUserVote == null){
-                if(currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.remove(uid)}
-                if(currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.remove(uid)}
-            }else if(currentItem.mUserVote == true){
-                if(!currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.add(uid)}
-                if(currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.remove(uid)}
-            }else{
-                if(currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.remove(uid)}
-                if(!currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.add(uid)}
-            }
-            holder.voteCountTV.text = voteCountString
+            currentItem = updatePostLists(currentItem,uid)
             changedPosts.add(currentItem)
         }
     }
@@ -211,6 +181,40 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) : RecyclerView.
                         pvNum.toString()
                     }
                 }
+            }
+        }
+    }
+
+    private fun getPrevVote(currentItem:PostClass, uid:String):Boolean?{
+        return when {
+            currentItem.mUpvoteIDs.contains(uid) -> {
+                true
+            }
+            currentItem.mDownvoteIDs.contains(uid) -> {
+                false
+            }
+            else -> {
+                null
+            }
+        }
+    }
+
+    private fun updatePostLists(currentItem: PostClass, uid:String):PostClass{
+        return when (currentItem.mUserVote) {
+            null -> {
+                if(currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.remove(uid)}
+                if(currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.remove(uid)}
+                currentItem
+            }
+            true -> {
+                if(!currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.add(uid)}
+                if(currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.remove(uid)}
+                currentItem
+            }
+            else -> {
+                if(currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.remove(uid)}
+                if(!currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.add(uid)}
+                currentItem
             }
         }
     }

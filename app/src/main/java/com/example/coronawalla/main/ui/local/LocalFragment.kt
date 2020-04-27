@@ -26,29 +26,8 @@ class LocalFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        updateServerValues()
-        val t = recyclerView.adapter as RecyclerViewAdapter
-        t.getChangedList()
-        val db = FirebaseFirestore.getInstance()
-        val oldPostList = t.getChangedList()
-        val batch = db.batch()
-        val colRef = db.collection("posts")
-        for(post in oldPostList!!){
-            val upSet = ArrayList<String>(post.mUpvoteIDs)
-            val downSet = ArrayList<String>(post.mDownvoteIDs)
-            batch.update(colRef.document(post.mPostID),"mUpvoteIDs",upSet)
-            batch.update(colRef.document(post.mPostID),"mDownvoteIDs",downSet)
-            batch.update(colRef.document(post.mPostID),"mVoteCount",post.mVoteCount)
-        }
-        batch.commit().addOnCompleteListener{
-            if(it.isSuccessful){
-                Log.i(TAG,"Posts updated!")
-            }else{
-                Log.e(TAG,it.exception.toString())
-            }
-        }
+        updatePostsServer()
     }
-
 
     override fun onResume() {
         super.onResume()
@@ -84,6 +63,26 @@ class LocalFragment : Fragment() {
         }
     }
 
-    private fun updateServerValues(){
+    private fun updatePostsServer(){
+        val t = recyclerView.adapter as RecyclerViewAdapter
+        t.getChangedList()
+        val db = FirebaseFirestore.getInstance()
+        val oldPostList = t.getChangedList()
+        val batch = db.batch()
+        val colRef = db.collection("posts")
+        for(post in oldPostList!!){
+            val upSet = ArrayList<String>(post.mUpvoteIDs)
+            val downSet = ArrayList<String>(post.mDownvoteIDs)
+            batch.update(colRef.document(post.mPostID),"mUpvoteIDs",upSet)
+            batch.update(colRef.document(post.mPostID),"mDownvoteIDs",downSet)
+            batch.update(colRef.document(post.mPostID),"mVoteCount",post.mVoteCount)
+        }
+        batch.commit().addOnCompleteListener{
+            if(it.isSuccessful){
+                Log.i(TAG,"Posts updated!")
+            }else{
+                Log.e(TAG,it.exception.toString())
+            }
+        }
     }
 }
