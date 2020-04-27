@@ -5,18 +5,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coronawalla.R
+import com.example.coronawalla.main.MainActivityViewModel
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.list_item.view.*
 
-class RecyclerViewAdapter(private val postList: List<PostClass>) :
-    RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder>() {
-
-
+class RecyclerViewAdapter(private val postList: List<PostClass>) : RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder>() {
+    private val changedPosts = ArrayList<PostClass>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolder {
-        val itemView =
-            LayoutInflater.from(parent.context).inflate(R.layout.list_item, parent, false)
+        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.list_item, parent, false)
         return RecyclerViewHolder(
             itemView
         )
@@ -25,9 +24,9 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) :
     override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {
         val currentItem = postList[position]
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
-        val ageHours =
-            (System.currentTimeMillis() - currentItem.mPostDateLong) / 3600000 // milliseconds per hour
+        val ageHours = (System.currentTimeMillis() - currentItem.mPostDateLong) / 3600000 // milliseconds per hour
         var prevVote: Boolean? = null
+
         prevVote = when {
             currentItem.mUpvoteIDs.contains(uid) -> {
                 true
@@ -39,24 +38,49 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) :
                 null
             }
         }
+
         holder.postTextTV.text = currentItem.mPostText
         holder.postAgeTV.text = ageHours.toString() + "h"
         holder.voteCountTV.text = currentItem.mVoteCount.toString()
         voteVisual(holder, currentItem.mUserVote)
-        holder.voteCountTV.text =
-            updateVoteCount(currentItem.mVoteCount.toString(), currentItem.mUserVote, prevVote)
-
+        holder.voteCountTV.text = updateVoteCount(currentItem.mVoteCount.toString(), currentItem.mUserVote, prevVote)
 
         holder.upvoteIV.setOnClickListener {
             currentItem.mUserVote = vote(currentItem.mUserVote, true, holder)
-            holder.voteCountTV.text =
-                updateVoteCount(currentItem.mVoteCount.toString(), currentItem.mUserVote, prevVote)
+            val voteCountString = updateVoteCount(currentItem.mVoteCount.toString(), currentItem.mUserVote, prevVote)
+            prevVote = currentItem.mUserVote
+            currentItem.mVoteCount = voteCountString.toInt()
+            if(currentItem.mUserVote == null){
+                if(currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.remove(uid)}
+                if(currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.remove(uid)}
+            }else if(currentItem.mUserVote == true){
+                if(!currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.add(uid)}
+                if(currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.remove(uid)}
+            }else{
+                if(currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.remove(uid)}
+                if(!currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.add(uid)}
+            }
+            holder.voteCountTV.text = voteCountString
+            changedPosts.add(currentItem)
         }
 
         holder.downvoteIV.setOnClickListener {
             currentItem.mUserVote = vote(currentItem.mUserVote, false, holder)
-            holder.voteCountTV.text =
-                updateVoteCount(currentItem.mVoteCount.toString(), currentItem.mUserVote, prevVote)
+            val voteCountString = updateVoteCount(currentItem.mVoteCount.toString(), currentItem.mUserVote, prevVote)
+            prevVote = currentItem.mUserVote
+            currentItem.mVoteCount = voteCountString.toInt()
+            if(currentItem.mUserVote == null){
+                if(currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.remove(uid)}
+                if(currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.remove(uid)}
+            }else if(currentItem.mUserVote == true){
+                if(!currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.add(uid)}
+                if(currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.remove(uid)}
+            }else{
+                if(currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.remove(uid)}
+                if(!currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.add(uid)}
+            }
+            holder.voteCountTV.text = voteCountString
+            changedPosts.add(currentItem)
         }
     }
 
@@ -109,7 +133,6 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) :
                 }
             }
         }
-
     }
 
     private fun voteVisual(holder: RecyclerViewHolder, vote: Boolean?) {
@@ -130,19 +153,14 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) :
         }
     }
 
-    private fun updateVoteCount(
-        postVoteCount: String,
-        usersVote: Boolean?,
-        usersPreviousVote: Boolean?
-    ): String {
+    private fun updateVoteCount(postVoteCount: String, usersVote: Boolean?, usersPreviousVote: Boolean?): String {
         var pvNum = postVoteCount.toInt()
-
         return when (usersVote) {
             null -> {
                 when (usersPreviousVote) {
                     null -> {
                         //user hasn't voted on post previously
-                        postVoteCount
+                        pvNum.toString()
                     }
                     true -> {
                         //user previously upvoted post
@@ -152,7 +170,7 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) :
                     else -> {
                         //user previously downvoted post
                         pvNum += 1
-                        postVoteCount
+                        pvNum.toString()
                     }
                 }
             }
@@ -197,5 +215,7 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) :
         }
     }
 
-
+    public fun getChangedList(): ArrayList<PostClass>{
+        return changedPosts
+    }
 }

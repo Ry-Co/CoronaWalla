@@ -40,7 +40,7 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val profileImageview = view.findViewById<CircularImageView>(R.id.profileImageView)
+        val profileImageview = view.findViewById<CircularImageView>(R.id.profileImageViewEdit)
         val handleTV = view.findViewById<TextView>(R.id.handleTV)
         val nicknameTV = view.findViewById<TextView>(R.id.nicknameTV)
         val postsCountTV = view.findViewById<TextView>(R.id.postsTV)

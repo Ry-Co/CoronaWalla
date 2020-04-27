@@ -9,7 +9,7 @@ data class PostClass(
     val mPostText: String,
     val mPosterID : String,
     val mPostGeoPoint: GeoPoint,
-    val mVoteCount: Int,
+    var mVoteCount: Int,
     val mPostDateLong: Long,
     val mMultiplier: Int,
     val mPayoutDateLong: Long,

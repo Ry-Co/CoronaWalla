@@ -14,7 +14,11 @@
         android:id="@+id/profile"
         android:name="com.example.coronawalla.main.ui.profile.ProfileFragment"
         android:label="fragment_profile"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/fragment_profile" >
+        <action
+            android:id="@+id/action_profile_to_profileEditFragment"
+            app:destination="@id/profileEditFragment" />
+    </fragment>
     <fragment
         android:id="@+id/roam"
         android:name="com.example.coronawalla.main.ui.roam.RoamFragment"
@@ -49,5 +53,14 @@
         <action
             android:id="@+id/action_postPreviewFragment_to_local"
             app:destination="@id/local" />
+    </fragment>
+    <fragment
+        android:id="@+id/profileEditFragment"
+        android:name="com.example.coronawalla.main.ui.profile.ProfileEditFragment"
+        android:label="fragment_profile_edit"
+        tools:layout="@layout/fragment_profile_edit" >
+        <action
+            android:id="@+id/action_profileEditFragment_to_profile"
+            app:destination="@id/profile" />
     </fragment>
 </navigation>

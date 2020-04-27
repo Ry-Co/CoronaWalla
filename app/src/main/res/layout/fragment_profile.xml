@@ -35,10 +35,11 @@
     </LinearLayout>
 
     <com.mikhaellopez.circularimageview.CircularImageView
-        android:id="@+id/profileImageView"
+        android:id="@+id/profileImageViewEdit"
         android:layout_width="240dp"
         android:layout_height="240dp"
         android:src="@drawable/ic_account_box_black_24dp"
+        android:scaleType="centerCrop"
         app:layout_constraintBottom_toTopOf="@+id/guideline3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -1,6 +1,7 @@
 package com.example.coronawalla.main.ui.local
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,13 +12,42 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivity
 import com.example.coronawalla.main.MainActivityViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.WriteBatch
 import kotlinx.android.synthetic.main.fragment_local.*
 
 class LocalFragment : Fragment() {
     private val viewModel by lazy{
         activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
+    private val TAG: String? = LocalFragment::class.simpleName
 
+
+    override fun onPause() {
+        super.onPause()
+        updateServerValues()
+        val t = recyclerView.adapter as RecyclerViewAdapter
+        t.getChangedList()
+        val db = FirebaseFirestore.getInstance()
+        val oldPostList = t.getChangedList()
+        val batch = db.batch()
+        val colRef = db.collection("posts")
+        for(post in oldPostList!!){
+            val upSet = ArrayList<String>(post.mUpvoteIDs)
+            val downSet = ArrayList<String>(post.mDownvoteIDs)
+            batch.update(colRef.document(post.mPostID),"mUpvoteIDs",upSet)
+            batch.update(colRef.document(post.mPostID),"mDownvoteIDs",downSet)
+            batch.update(colRef.document(post.mPostID),"mVoteCount",post.mVoteCount)
+        }
+        batch.commit().addOnCompleteListener{
+            if(it.isSuccessful){
+                Log.i(TAG,"Posts updated!")
+            }else{
+                Log.e(TAG,it.exception.toString())
+            }
+        }
+    }
 
 
     override fun onResume() {
@@ -39,17 +69,21 @@ class LocalFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         viewModel!!.localPostList.observe(viewLifecycleOwner, Observer{
             recyclerView.adapter = RecyclerViewAdapter(it)
+
         })
 
 
         refreshLayout.setOnRefreshListener {
             //This is a safe cast because of the fragment we are in
             val mA:MainActivity = activity as MainActivity
-            mA.updatePostList()
+            mA.updateLocalPostList()
             viewModel!!.localPostList.observe(viewLifecycleOwner, Observer{
                 recyclerView.adapter = RecyclerViewAdapter(it)
             })
             refreshLayout.isRefreshing = false
         }
+    }
+
+    private fun updateServerValues(){
     }
 }

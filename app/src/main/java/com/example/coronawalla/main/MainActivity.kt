@@ -29,6 +29,14 @@ import org.imperiumlabs.geofirestore.extension.getAtLocation
 class MainActivity : AppCompatActivity() {
     private val TAG: String? = MainActivity::class.simpleName
 
+
+    /*TODO: implement
+    *
+    * https://github.com/hdodenhof/CircleImageView
+    * https://github.com/bumptech/glide
+    *
+    * */
+
     private val viewModel by lazy{
         this.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
@@ -46,13 +54,14 @@ class MainActivity : AppCompatActivity() {
 
         val navController = findNavController(R.id.main_nav_host_fragment)
         bottomNavigation.setupWithNavController(navController)
-        updatePostList()
+        updateLocalPostList()
         getCurrentUser()
         viewModel.toolbarMode.observe(this, Observer {
             when(viewModel.toolbarMode.value){
                  1 -> roamToolbar() //roam
                  0 -> localToolbar() //local
                 -1 -> profileToolbar() //profile
+                -2 -> profileEditToolbar()
                  2 -> postToolbar() //post creation toolbar
                  3 -> postPreviewToolbar()
             }
@@ -60,8 +69,25 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    //TODO: make profile edit toolbar, with check in top right and X in top left
-
+    private fun profileEditToolbar(){
+        Log.d(TAG, "Setting Toolbar to ProfileEdit")
+        toolbar_title_tv.text = "Edit Profile"
+        post_IV.visibility = View.INVISIBLE
+        editProfile_IV.visibility = View.INVISIBLE
+        toolbar_send_tv.visibility = View.INVISIBLE
+        toolbar_cancel_tv.visibility = View.INVISIBLE
+        bottomNavigation.visibility = View.VISIBLE
+        editProfile_cancel.visibility = View.VISIBLE
+        editProfile_confirm.visibility = View.VISIBLE
+        editProfile_confirm.setOnClickListener {
+            //send changes server side and close edit
+            findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_profileEditFragment_to_profile)
+        }
+        editProfile_cancel.setOnClickListener{
+            //close edit
+            findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_profileEditFragment_to_profile)
+        }
+    }
     private fun profileToolbar(){
         Log.d(TAG, "Setting Toolbar to Profile")
         toolbar_title_tv.text = "Profile"
@@ -70,9 +96,12 @@ class MainActivity : AppCompatActivity() {
         toolbar_send_tv.visibility = View.INVISIBLE
         toolbar_cancel_tv.visibility = View.INVISIBLE
         bottomNavigation.visibility = View.VISIBLE
+        editProfile_cancel.visibility = View.INVISIBLE
+        editProfile_confirm.visibility = View.INVISIBLE
 
         editProfile_IV.setOnClickListener{
             Log.e(TAG, "Edit Profile!!!!")
+            findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_profile_to_profileEditFragment)
         }
     }
     private fun localToolbar(){
@@ -83,6 +112,8 @@ class MainActivity : AppCompatActivity() {
         bottomNavigation.visibility = View.VISIBLE
         editProfile_IV.visibility = View.INVISIBLE
         post_IV.visibility = View.VISIBLE
+        editProfile_cancel.visibility = View.INVISIBLE
+        editProfile_confirm.visibility = View.INVISIBLE
         post_IV.setOnClickListener{
             findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_local_to_postFragment)
             Toast.makeText(this, "POST", Toast.LENGTH_SHORT).show()
@@ -96,6 +127,8 @@ class MainActivity : AppCompatActivity() {
         post_IV.visibility = View.INVISIBLE
         bottomNavigation.visibility = View.VISIBLE
         editProfile_IV.visibility = View.INVISIBLE
+        editProfile_cancel.visibility = View.INVISIBLE
+        editProfile_confirm.visibility = View.INVISIBLE
 
     }
     private fun postToolbar(){
@@ -106,6 +139,8 @@ class MainActivity : AppCompatActivity() {
         toolbar_send_tv.visibility = View.VISIBLE
         toolbar_cancel_tv.visibility = View.VISIBLE
         editProfile_IV.visibility = View.INVISIBLE
+        editProfile_cancel.visibility = View.INVISIBLE
+        editProfile_confirm.visibility = View.INVISIBLE
 
         toolbar_cancel_tv.setOnClickListener {
             findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_postFragment_to_local)
@@ -118,6 +153,8 @@ class MainActivity : AppCompatActivity() {
         toolbar_cancel_tv.visibility = View.INVISIBLE
         post_IV.visibility = View.INVISIBLE
         editProfile_IV.visibility = View.INVISIBLE
+        editProfile_cancel.visibility = View.INVISIBLE
+        editProfile_confirm.visibility = View.INVISIBLE
 
 
     }
@@ -133,7 +170,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    public fun updatePostList(){
+    public fun updateLocalPostList(){
          getUsersCurrentLocation{loc ->
             getLocalDocs(loc){docs ->
                 val posts = buildPostList(docs)
@@ -180,14 +217,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun buildPostObject(docSnap : DocumentSnapshot): PostClass {
-        val mAuth = FirebaseAuth.getInstance()
+        val uid = viewModel.currentUser.value!!.mUserID
         var userVote : Boolean? = null
         var list :ArrayList<String> = docSnap.get("mUpvoteIDs") as ArrayList<String>
         val upvotes = list.toHashSet()
         list = docSnap.get("mDownvoteIDs") as ArrayList<String>
         val downvotes = list.toHashSet()
-        userVote = if(!upvotes.contains(mAuth.currentUser!!.uid) && !downvotes.contains(mAuth.currentUser!!.uid)) { null
-        }else upvotes.contains(mAuth.currentUser!!.uid)
+        userVote = if(!upvotes.contains(uid) && !downvotes.contains(uid)) { null
+        }else upvotes.contains(uid)
 
         val voteCountLong:Long = docSnap.get("mVoteCount") as Long
         val mMultiplerLong:Long = docSnap.get("mMultiplier") as Long
