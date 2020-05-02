@@ -81,6 +81,7 @@ class PasswordFragment : Fragment() {
                     user["mNamedPostCount"] = 0
                     user["mAnonPostCount"] = 0
                     user["mRatio"] = 0.0
+                    user["mProfileImageURL"] = ""
 
                     FirebaseFirestore.getInstance().collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
                         if(it.isSuccessful){

@@ -1,5 +1,6 @@
 package com.example.coronawalla.main.ui.local
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +15,8 @@ import kotlinx.android.synthetic.main.list_item.view.*
 
 class RecyclerViewAdapter(private val postList: List<PostClass>) : RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder>() {
     private val changedPosts = ArrayList<PostClass>()
+    private val TAG: String? = RecyclerViewAdapter::class.simpleName
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.list_item, parent, false)
         return RecyclerViewHolder(
@@ -26,6 +29,7 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) : RecyclerView.
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
         val ageHours = (System.currentTimeMillis() - currentItem.mPostDateLong) / 3600000 // milliseconds per hour
         var prevVote = getPrevVote(currentItem,uid)
+
 
         holder.postTextTV.text = currentItem.mPostText
         holder.postAgeTV.text = ageHours.toString() + "h"

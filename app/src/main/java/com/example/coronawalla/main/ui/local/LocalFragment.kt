@@ -50,12 +50,11 @@ class LocalFragment : Fragment() {
             recyclerView.adapter = RecyclerViewAdapter(it)
 
         })
-
-
         refreshLayout.setOnRefreshListener {
             //This is a safe cast because of the fragment we are in
+            Log.e(TAG, "REFRESH")
             val mA:MainActivity = activity as MainActivity
-            mA.updateLocalPostList()
+            mA.updateLocalPostList(viewModel!!.currentLocation.value!!)
             viewModel!!.localPostList.observe(viewLifecycleOwner, Observer{
                 recyclerView.adapter = RecyclerViewAdapter(it)
             })

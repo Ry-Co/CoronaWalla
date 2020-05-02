@@ -3,6 +3,7 @@ package com.example.coronawalla.main
 import android.Manifest
 import android.location.Location
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -14,7 +15,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.coronawalla.R
 import com.example.coronawalla.main.ui.local.PostClass
 import com.example.coronawalla.main.ui.profile.UserClass
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -28,14 +29,11 @@ import org.imperiumlabs.geofirestore.extension.getAtLocation
 
 class MainActivity : AppCompatActivity() {
     private val TAG: String? = MainActivity::class.simpleName
-
-
-    /*TODO: implement
-    *
-    * https://github.com/hdodenhof/CircleImageView
-    * https://github.com/bumptech/glide
-    *
-    * */
+    private lateinit var flp: FusedLocationProviderClient
+    // globally declare LocationRequest
+    private lateinit var locReq: LocationRequest
+    // globally declare LocationCallback
+    private lateinit var locationCallback: LocationCallback
 
     private val viewModel by lazy{
         this.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
@@ -47,15 +45,41 @@ class MainActivity : AppCompatActivity() {
         permanentlyDeniedMessage = "Location permissions are needed for the core functionality of this app. Please enable these permissions to continue")
 
 
+    /*TODO: implement
+    *
+    * https://github.com/hdodenhof/CircleImageView
+    * https://github.com/bumptech/glide
+    *
+    * */
+
+    override fun onResume() {
+        super.onResume()
+        startLocationUpdates()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopLocationUpdates()
+
+        //TODO: update user variables
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar_main))
-
         val navController = findNavController(R.id.main_nav_host_fragment)
         bottomNavigation.setupWithNavController(navController)
-        updateLocalPostList()
+
+        flp = LocationServices.getFusedLocationProviderClient(this)
+        getLocationUpdates()
         getCurrentUser()
+
+        viewModel.currentLocation.observe(this, Observer{ loc ->
+            Log.e(TAG,"location updated")
+            updateLocalPostList(loc)
+        })
+
         viewModel.toolbarMode.observe(this, Observer {
             when(viewModel.toolbarMode.value){
                  1 -> roamToolbar() //roam
@@ -170,21 +194,61 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    public fun updateLocalPostList(){
-         getUsersCurrentLocation{loc ->
-            getLocalDocs(loc){docs ->
-                val posts = buildPostList(docs)
-                viewModel.currentLocation.value = loc
-                viewModel.localPostList.value = posts
+    public fun updateLocalPostList(loc:Location){
+        getLocalDocs(loc){docs ->
+            val posts = buildPostList(docs)
+            viewModel.localPostList.value = posts
+        }
+    }
+
+    /**
+     * call this method in onCreate
+     * onLocationResult call when location is changed
+     */
+    private fun getLocationUpdates() = runWithPermissions(Manifest.permission.ACCESS_FINE_LOCATION, options = permOptions){
+        locReq = LocationRequest()
+        locReq.interval = 300000 // 5minute updates
+        locReq.fastestInterval = 300000
+        locReq.smallestDisplacement = 170f // 170m = 0.1 miles
+        locReq.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+
+        locationCallback = object:LocationCallback(){
+            override fun onLocationResult(locationResult: LocationResult?) {
+                locationResult ?: return
+                if (locationResult.locations.isNotEmpty()) {
+                    // get latest location
+                    val location = locationResult.lastLocation
+                    // use your location object
+                    // get latitude , longitude and other info from this
+                    viewModel.currentLocation.value = location
+                }
             }
         }
     }
+    private fun startLocationUpdates() {
+        flp.requestLocationUpdates(
+            locReq,
+            locationCallback,
+            null /* Looper */
+        )
+    }
+    private fun stopLocationUpdates() {
+        flp.removeLocationUpdates(locationCallback)
+    }
+
+
 
     private fun getUsersCurrentLocation(callback:(Location) -> Unit) = runWithPermissions(Manifest.permission.ACCESS_FINE_LOCATION, options = permOptions){
         val flp = LocationServices.getFusedLocationProviderClient(this)
         flp.lastLocation.addOnCompleteListener{
             if (it.isSuccessful){
-                callback.invoke(it.result!!)
+                if(it.result == null){
+                    Log.e(TAG, "Error:: Location is null")
+                    callback.invoke(it.result!!)
+                }else{
+                    callback.invoke(it.result!!)
+                }
+
             }else{
                 Log.e(TAG, "Error:: "+it.exception.toString())
             }
@@ -217,7 +281,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun buildPostObject(docSnap : DocumentSnapshot): PostClass {
-        val uid = viewModel.currentUser.value!!.mUserID
+        val uid = FirebaseAuth.getInstance().currentUser!!.uid
         var userVote : Boolean? = null
         var list :ArrayList<String> = docSnap.get("mUpvoteIDs") as ArrayList<String>
         val upvotes = list.toHashSet()
@@ -245,12 +309,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun buildUserObject(docSnap:DocumentSnapshot): UserClass? {
+        var profImageURL:String? = null
         val namedPosts:Long = docSnap.get("mNamedPostCount") as Long
         val anonPosts:Long = docSnap.get("mAnonPostCount") as Long
         val followerCount:Long = docSnap.get("mFollowersCount") as Long
         val followingCount:Long = docSnap.get("mFollowingCount") as Long
         val karmaCount:Long = docSnap.get("mKarmaCount") as Long
         val ratio = namedPosts.toDouble()/(namedPosts.toDouble()+anonPosts.toDouble()) as Double
+        if(docSnap.get("mProfileImageURL") != null){
+            profImageURL = docSnap.get("mProfileImageURL") as String
+        }
 
 
         val userObject = docSnap.get("mAuthUser") as Map<*, *>
@@ -265,7 +333,8 @@ class MainActivity : AppCompatActivity() {
             mNamedPostCount = namedPosts.toInt(),
             mAnonPostCount = anonPosts.toInt(),
             mRatio = "%.3f".format(ratio).toDouble(),
-            mAuthUserObject = userObject
+            mAuthUserObject = userObject,
+            mProfileImageURL = profImageURL
         )
     }
 }

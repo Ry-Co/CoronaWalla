@@ -9,10 +9,12 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.bumptech.glide.Glide
 import com.example.coronawalla.LauncherActivity
 import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivityViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.storage.FirebaseStorage
 import com.mikhaellopez.circularimageview.CircularImageView
 
 
@@ -40,6 +42,11 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val storage = FirebaseStorage.getInstance().reference
+        val uid = viewModel!!.currentUser.value!!.mUserID
+        val userImageStorage = storage.child("images/$uid")
+
+
         val profileImageview = view.findViewById<CircularImageView>(R.id.profileImageViewEdit)
         val handleTV = view.findViewById<TextView>(R.id.handleTV)
         val nicknameTV = view.findViewById<TextView>(R.id.nicknameTV)
@@ -55,6 +62,7 @@ class ProfileFragment : Fragment() {
             startActivity(intent)
         }
 
+
         if(this::currentUser.isInitialized){
             handleTV.text = currentUser.mHandle
             nicknameTV.text = currentUser.mUsername
@@ -63,8 +71,8 @@ class ProfileFragment : Fragment() {
             followersTV.text = currentUser.mFollowerCount.toString()
             postRatioTV.text = currentUser.mRatio.toString()
             followingTV.text = currentUser.mFollowingCount.toString()
-        }else{
-            viewModel!!.currentUser.observe(viewLifecycleOwner,Observer{
+        }else {
+            viewModel!!.currentUser.observe(viewLifecycleOwner, Observer {
                 currentUser = it
                 handleTV.text = currentUser.mHandle
                 nicknameTV.text = currentUser.mUsername
@@ -76,6 +84,10 @@ class ProfileFragment : Fragment() {
             })
         }
 
+        if(viewModel!!.currentUser.value!!.mProfileImageURL != null){
+            val url =viewModel!!.currentUser.value!!.mProfileImageURL.toString()
+            //TODO: add a .placeholder at some point
+        }
 
     }
 

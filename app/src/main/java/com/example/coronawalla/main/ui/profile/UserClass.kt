@@ -11,5 +11,6 @@ data class UserClass(
     val mNamedPostCount: Int= 0,
     val mAnonPostCount: Int= 0,
     val mRatio: Double = 0.0,
-    val mAuthUserObject: Map<*, *>? = null
+    val mAuthUserObject: Map<*, *>? = null,
+    var mProfileImageURL: String? = null
 )
