@@ -11,10 +11,10 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
@@ -40,9 +40,7 @@ import java.io.ByteArrayOutputStream
 class MainActivity : AppCompatActivity() {
     private val TAG: String? = MainActivity::class.simpleName
     private lateinit var flp: FusedLocationProviderClient
-    // globally declare LocationRequest
     private lateinit var locReq: LocationRequest
-    // globally declare LocationCallback
     private lateinit var locationCallback: LocationCallback
 
     private val viewModel by lazy{
@@ -54,12 +52,6 @@ class MainActivity : AppCompatActivity() {
         handlePermanentlyDenied = true,
         permanentlyDeniedMessage = "Location permissions are needed for the core functionality of this app. Please enable these permissions to continue")
 
-    /*TODO: implement
-    *
-    * https://github.com/hdodenhof/CircleImageView
-    * https://github.com/bumptech/glide
-    *
-    * */
     override fun onResume() {
         super.onResume()
         startLocationUpdates()
@@ -68,7 +60,7 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         stopLocationUpdates()
-        updateUsersValues()
+        //updateCurrentUserValues()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,110 +78,14 @@ class MainActivity : AppCompatActivity() {
             Log.e(TAG,"location updated")
             updateLocalPostList(loc)
         })
+
+        val tb = ToolbarWorker(this)
         viewModel.toolbarMode.observe(this, Observer {
-            when(viewModel.toolbarMode.value){
-                 1 -> roamToolbar() //roam
-                 0 -> localToolbar() //local
-                -1 -> profileToolbar() //profile
-                -2 -> profileEditToolbar() // profile edit
-                 2 -> postToolbar() //post creation toolbar
-                 3 -> postPreviewToolbar() //preview
-            }
+            tb.switchBox(it)
         })
     }
 
-
-    private fun profileEditToolbar(){
-        Log.d(TAG, "Setting Toolbar to ProfileEdit")
-        toolbar_title_tv.text = "Edit Profile"
-        post_IV.visibility = View.INVISIBLE
-        editProfile_IV.visibility = View.INVISIBLE
-        toolbar_send_tv.visibility = View.INVISIBLE
-        toolbar_cancel_tv.visibility = View.INVISIBLE
-        bottomNavigation.visibility = View.VISIBLE
-        editProfile_cancel.visibility = View.VISIBLE
-        editProfile_confirm.visibility = View.VISIBLE
-        editProfile_confirm.setOnClickListener {
-            //send changes server side and close edit
-            findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_profileEditFragment_to_profile)
-        }
-        editProfile_cancel.setOnClickListener{
-            //close edit
-            findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_profileEditFragment_to_profile)
-        }
-    }
-    private fun profileToolbar(){
-        Log.d(TAG, "Setting Toolbar to Profile")
-        toolbar_title_tv.text = "Profile"
-        post_IV.visibility = View.INVISIBLE
-        editProfile_IV.visibility = View.VISIBLE
-        toolbar_send_tv.visibility = View.INVISIBLE
-        toolbar_cancel_tv.visibility = View.INVISIBLE
-        bottomNavigation.visibility = View.VISIBLE
-        editProfile_cancel.visibility = View.INVISIBLE
-        editProfile_confirm.visibility = View.INVISIBLE
-
-        editProfile_IV.setOnClickListener{
-            Log.e(TAG, "Edit Profile!!!!")
-            findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_profile_to_profileEditFragment)
-        }
-    }
-    private fun localToolbar(){
-        Log.d(TAG, "Setting Toolbar to Local")
-        toolbar_title_tv.text = "Local"
-        toolbar_send_tv.visibility = View.INVISIBLE
-        toolbar_cancel_tv.visibility = View.INVISIBLE
-        bottomNavigation.visibility = View.VISIBLE
-        editProfile_IV.visibility = View.INVISIBLE
-        post_IV.visibility = View.VISIBLE
-        editProfile_cancel.visibility = View.INVISIBLE
-        editProfile_confirm.visibility = View.INVISIBLE
-        post_IV.setOnClickListener{
-            findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_local_to_postFragment)
-            Toast.makeText(this, "POST", Toast.LENGTH_SHORT).show()
-        }
-    }
-    private fun roamToolbar(){
-        Log.d(TAG, "Setting Toolbar to Roam")
-        toolbar_title_tv.text = "Roam"
-        toolbar_send_tv.visibility = View.INVISIBLE
-        toolbar_cancel_tv.visibility = View.INVISIBLE
-        post_IV.visibility = View.INVISIBLE
-        bottomNavigation.visibility = View.VISIBLE
-        editProfile_IV.visibility = View.INVISIBLE
-        editProfile_cancel.visibility = View.INVISIBLE
-        editProfile_confirm.visibility = View.INVISIBLE
-
-    }
-    private fun postToolbar(){
-        Log.d(TAG, "Setting Toolbar to Post")
-        toolbar_title_tv.text = "Post"
-        post_IV.visibility = View.INVISIBLE
-        bottomNavigation.visibility = View.INVISIBLE
-        toolbar_send_tv.visibility = View.VISIBLE
-        toolbar_cancel_tv.visibility = View.VISIBLE
-        editProfile_IV.visibility = View.INVISIBLE
-        editProfile_cancel.visibility = View.INVISIBLE
-        editProfile_confirm.visibility = View.INVISIBLE
-
-        toolbar_cancel_tv.setOnClickListener {
-            findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_postFragment_to_local)
-        }
-    }
-    private fun postPreviewToolbar(){
-        Log.d(TAG, "Setting Toolbar to Post-Preview")
-        toolbar_title_tv.text = "Post"
-        toolbar_send_tv.visibility = View.INVISIBLE
-        toolbar_cancel_tv.visibility = View.INVISIBLE
-        post_IV.visibility = View.INVISIBLE
-        editProfile_IV.visibility = View.INVISIBLE
-        editProfile_cancel.visibility = View.INVISIBLE
-        editProfile_confirm.visibility = View.INVISIBLE
-
-
-    }
-
-    public fun getCurrentUser(){
+    private fun getCurrentUser(){
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
         FirebaseFirestore.getInstance().collection("users").document(uid).get().addOnCompleteListener{
             if(it.isSuccessful){
@@ -200,13 +96,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    public fun updateLocalPostList(loc:Location){
+    fun updateLocalPostList(loc:Location){
         getLocalDocs(loc){docs ->
             val posts = buildPostList(docs)
             viewModel.localPostList.value = posts
         }
     }
-
     private fun getLocationUpdates() = runWithPermissions(Manifest.permission.ACCESS_FINE_LOCATION, options = permOptions){
         locReq = LocationRequest()
         locReq.interval = 300000 // 5minute updates
@@ -236,23 +131,6 @@ class MainActivity : AppCompatActivity() {
     }
     private fun stopLocationUpdates() {
         flp.removeLocationUpdates(locationCallback)
-    }
-
-    private fun getUsersCurrentLocation(callback:(Location) -> Unit) = runWithPermissions(Manifest.permission.ACCESS_FINE_LOCATION, options = permOptions){
-        val flp = LocationServices.getFusedLocationProviderClient(this)
-        flp.lastLocation.addOnCompleteListener{
-            if (it.isSuccessful){
-                if(it.result == null){
-                    Log.e(TAG, "Error:: Location is null")
-                    callback.invoke(it.result!!)
-                }else{
-                    callback.invoke(it.result!!)
-                }
-
-            }else{
-                Log.e(TAG, "Error:: "+it.exception.toString())
-            }
-        }
     }
 
     private fun getLocalDocs(loc:Location, callback: (List<DocumentSnapshot>) -> Unit){
@@ -389,7 +267,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun updateUsersValues(){
+    private fun updateCurrentUserValues(){
         val dbUserRef = FirebaseFirestore.getInstance().collection("users").document(viewModel.currentUser.value!!.mUserID)
         val mAuth = FirebaseAuth.getInstance()
         val currentUser = viewModel.currentUser.value
