@@ -1,31 +1,41 @@
 package com.example.coronawalla.main
 
 import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.location.Location
+import android.os.Build
 import android.os.Bundle
-import android.os.PersistableBundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.coronawalla.R
 import com.example.coronawalla.main.ui.local.PostClass
 import com.example.coronawalla.main.ui.profile.UserClass
+import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.gms.location.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import com.livinglifetechway.quickpermissions_kotlin.util.QuickPermissionsOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.toolbar.*
 import org.imperiumlabs.geofirestore.GeoFirestore
 import org.imperiumlabs.geofirestore.extension.getAtLocation
+import java.io.ByteArrayOutputStream
 
 class MainActivity : AppCompatActivity() {
     private val TAG: String? = MainActivity::class.simpleName
@@ -44,14 +54,12 @@ class MainActivity : AppCompatActivity() {
         handlePermanentlyDenied = true,
         permanentlyDeniedMessage = "Location permissions are needed for the core functionality of this app. Please enable these permissions to continue")
 
-
     /*TODO: implement
     *
     * https://github.com/hdodenhof/CircleImageView
     * https://github.com/bumptech/glide
     *
     * */
-
     override fun onResume() {
         super.onResume()
         startLocationUpdates()
@@ -60,8 +68,7 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         stopLocationUpdates()
-
-        //TODO: update user variables
+        updateUsersValues()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,15 +86,14 @@ class MainActivity : AppCompatActivity() {
             Log.e(TAG,"location updated")
             updateLocalPostList(loc)
         })
-
         viewModel.toolbarMode.observe(this, Observer {
             when(viewModel.toolbarMode.value){
                  1 -> roamToolbar() //roam
                  0 -> localToolbar() //local
                 -1 -> profileToolbar() //profile
-                -2 -> profileEditToolbar()
+                -2 -> profileEditToolbar() // profile edit
                  2 -> postToolbar() //post creation toolbar
-                 3 -> postPreviewToolbar()
+                 3 -> postPreviewToolbar() //preview
             }
         })
     }
@@ -201,10 +207,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * call this method in onCreate
-     * onLocationResult call when location is changed
-     */
     private fun getLocationUpdates() = runWithPermissions(Manifest.permission.ACCESS_FINE_LOCATION, options = permOptions){
         locReq = LocationRequest()
         locReq.interval = 300000 // 5minute updates
@@ -235,8 +237,6 @@ class MainActivity : AppCompatActivity() {
     private fun stopLocationUpdates() {
         flp.removeLocationUpdates(locationCallback)
     }
-
-
 
     private fun getUsersCurrentLocation(callback:(Location) -> Unit) = runWithPermissions(Manifest.permission.ACCESS_FINE_LOCATION, options = permOptions){
         val flp = LocationServices.getFusedLocationProviderClient(this)
@@ -336,5 +336,84 @@ class MainActivity : AppCompatActivity() {
             mAuthUserObject = userObject,
             mProfileImageURL = profImageURL
         )
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK) {
+            val db = FirebaseFirestore.getInstance()
+            val uid = viewModel.currentUser.value!!.mUserID
+            val storageRef = FirebaseStorage.getInstance().reference.child("images/$uid")
+
+            //Image Uri will not be null for RESULT_OK
+            val fileUri = data?.data
+
+            try{
+                fileUri?.let {
+                    if(Build.VERSION.SDK_INT<28){
+                        val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, fileUri)
+                        uploadBitmap(bitmap,storageRef)
+                        viewModel.currentProfileBitmap.value = bitmap
+                    }else{
+                        val source = ImageDecoder.createSource(this.contentResolver, fileUri)
+                        val bitmap = ImageDecoder.decodeBitmap(source)
+                        uploadBitmap(bitmap,storageRef)
+                        viewModel.currentProfileBitmap.value = bitmap
+                    }
+                }
+            }catch (e:Exception){
+                e.printStackTrace()
+            }
+
+        } else if (resultCode == ImagePicker.RESULT_ERROR) {
+            Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Task Cancelled", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun uploadBitmap(bitmap: Bitmap, storageRef:StorageReference){
+        val baos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
+        val data = baos.toByteArray()
+        val uploadTask = storageRef.putBytes(data)
+        uploadTask.addOnCompleteListener{
+            if (it.isSuccessful){
+                val downloadURL = it.result
+                //todo: update viewmodel for user with their image url
+                viewModel.currentUser.value!!.mProfileImageURL = downloadURL.toString()
+            }else{
+                Toast.makeText(this,it.exception.toString(),Toast.LENGTH_LONG).show()
+            }
+        }
+
+    }
+
+    private fun updateUsersValues(){
+        val dbUserRef = FirebaseFirestore.getInstance().collection("users").document(viewModel.currentUser.value!!.mUserID)
+        val mAuth = FirebaseAuth.getInstance()
+        val currentUser = viewModel.currentUser.value
+        val activePostMap = HashMap<String, String>()
+        //update all users fields
+        val userUpdate = HashMap<String, Any>()
+        userUpdate["mActivePosts"] = activePostMap
+        userUpdate["mAuthUser"] = mAuth.currentUser!!
+        userUpdate["mHandle"] = currentUser!!.mHandle
+        userUpdate["mUserName"] = currentUser.mUsername
+        userUpdate["mKarmaCount"] = currentUser.mKarmaCount
+        userUpdate["mFollowersCount"] = currentUser.mFollowerCount
+        userUpdate["mFollowingCount"] = currentUser.mFollowingCount
+        userUpdate["mNamedPostCount"] = currentUser.mNamedPostCount
+        userUpdate["mAnonPostCount"] = currentUser.mAnonPostCount
+        userUpdate["mRatio"] = currentUser.mRatio
+        userUpdate["mProfileImageURL"] = currentUser.mProfileImageURL.toString()
+
+        dbUserRef.update(userUpdate).addOnCompleteListener{
+            if(it.isSuccessful){
+                Log.i(TAG,"UserUpdateSuccessful")
+            }else{
+                Toast.makeText(this,it.exception.toString(), Toast.LENGTH_LONG).show()
+            }
+        }
     }
 }

@@ -1,34 +1,36 @@
 package com.example.coronawalla.main.ui.profile
 
-import android.app.Activity
-import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
+import android.Manifest
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-
 import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivityViewModel
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
-import kotlinx.android.synthetic.main.fragment_profile.*
-import java.io.ByteArrayOutputStream
+import com.github.dhaval2404.imagepicker.ImagePicker
+import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
+import com.livinglifetechway.quickpermissions_kotlin.util.QuickPermissionsOptions
 
 //TODO: add background color selector a nd profile image selector
+//TODO: turn this into an activity so the imagepicker works
 class ProfileEditFragment : Fragment() {
     private val TAG: String? = ProfileEditFragment::class.simpleName
-
+    private lateinit var profImg:ImageView
     private val viewModel by lazy{
         activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
     val IMAGE_REQUEST_CODE = 0x1
+    private val permOptions = QuickPermissionsOptions(
+        handleRationale = true,
+        rationaleMessage = "Location permissions are required for core functionality!",
+        handlePermanentlyDenied = true,
+        permanentlyDeniedMessage = "Location permissions are needed for the core functionality of this app. Please enable these permissions to continue")
 
     override fun onPause() {
         super.onPause()
@@ -51,47 +53,30 @@ class ProfileEditFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val profileEdit = view.findViewById<ImageView>(R.id.profileImageViewEdit)
+        profImg = view.findViewById(R.id.profileImageViewEdit)
         val profEditTV = view.findViewById<TextView>(R.id.changeProfilePic_TV)
-        profileEdit.setOnClickListener{
+        profImg.setOnClickListener{
             getImageFromGallery()
         }
         profEditTV.setOnClickListener {
             getImageFromGallery()
         }
+
+        viewModel!!.currentProfileBitmap.observe(viewLifecycleOwner, Observer{
+            profImg.setImageBitmap(it)
+        })
+
+
     }
 
     private fun getImageFromGallery(){
-        val intent = Intent(Intent.ACTION_PICK)
-        intent.type = "image/*"
-        startActivityForResult(intent, IMAGE_REQUEST_CODE)
+        ImagePicker.with(this)
+            .galleryOnly()
+            .cropSquare()
+            .compress(1024)
+            .start()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        val storage = FirebaseStorage.getInstance().reference
-        val uid = viewModel!!.currentUser.value!!.mUserID
-
-        if(resultCode == Activity.RESULT_OK && requestCode == IMAGE_REQUEST_CODE){
-            profileImageViewEdit.setImageURI(data?.data)
-            val userImageStorage = storage.child("images/$uid")
-            val bitmap = (profileImageViewEdit.drawable as BitmapDrawable).bitmap
-            val baos = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-            val imageData = baos.toByteArray()
-            val uploadTask = userImageStorage.putBytes(imageData)
-
-            uploadTask.addOnCompleteListener{
-                if(it.isSuccessful){
-                    Log.d(TAG,"Image is uploaded!")
-                    viewModel!!.currentUser.value!!.mProfileImageURL = userImageStorage.downloadUrl.result.toString()
-                }else{
-                    Log.e(TAG, it.exception.toString())
-                }
-            }
-
-        }
-    }
 
 
 }

@@ -43,7 +43,7 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val storage = FirebaseStorage.getInstance().reference
-        val uid = viewModel!!.currentUser.value!!.mUserID
+        val uid = FirebaseAuth.getInstance().currentUser!!.uid
         val userImageStorage = storage.child("images/$uid")
 
 
@@ -83,6 +83,10 @@ class ProfileFragment : Fragment() {
                 followingTV.text = currentUser.mFollowingCount.toString()
             })
         }
+
+        viewModel!!.currentProfileBitmap.observe(viewLifecycleOwner, Observer{
+            profileImageview.setImageBitmap(it)
+        })
 
         if(viewModel!!.currentUser.value!!.mProfileImageURL != null){
             val url =viewModel!!.currentUser.value!!.mProfileImageURL.toString()
