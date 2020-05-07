@@ -36,7 +36,7 @@ class ProfileEditFragment : Fragment() {
         super.onPause()
 
         //TODO: update user info from viewmodel
-
+        viewModel!!.updateUserServer.value = true
     }
 
     override fun onResume() {

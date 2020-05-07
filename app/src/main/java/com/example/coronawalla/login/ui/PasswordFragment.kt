@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.example.coronawalla.LauncherActivity
 import com.example.coronawalla.login.LoginActivityViewModel
 import com.example.coronawalla.R
+import com.example.coronawalla.main.ui.profile.UserClass
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -68,21 +69,8 @@ class PasswordFragment : Fragment() {
             .addOnCompleteListener {
                 if(it.isSuccessful){
                     Toast.makeText(context, "User Created!", Toast.LENGTH_SHORT).show()
-                    val user = HashMap<String, Any>()
-                    val activePostMap = HashMap<String, String>()
-                    user["mActivePosts"] = activePostMap
-                    user["mUserID"] = mAuth.currentUser!!.uid
-                    user["mAuthUser"] = mAuth.currentUser!!
-                    user["mHandle"] = "@NoHandle"
-                    user["mUserName"] = "Anonymous"
-                    user["mKarmaCount"] = 0
-                    user["mFollowersCount"] = 0
-                    user["mFollowingCount"] = 0
-                    user["mNamedPostCount"] = 0
-                    user["mAnonPostCount"] = 0
-                    user["mRatio"] = 0.0
-                    user["mProfileImageURL"] = ""
-
+                    val user = UserClass()
+                    user.user_id = mAuth.currentUser!!.uid
                     FirebaseFirestore.getInstance().collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
                         if(it.isSuccessful){
                             Log.d(TAG, "User created")
@@ -92,8 +80,6 @@ class PasswordFragment : Fragment() {
                             Log.e(TAG,"Error:: "+ it.exception.toString())
                         }
                     }
-
-
 
                     //val intent = Intent(context, MainActivity::class.java)
                     //startActivity(intent)

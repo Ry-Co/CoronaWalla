@@ -73,35 +73,57 @@ class PostPreviewFragment : Fragment() {
                 if (it.isSuccessful){
                     Log.d(TAG, "Post Sent!")
                     val geoFirestore = GeoFirestore(db.collection("posts"))
-                    db.collection("posts").document(it.result!!.id).update("mPostID", it.result!!.id)
+                    db.collection("posts").document(it.result!!.id).update("post_id", it.result!!.id).addOnCompleteListener{
+                        if(it.isSuccessful){
+                            Log.i(TAG, "Updated mPostID")
+                        }else{
+                            Log.e(TAG, it.exception.toString())
+                        }
+                    }
                     geoFirestore.setLocation(it!!.result!!.id,currentGeoPoint)
                 }else{
                     Log.e(TAG, "Error:: "+it.exception.toString())
                 }
             }
-
-            //send post to server
             findNavController().navigate(R.id.action_postPreviewFragment_to_local)
         }
     }
 
-    private fun getPostMap(): HashMap<String, Any>{
-        val postTime = System.currentTimeMillis()
-        val upvotes = ArrayList<String>()
-        upvotes.add(mAuth.currentUser!!.uid)
-        val downvotes = ArrayList<String>()
+    private fun getPostMap(): PostClass{
+
+//        val upvotes = ArrayList<String>()
+//        upvotes.add(mAuth.currentUser!!.uid)
+//        val downvotes = ArrayList<String>()
+//        val post = HashMap<String, Any>()
+//        post["mPostText"] = postViewModel?.postText?.value.toString()
+//        post["mPosterID"] = mAuth.currentUser!!.uid
+//        post["mPostGeoPoint"] = currentGeoPoint
+//        post["mVoteCount"] = 1
+//        post["mPostDateLong"] = postTime
+//        post["mMultiplier"] = 1
+//        post["mPayoutDateLong"] = postTime + 3600000*24
+//        post["mUpvoteIDs"] = upvotes
+//        post["mDownvoteIDs"] = downvotes
+//        post["mUserVote"] =  ""
+//        return
         val currentGeoPoint = GeoPoint(viewModel!!.currentLocation.value!!.latitude, viewModel!!.currentLocation.value!!.longitude)
-        val post = HashMap<String, Any>()
-        post["mPostText"] = postViewModel?.postText?.value.toString()
-        post["mPosterID"] = mAuth.currentUser!!.uid
-        post["mPostGeoPoint"] = currentGeoPoint
-        post["mVoteCount"] = 1
-        post["mPostDateLong"] = postTime
-        post["mMultiplier"] = 1
-        post["mPayoutDateLong"] = postTime + 3600000*24
-        post["mUpvoteIDs"] = upvotes
-        post["mDownvoteIDs"] = downvotes
-        post["mUserVote"] =  ""
-        return post
+        val postTime = System.currentTimeMillis()
+        val mVotes = mutableMapOf<String, Boolean?>()
+        mVotes[mAuth.currentUser!!.uid] = true
+
+
+        return PostClass(
+            post_id = "",
+            post_text = postViewModel?.postText?.value.toString(),
+            poster_id = mAuth.currentUser!!.uid,
+            active = true,
+            post_geo_point = currentGeoPoint,
+            post_date_long = postTime,
+            post_multiplier = 1,
+            payout_date_long = postTime + 3600000*24,
+            votes_map = mVotes,
+            vote_count = 1,
+            users_vote = true
+        )
     }
 }

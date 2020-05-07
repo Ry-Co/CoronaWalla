@@ -9,7 +9,6 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import com.bumptech.glide.Glide
 import com.example.coronawalla.LauncherActivity
 import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivityViewModel
@@ -64,23 +63,23 @@ class ProfileFragment : Fragment() {
 
 
         if(this::currentUser.isInitialized){
-            handleTV.text = currentUser.mHandle
-            nicknameTV.text = currentUser.mUsername
-            postsCountTV.text = currentUser.mPostsCount.toString()
-            karamTV.text = currentUser.mKarmaCount.toString()
-            followersTV.text = currentUser.mFollowerCount.toString()
-            postRatioTV.text = currentUser.mRatio.toString()
-            followingTV.text = currentUser.mFollowingCount.toString()
+//            handleTV.text = currentUser.mHandle
+//            nicknameTV.text = currentUser.mUsername
+//            postsCountTV.text = currentUser.mPostsCount.toString()
+//            karamTV.text = currentUser.mKarmaCount.toString()
+//            followersTV.text = currentUser.mFollowersCount.toString()
+//            postRatioTV.text = currentUser.mRatio.toString()
+//            followingTV.text = currentUser.mFollowingCount.toString()
         }else {
             viewModel!!.currentUser.observe(viewLifecycleOwner, Observer {
-                currentUser = it
-                handleTV.text = currentUser.mHandle
-                nicknameTV.text = currentUser.mUsername
-                postsCountTV.text = currentUser.mPostsCount.toString()
-                karamTV.text = currentUser.mKarmaCount.toString()
-                followersTV.text = currentUser.mFollowerCount.toString()
-                postRatioTV.text = currentUser.mRatio.toString()
-                followingTV.text = currentUser.mFollowingCount.toString()
+//                currentUser = it
+//                handleTV.text = currentUser.mHandle
+//                nicknameTV.text = currentUser.mUsername
+//                postsCountTV.text = currentUser.mPostsCount.toString()
+//                karamTV.text = currentUser.mKarmaCount.toString()
+//                followersTV.text = currentUser.mFollowersCount.toString()
+//                postRatioTV.text = currentUser.mRatio.toString()
+//                followingTV.text = currentUser.mFollowingCount.toString()
             })
         }
 
@@ -88,8 +87,8 @@ class ProfileFragment : Fragment() {
             profileImageview.setImageBitmap(it)
         })
 
-        if(viewModel!!.currentUser.value!!.mProfileImageURL != null){
-            val url =viewModel!!.currentUser.value!!.mProfileImageURL.toString()
+        if(viewModel!!.currentUser.value!!.profile_image_url != null){
+            val url =viewModel!!.currentUser.value!!.profile_image_url.toString()
             //TODO: add a .placeholder at some point
         }
 

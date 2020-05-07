@@ -9,8 +9,8 @@
 
     <com.mikhaellopez.circularimageview.CircularImageView
         android:id="@+id/profileImageViewEdit"
-        android:layout_width="240dp"
-        android:layout_height="240dp"
+        android:layout_width="220dp"
+        android:layout_height="220dp"
         android:scaleType="centerCrop"
         android:src="@drawable/ic_account_box_black_24dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -72,7 +72,7 @@
         android:layout_marginStart="16dp"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="@NickName"
+        android:text=".@NickName"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView7" />
 

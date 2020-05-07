@@ -10,8 +10,6 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
-import android.view.View
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -32,7 +30,6 @@ import com.google.firebase.storage.StorageReference
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import com.livinglifetechway.quickpermissions_kotlin.util.QuickPermissionsOptions
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.toolbar.*
 import org.imperiumlabs.geofirestore.GeoFirestore
 import org.imperiumlabs.geofirestore.extension.getAtLocation
 import java.io.ByteArrayOutputStream
@@ -42,7 +39,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var flp: FusedLocationProviderClient
     private lateinit var locReq: LocationRequest
     private lateinit var locationCallback: LocationCallback
-
     private val viewModel by lazy{
         this.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
@@ -60,6 +56,7 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         stopLocationUpdates()
+        //todo: update user vals
         //updateCurrentUserValues()
     }
 
@@ -83,6 +80,10 @@ class MainActivity : AppCompatActivity() {
         viewModel.toolbarMode.observe(this, Observer {
             tb.switchBox(it)
         })
+
+        viewModel.updateUserServer.observe(this,Observer{
+            //updateCurrentUserValues()
+        })
     }
 
     private fun getCurrentUser(){
@@ -96,12 +97,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun updateLocalPostList(loc:Location){
-        getLocalDocs(loc){docs ->
-            val posts = buildPostList(docs)
-            viewModel.localPostList.value = posts
-        }
-    }
     private fun getLocationUpdates() = runWithPermissions(Manifest.permission.ACCESS_FINE_LOCATION, options = permOptions){
         locReq = LocationRequest()
         locReq.interval = 300000 // 5minute updates
@@ -133,6 +128,13 @@ class MainActivity : AppCompatActivity() {
         flp.removeLocationUpdates(locationCallback)
     }
 
+    fun updateLocalPostList(loc:Location){
+        getLocalDocs(loc){docs ->
+            val posts = buildPostList(docs)
+            viewModel.localPostList.value = posts
+        }
+    }
+
     private fun getLocalDocs(loc:Location, callback: (List<DocumentSnapshot>) -> Unit){
         val usersGP = GeoPoint(loc.latitude, loc.longitude)
         val radiusInKm = 5 * 1.60934 //5 miles
@@ -152,101 +154,106 @@ class MainActivity : AppCompatActivity() {
     private fun buildPostList(input:List<DocumentSnapshot>): ArrayList<PostClass>{
         val out = ArrayList<PostClass>()
         for(d in input){
-            val p = buildPostObject(d)
-            out.add(p)
+            val p = d.toObject(PostClass::class.java)
+            if(p != null){
+                out.add(p)
+            }
         }
         return out
     }
 
     private fun buildPostObject(docSnap : DocumentSnapshot): PostClass {
-        val uid = FirebaseAuth.getInstance().currentUser!!.uid
-        var userVote : Boolean? = null
-        var list :ArrayList<String> = docSnap.get("mUpvoteIDs") as ArrayList<String>
-        val upvotes = list.toHashSet()
-        list = docSnap.get("mDownvoteIDs") as ArrayList<String>
-        val downvotes = list.toHashSet()
-        userVote = if(!upvotes.contains(uid) && !downvotes.contains(uid)) { null
-        }else upvotes.contains(uid)
-
-        val voteCountLong:Long = docSnap.get("mVoteCount") as Long
-        val mMultiplerLong:Long = docSnap.get("mMultiplier") as Long
-
-        return PostClass(
-            mPostID = docSnap.id,
-            mPostText = docSnap.get("mPostText") as String,
-            mPosterID = docSnap.get("mPosterID") as String,
-            mPostGeoPoint= docSnap.get("mPostGeoPoint") as GeoPoint,
-            mVoteCount = voteCountLong.toInt(),
-            mPostDateLong = docSnap.get("mPostDateLong") as Long,
-            mMultiplier = mMultiplerLong.toInt(),
-            mPayoutDateLong = docSnap.get("mPayoutDateLong") as Long,
-            mUpvoteIDs = upvotes,
-            mDownvoteIDs = downvotes,
-            mUserVote = userVote
-        )
+        return docSnap.toObject(PostClass::class.java)!!
+//        val uid = FirebaseAuth.getInstance().currentUser!!.uid
+//        var userVote : Boolean? = null
+//        var list :ArrayList<String> = docSnap.get("mUpvoteIDs") as ArrayList<String>
+//        val upvotes = list.toHashSet()
+//        list = docSnap.get("mDownvoteIDs") as ArrayList<String>
+//        val downvotes = list.toHashSet()
+//        userVote = if(!upvotes.contains(uid) && !downvotes.contains(uid)) { null
+//        }else upvotes.contains(uid)
+//
+//        val voteCountLong:Long = docSnap.get("mVoteCount") as Long
+//        val mMultiplerLong:Long = docSnap.get("mMultiplier") as Long
+//        val votes = mutableMapOf<String, Boolean?>()
+//        return PostClass(
+//            mPostID = docSnap.id,
+//            mPostText = docSnap.get("mPostText") as String,
+//            mPosterID = docSnap.get("mPosterID") as String,
+//            mPostGeoPoint= docSnap.get("mPostGeoPoint") as GeoPoint,
+//            mVoteCount = voteCountLong.toInt(),
+//            mPostDateLong = docSnap.get("mPostDateLong") as Long,
+//            mMultiplier = mMultiplerLong.toInt(),
+//            mPayoutDateLong = docSnap.get("mPayoutDateLong") as Long,
+//            mUserVote = userVote,
+//            mActive = false,
+//            mVotes = votes
+//        )
     }
 
     private fun buildUserObject(docSnap:DocumentSnapshot): UserClass? {
-        var profImageURL:String? = null
-        val namedPosts:Long = docSnap.get("mNamedPostCount") as Long
-        val anonPosts:Long = docSnap.get("mAnonPostCount") as Long
-        val followerCount:Long = docSnap.get("mFollowersCount") as Long
-        val followingCount:Long = docSnap.get("mFollowingCount") as Long
-        val karmaCount:Long = docSnap.get("mKarmaCount") as Long
-        val ratio = namedPosts.toDouble()/(namedPosts.toDouble()+anonPosts.toDouble()) as Double
-        if(docSnap.get("mProfileImageURL") != null){
-            profImageURL = docSnap.get("mProfileImageURL") as String
-        }
-
-
-        val userObject = docSnap.get("mAuthUser") as Map<*, *>
-        return UserClass(
-            mHandle = docSnap.get("mHandle") as String,
-            mUsername = docSnap.get("mUserName") as String,
-            mUserID = docSnap.id as String,
-            mPostsCount = namedPosts.toInt()+anonPosts.toInt(),
-            mKarmaCount = karmaCount.toInt(),
-            mFollowerCount = followerCount.toInt(),
-            mFollowingCount = followingCount.toInt(),
-            mNamedPostCount = namedPosts.toInt(),
-            mAnonPostCount = anonPosts.toInt(),
-            mRatio = "%.3f".format(ratio).toDouble(),
-            mAuthUserObject = userObject,
-            mProfileImageURL = profImageURL
-        )
+        //        var profImageURL:String? = null
+//        val namedPosts:Long = docSnap.get("mNamedPostCount") as Long
+//        val anonPosts:Long = docSnap.get("mAnonPostCount") as Long
+//        val followerCount:Long = docSnap.get("mFollowersCount") as Long
+//        val followingCount:Long = docSnap.get("mFollowingCount") as Long
+//        val karmaCount:Long = docSnap.get("mKarmaCount") as Long
+//        val ratio = namedPosts.toDouble()/(namedPosts.toDouble()+anonPosts.toDouble()) as Double
+//        if(docSnap.get("mProfileImageURL") != null){
+//            profImageURL = docSnap.get("mProfileImageURL") as String
+//        }
+//
+//
+//        val userObject = docSnap.get("mAuthUser") as Map<*, *>
+        return docSnap.toObject(UserClass::class.java)
+//        return UserClass(
+//            mHandle = docSnap.get("mHandle") as String,
+//            mUsername = docSnap.get("mUserName") as String,
+//            mUserID = docSnap.id as String,
+//            mPostsCount = namedPosts.toInt()+anonPosts.toInt(),
+//            mKarmaCount = karmaCount.toInt(),
+//            mFollowersCount = followerCount.toInt(),
+//            mFollowingCount = followingCount.toInt(),
+//            mNamedPostCount = namedPosts.toInt(),
+//            mAnonPostCount = anonPosts.toInt(),
+//            mRatio = "%.3f".format(ratio).toDouble(),
+//            mAuthUserObject = userObject,
+//            mProfileImageURL = profImageURL
+//        )
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK) {
-            val db = FirebaseFirestore.getInstance()
-            val uid = viewModel.currentUser.value!!.mUserID
-            val storageRef = FirebaseStorage.getInstance().reference.child("images/$uid")
+        when (resultCode) {
+            Activity.RESULT_OK -> {
+                val uid = viewModel.currentUser.value!!.user_id
+                val storageRef = FirebaseStorage.getInstance().reference.child("images/$uid")
+                val fileUri = data?.data
 
-            //Image Uri will not be null for RESULT_OK
-            val fileUri = data?.data
-
-            try{
-                fileUri?.let {
-                    if(Build.VERSION.SDK_INT<28){
-                        val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, fileUri)
-                        uploadBitmap(bitmap,storageRef)
-                        viewModel.currentProfileBitmap.value = bitmap
-                    }else{
-                        val source = ImageDecoder.createSource(this.contentResolver, fileUri)
-                        val bitmap = ImageDecoder.decodeBitmap(source)
-                        uploadBitmap(bitmap,storageRef)
-                        viewModel.currentProfileBitmap.value = bitmap
+                try{
+                    fileUri?.let {
+                        if(Build.VERSION.SDK_INT<28){
+                            val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, fileUri)
+                            uploadBitmap(bitmap,storageRef)
+                            viewModel.currentProfileBitmap.value = bitmap
+                        }else{
+                            val source = ImageDecoder.createSource(this.contentResolver, fileUri)
+                            val bitmap = ImageDecoder.decodeBitmap(source)
+                            uploadBitmap(bitmap,storageRef)
+                            viewModel.currentProfileBitmap.value = bitmap
+                        }
                     }
+                }catch (e:Exception){
+                    e.printStackTrace()
                 }
-            }catch (e:Exception){
-                e.printStackTrace()
-            }
 
-        } else if (resultCode == ImagePicker.RESULT_ERROR) {
-            Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "Task Cancelled", Toast.LENGTH_SHORT).show()
+            }
+            ImagePicker.RESULT_ERROR -> {
+                Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_SHORT).show()
+            }
+            else -> {
+                Toast.makeText(this, "Task Cancelled", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -258,8 +265,7 @@ class MainActivity : AppCompatActivity() {
         uploadTask.addOnCompleteListener{
             if (it.isSuccessful){
                 val downloadURL = it.result
-                //todo: update viewmodel for user with their image url
-                viewModel.currentUser.value!!.mProfileImageURL = downloadURL.toString()
+                viewModel.currentUser.value!!.profile_image_url = downloadURL.toString()
             }else{
                 Toast.makeText(this,it.exception.toString(),Toast.LENGTH_LONG).show()
             }
@@ -268,30 +274,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateCurrentUserValues(){
-        val dbUserRef = FirebaseFirestore.getInstance().collection("users").document(viewModel.currentUser.value!!.mUserID)
         val mAuth = FirebaseAuth.getInstance()
         val currentUser = viewModel.currentUser.value
+        val dbUserRef = FirebaseFirestore.getInstance().collection("users").document(currentUser!!.user_id)
         val activePostMap = HashMap<String, String>()
-        //update all users fields
-        val userUpdate = HashMap<String, Any>()
-        userUpdate["mActivePosts"] = activePostMap
-        userUpdate["mAuthUser"] = mAuth.currentUser!!
-        userUpdate["mHandle"] = currentUser!!.mHandle
-        userUpdate["mUserName"] = currentUser.mUsername
-        userUpdate["mKarmaCount"] = currentUser.mKarmaCount
-        userUpdate["mFollowersCount"] = currentUser.mFollowerCount
-        userUpdate["mFollowingCount"] = currentUser.mFollowingCount
-        userUpdate["mNamedPostCount"] = currentUser.mNamedPostCount
-        userUpdate["mAnonPostCount"] = currentUser.mAnonPostCount
-        userUpdate["mRatio"] = currentUser.mRatio
-        userUpdate["mProfileImageURL"] = currentUser.mProfileImageURL.toString()
 
-        dbUserRef.update(userUpdate).addOnCompleteListener{
-            if(it.isSuccessful){
-                Log.i(TAG,"UserUpdateSuccessful")
-            }else{
-                Toast.makeText(this,it.exception.toString(), Toast.LENGTH_LONG).show()
-            }
-        }
+
+//        dbUserRef.update(
+//            "mActivePosts", activePostMap,
+//            "mAnonPostCount",currentUser.mAnonPostCount,
+//            "mAuthUser",mAuth.currentUser,
+//            "mFollowersCount",currentUser.mFollowersCount,
+//            "mFollowingCount",currentUser.mFollowingCount,
+//            "field","value",
+//            "field","value",
+//            "field","value",
+//            "field","value"
+//        ).addOnCompleteListener{
+//            if(it.isSuccessful){
+//                Log.i(TAG,"UserUpdateSuccessful")
+//            }else{
+//                Toast.makeText(this,it.exception.toString(), Toast.LENGTH_LONG).show()
+//            }
+//        }
     }
 }

@@ -1,16 +1,15 @@
 package com.example.coronawalla.main.ui.profile
 
+import com.example.coronawalla.main.ui.local.PostClass
+
 data class UserClass(
-    val mHandle: String = "NoHandle",
-    val mUsername: String = "Anonymous",
-    val mUserID: String = "",
-    val mPostsCount: Int = 0,
-    val mKarmaCount: Int= 0,
-    val mFollowerCount: Int= 0,
-    val mFollowingCount: Int= 0,
-    val mNamedPostCount: Int= 0,
-    val mAnonPostCount: Int= 0,
-    val mRatio: Double = 0.0,
-    val mAuthUserObject: Map<*, *>? = null,
-    var mProfileImageURL: String? = null
+    val handle: String = "NoHandle",
+    val username: String = "Anonymous",
+    var user_id: String = "",
+    var posts: MutableList<PostClass> = mutableListOf(),
+    var karma:Int = 0,
+    val followers_count: Int= 0,
+    val following_count: Int= 0,
+    val ratio: Double = 0.0,
+    var profile_image_url: String? = null
 )

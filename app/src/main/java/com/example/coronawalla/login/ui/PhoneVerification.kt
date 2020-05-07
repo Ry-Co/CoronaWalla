@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.example.coronawalla.LauncherActivity
 import com.example.coronawalla.login.LoginActivityViewModel
 import com.example.coronawalla.R
+import com.example.coronawalla.main.ui.profile.UserClass
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
@@ -97,20 +98,8 @@ class PhoneVerification : Fragment() {
                         if (it.isSuccessful) {
                             //Toast.makeText(context, "Phone added!", Toast.LENGTH_SHORT).show()
                             val mAuth = FirebaseAuth.getInstance()
-                            val user = HashMap<String, Any>()
-                            val activePostMap = HashMap<String, String>()
-                            user["mActivePosts"] = activePostMap
-                            user["mUserID"] = mAuth.currentUser!!.uid
-                            user["mAuthUser"] = mAuth.currentUser!!
-                            user["mHandle"] = "@NoHandle"
-                            user["mUserName"] = "Anonymous"
-                            user["mKarmaCount"] = 0
-                            user["mFollowersCount"] = 0
-                            user["mFollowingCount"] = 0
-                            user["mNamedPostCount"] = 0
-                            user["mAnonPostCount"] = 0
-                            user["mRatio"] = 0.0
-                            user["mProfileImageURL"] = ""
+                            val user = UserClass()
+                            user.user_id = mAuth.currentUser!!.uid
 
                             FirebaseFirestore.getInstance().collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
                                 if(it.isSuccessful){

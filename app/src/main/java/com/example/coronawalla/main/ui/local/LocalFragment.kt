@@ -12,9 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivity
 import com.example.coronawalla.main.MainActivityViewModel
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.WriteBatch
 import kotlinx.android.synthetic.main.fragment_local.*
 
 class LocalFragment : Fragment() {
@@ -27,6 +25,7 @@ class LocalFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         updatePostsServer()
+        viewModel!!.updateUserServer.value = true
     }
 
     override fun onResume() {
@@ -35,9 +34,7 @@ class LocalFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-
         return inflater.inflate(R.layout.fragment_local, container, false)
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -69,13 +66,20 @@ class LocalFragment : Fragment() {
         val oldPostList = t.getChangedList()
         val batch = db.batch()
         val colRef = db.collection("posts")
-        for(post in oldPostList!!){
-            val upSet = ArrayList<String>(post.mUpvoteIDs)
-            val downSet = ArrayList<String>(post.mDownvoteIDs)
-            batch.update(colRef.document(post.mPostID),"mUpvoteIDs",upSet)
-            batch.update(colRef.document(post.mPostID),"mDownvoteIDs",downSet)
-            batch.update(colRef.document(post.mPostID),"mVoteCount",post.mVoteCount)
+        for(post in oldPostList){
+            val docRef = colRef.document(post.post_id)
+            //val upSet = ArrayList<String>(post.mUpvoteIDs)
+            //val downSet = ArrayList<String>(post.mDownvoteIDs)
+            //batch.update(colRef.document(post.mPostID),"mUpvoteIDs",upSet)
+            //batch.update(colRef.document(post.mPostID),"mDownvoteIDs",downSet)
+            //batch.update(colRef.document(post.mPostID),"mVoteCount",post.mVoteCount)
+            //batch.set(colRef.document(post.mPostID), post)
+            //colRef.document(post.post_id).set(post)
+            //db.collection("posts").document(post.post_id).update(post)
+            batch.update(docRef,"vote_count",post.vote_count)
+            batch.update(docRef,"votes_map",post.votes_map)
         }
+
         batch.commit().addOnCompleteListener{
             if(it.isSuccessful){
                 Log.i(TAG,"Posts updated!")

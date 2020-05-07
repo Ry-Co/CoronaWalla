@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.coronawalla.main.ui.local.PostClass
 import com.example.coronawalla.main.ui.profile.UserClass
+//https://proandroiddev.com/when-to-load-data-in-viewmodels-ad9616940da7
 
 class MainActivityViewModel: ViewModel() {
     var toolbarMode = MutableLiveData<Int>()
@@ -14,6 +15,7 @@ class MainActivityViewModel: ViewModel() {
     var currentUser = MutableLiveData<UserClass>()
     var currentProfileBitmap = MutableLiveData<Bitmap>()
     var localPostList = MutableLiveData<ArrayList<PostClass>>()
-    //https://proandroiddev.com/when-to-load-data-in-viewmodels-ad9616940da7
+    var updateUserServer = MutableLiveData<Boolean>()
+
 
 }
