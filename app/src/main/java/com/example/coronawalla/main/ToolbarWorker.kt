@@ -47,6 +47,7 @@ class ToolbarWorker constructor(activity: Activity){
         editProfileConfirm.setOnClickListener {
             //send changes server side and close edit
             mActivity.findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_profileEditFragment_to_profile)
+            //todo send update to server and update viewmodel
         }
         editProfileCancel.setOnClickListener{
             //close edit

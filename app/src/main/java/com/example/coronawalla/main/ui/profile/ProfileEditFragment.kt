@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -19,9 +20,9 @@ import com.livinglifetechway.quickpermissions_kotlin.util.QuickPermissionsOption
 
 //TODO: add background color selector a nd profile image selector
 //TODO: turn this into an activity so the imagepicker works
+
 class ProfileEditFragment : Fragment() {
     private val TAG: String? = ProfileEditFragment::class.simpleName
-    private lateinit var profImg:ImageView
     private val viewModel by lazy{
         activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
@@ -34,7 +35,6 @@ class ProfileEditFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-
         //TODO: update user info from viewmodel
         viewModel!!.updateUserServer.value = true
     }
@@ -53,7 +53,10 @@ class ProfileEditFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        profImg = view.findViewById(R.id.profileImageViewEdit)
+        //todo check if handle is available
+        val profImg:ImageView = view.findViewById(R.id.profileImageViewEdit)
+        val handleET: EditText = view.findViewById(R.id.handle_et)
+        val usernameET:EditText = view.findViewById(R.id.username_et)
         val profEditTV = view.findViewById<TextView>(R.id.changeProfilePic_TV)
         profImg.setOnClickListener{
             getImageFromGallery()
@@ -61,10 +64,10 @@ class ProfileEditFragment : Fragment() {
         profEditTV.setOnClickListener {
             getImageFromGallery()
         }
-
         viewModel!!.currentProfileBitmap.observe(viewLifecycleOwner, Observer{
             profImg.setImageBitmap(it)
         })
+
 
 
     }
@@ -76,7 +79,4 @@ class ProfileEditFragment : Fragment() {
             .compress(1024)
             .start()
     }
-
-
-
 }

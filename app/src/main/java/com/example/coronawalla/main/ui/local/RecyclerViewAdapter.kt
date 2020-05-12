@@ -207,39 +207,22 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) : RecyclerView.
             currentItem.users_vote = null
             null
         }
-//        return when {
-//            currentItem.mUpvoteIDs.contains(uid) -> {
-//                true
-//            }
-//            currentItem.mDownvoteIDs.contains(uid) -> {
-//                false
-//            }
-//            else -> {
-//                null
-//            }
-//        }
     }
 
     private fun updatePostLists(currentItem: PostClass, uid:String):PostClass{
         return when (currentItem.users_vote) {
             null -> {
-//                if(currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.remove(uid)}
-//                if(currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.remove(uid)}
                 //we are using this instead of replace for api requirements
                 currentItem.votes_map!!.remove(uid)
                 currentItem.votes_map!![uid] = null
                 currentItem
             }
             true -> {
-//                if(!currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.add(uid)}
-//                if(currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.remove(uid)}
                 currentItem.votes_map!!.remove(uid)
                 currentItem.votes_map!![uid] = true
                 currentItem
             }
             else -> {
-//                if(currentItem.mUpvoteIDs.contains(uid)){currentItem.mUpvoteIDs.remove(uid)}
-//                if(!currentItem.mDownvoteIDs.contains(uid)){currentItem.mDownvoteIDs.add(uid)}
                 currentItem.votes_map!!.remove(uid)
                 currentItem.votes_map!![uid] = false
                 currentItem

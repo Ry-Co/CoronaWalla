@@ -68,14 +68,6 @@ class LocalFragment : Fragment() {
         val colRef = db.collection("posts")
         for(post in oldPostList){
             val docRef = colRef.document(post.post_id)
-            //val upSet = ArrayList<String>(post.mUpvoteIDs)
-            //val downSet = ArrayList<String>(post.mDownvoteIDs)
-            //batch.update(colRef.document(post.mPostID),"mUpvoteIDs",upSet)
-            //batch.update(colRef.document(post.mPostID),"mDownvoteIDs",downSet)
-            //batch.update(colRef.document(post.mPostID),"mVoteCount",post.mVoteCount)
-            //batch.set(colRef.document(post.mPostID), post)
-            //colRef.document(post.post_id).set(post)
-            //db.collection("posts").document(post.post_id).update(post)
             batch.update(docRef,"vote_count",post.vote_count)
             batch.update(docRef,"votes_map",post.votes_map)
         }

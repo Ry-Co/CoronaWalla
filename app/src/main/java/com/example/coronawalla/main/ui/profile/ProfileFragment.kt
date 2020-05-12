@@ -15,6 +15,7 @@ import com.example.coronawalla.main.MainActivityViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import com.mikhaellopez.circularimageview.CircularImageView
+import kotlinx.android.synthetic.main.fragment_profile.*
 
 
 class ProfileFragment : Fragment() {
@@ -45,7 +46,6 @@ class ProfileFragment : Fragment() {
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
         val userImageStorage = storage.child("images/$uid")
 
-
         val profileImageview = view.findViewById<CircularImageView>(R.id.profileImageViewEdit)
         val handleTV = view.findViewById<TextView>(R.id.handleTV)
         val nicknameTV = view.findViewById<TextView>(R.id.nicknameTV)
@@ -61,25 +61,25 @@ class ProfileFragment : Fragment() {
             startActivity(intent)
         }
 
-
         if(this::currentUser.isInitialized){
-//            handleTV.text = currentUser.mHandle
-//            nicknameTV.text = currentUser.mUsername
-//            postsCountTV.text = currentUser.mPostsCount.toString()
-//            karamTV.text = currentUser.mKarmaCount.toString()
-//            followersTV.text = currentUser.mFollowersCount.toString()
-//            postRatioTV.text = currentUser.mRatio.toString()
-//            followingTV.text = currentUser.mFollowingCount.toString()
+            handleTV.text = currentUser.handle
+            nicknameTV.text = currentUser.username
+            postsCountTV.text=currentUser.posts.size.toString()
+            karmaTV.text = currentUser.karma.toString()
+            followersTV.text = currentUser.followers_count.toString()
+            followingTV.text = currentUser.following_count.toString()
+            postRatioTV.text = currentUser.ratio.toString()
+
         }else {
             viewModel!!.currentUser.observe(viewLifecycleOwner, Observer {
-//                currentUser = it
-//                handleTV.text = currentUser.mHandle
-//                nicknameTV.text = currentUser.mUsername
-//                postsCountTV.text = currentUser.mPostsCount.toString()
-//                karamTV.text = currentUser.mKarmaCount.toString()
-//                followersTV.text = currentUser.mFollowersCount.toString()
-//                postRatioTV.text = currentUser.mRatio.toString()
-//                followingTV.text = currentUser.mFollowingCount.toString()
+                currentUser=it
+                handleTV.text = currentUser.handle
+                nicknameTV.text = currentUser.username
+                postsCountTV.text=currentUser.posts.size.toString()
+                karmaTV.text = currentUser.karma.toString()
+                followersTV.text = currentUser.followers_count.toString()
+                followingTV.text = currentUser.following_count.toString()
+                postRatioTV.text = currentUser.ratio.toString()
             })
         }
 
@@ -89,10 +89,9 @@ class ProfileFragment : Fragment() {
 
         if(viewModel!!.currentUser.value!!.profile_image_url != null){
             val url =viewModel!!.currentUser.value!!.profile_image_url.toString()
+
             //TODO: add a .placeholder at some point
         }
 
     }
-
-
 }

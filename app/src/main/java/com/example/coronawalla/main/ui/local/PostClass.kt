@@ -14,5 +14,7 @@ data class PostClass(
     val payout_date_long: Long = 0,
     var votes_map:MutableMap<String,Boolean?>? = null,
     var vote_count:Int =0,
-    var users_vote: Boolean?= null
+    var users_vote: Boolean?= null,
+    val g:String?="",
+    val l:GeoPoint?=null
 )

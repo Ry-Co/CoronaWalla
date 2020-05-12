@@ -66,7 +66,6 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(findViewById(R.id.toolbar_main))
         val navController = findNavController(R.id.main_nav_host_fragment)
         bottomNavigation.setupWithNavController(navController)
-
         flp = LocationServices.getFusedLocationProviderClient(this)
         getLocationUpdates()
         getCurrentUser()
@@ -90,7 +89,7 @@ class MainActivity : AppCompatActivity() {
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
         FirebaseFirestore.getInstance().collection("users").document(uid).get().addOnCompleteListener{
             if(it.isSuccessful){
-                viewModel.currentUser.value = buildUserObject(it.result!!)
+                viewModel.currentUser.value =  it.result!!.toObject(UserClass::class.java)
             }else{
                 Log.d(TAG, "Error:: "+it.exception)
             }
@@ -160,66 +159,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return out
-    }
-
-    private fun buildPostObject(docSnap : DocumentSnapshot): PostClass {
-        return docSnap.toObject(PostClass::class.java)!!
-//        val uid = FirebaseAuth.getInstance().currentUser!!.uid
-//        var userVote : Boolean? = null
-//        var list :ArrayList<String> = docSnap.get("mUpvoteIDs") as ArrayList<String>
-//        val upvotes = list.toHashSet()
-//        list = docSnap.get("mDownvoteIDs") as ArrayList<String>
-//        val downvotes = list.toHashSet()
-//        userVote = if(!upvotes.contains(uid) && !downvotes.contains(uid)) { null
-//        }else upvotes.contains(uid)
-//
-//        val voteCountLong:Long = docSnap.get("mVoteCount") as Long
-//        val mMultiplerLong:Long = docSnap.get("mMultiplier") as Long
-//        val votes = mutableMapOf<String, Boolean?>()
-//        return PostClass(
-//            mPostID = docSnap.id,
-//            mPostText = docSnap.get("mPostText") as String,
-//            mPosterID = docSnap.get("mPosterID") as String,
-//            mPostGeoPoint= docSnap.get("mPostGeoPoint") as GeoPoint,
-//            mVoteCount = voteCountLong.toInt(),
-//            mPostDateLong = docSnap.get("mPostDateLong") as Long,
-//            mMultiplier = mMultiplerLong.toInt(),
-//            mPayoutDateLong = docSnap.get("mPayoutDateLong") as Long,
-//            mUserVote = userVote,
-//            mActive = false,
-//            mVotes = votes
-//        )
-    }
-
-    private fun buildUserObject(docSnap:DocumentSnapshot): UserClass? {
-        //        var profImageURL:String? = null
-//        val namedPosts:Long = docSnap.get("mNamedPostCount") as Long
-//        val anonPosts:Long = docSnap.get("mAnonPostCount") as Long
-//        val followerCount:Long = docSnap.get("mFollowersCount") as Long
-//        val followingCount:Long = docSnap.get("mFollowingCount") as Long
-//        val karmaCount:Long = docSnap.get("mKarmaCount") as Long
-//        val ratio = namedPosts.toDouble()/(namedPosts.toDouble()+anonPosts.toDouble()) as Double
-//        if(docSnap.get("mProfileImageURL") != null){
-//            profImageURL = docSnap.get("mProfileImageURL") as String
-//        }
-//
-//
-//        val userObject = docSnap.get("mAuthUser") as Map<*, *>
-        return docSnap.toObject(UserClass::class.java)
-//        return UserClass(
-//            mHandle = docSnap.get("mHandle") as String,
-//            mUsername = docSnap.get("mUserName") as String,
-//            mUserID = docSnap.id as String,
-//            mPostsCount = namedPosts.toInt()+anonPosts.toInt(),
-//            mKarmaCount = karmaCount.toInt(),
-//            mFollowersCount = followerCount.toInt(),
-//            mFollowingCount = followingCount.toInt(),
-//            mNamedPostCount = namedPosts.toInt(),
-//            mAnonPostCount = anonPosts.toInt(),
-//            mRatio = "%.3f".format(ratio).toDouble(),
-//            mAuthUserObject = userObject,
-//            mProfileImageURL = profImageURL
-//        )
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
