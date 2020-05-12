@@ -23,13 +23,15 @@
             android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="16dp"
-            android:text="Profile"
+            android:clickable="true"
+            android:text="Curr. Town"
             android:textColor="#ffffff"
             android:textSize="24sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:focusable="true" />
 
         <TextView
             android:id="@+id/toolbar_send_tv"
@@ -90,9 +92,22 @@
             android:layout_height="32dp"
             android:layout_marginStart="24dp"
             android:clickable="true"
-            android:contentDescription="Post"
+            android:contentDescription="edit profile"
             android:focusable="true"
             android:src="@drawable/ic_settings_white_24dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/profile_IV"
+            android:layout_width="33dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="24dp"
+            android:clickable="true"
+            android:contentDescription="profile"
+            android:focusable="true"
+            android:src="@drawable/ic_person_white_24dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

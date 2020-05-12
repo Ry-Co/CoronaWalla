@@ -10,16 +10,17 @@ import androidx.navigation.findNavController
 import com.example.coronawalla.R
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-class ToolbarWorker constructor(activity: Activity){
+class ToolbarWorker constructor(activity: Activity, userIsAnon:Boolean){
     private val TAG: String? = ToolbarWorker::class.simpleName
-
+    private val anonUser:Boolean = userIsAnon
     private val mActivity: Activity = activity
     private val toolbarTitleTV = mActivity.findViewById<TextView>(R.id.toolbar_title_tv)
     private val toolbarSendTv = mActivity.findViewById<TextView>(R.id.toolbar_send_tv)
     private val toolbarCancelTv = mActivity.findViewById<TextView>(R.id.toolbar_cancel_tv)
     private val postIv = mActivity.findViewById<ImageView>(R.id.post_IV)
+    private val profileIV  = mActivity.findViewById<ImageView>(R.id.profile_IV)
     private val editProfileIV = mActivity.findViewById<ImageView>(R.id.editProfile_IV)
-    private val bottomNavigation =mActivity.findViewById<BottomNavigationView>(R.id.bottomNavigation)
+    //private val bottomNavigation =mActivity.findViewById<BottomNavigationView>(R.id.bottomNavigation)
     private val editProfileCancel = mActivity.findViewById<ImageView>(R.id.editProfile_cancel)
     private val editProfileConfirm = mActivity.findViewById<ImageView>(R.id.editProfile_confirm)
 
@@ -34,6 +35,35 @@ class ToolbarWorker constructor(activity: Activity){
         }
     }
 
+
+    private fun localToolbar(){
+        Log.d(TAG, "Setting Toolbar to Local")
+        toolbarTitleTV.text = "Curr. Town"
+        toolbarSendTv.visibility = View.INVISIBLE
+        toolbarCancelTv.visibility = View.INVISIBLE
+        profileIV.visibility = View.VISIBLE
+        //bottomNavigation.visibility = View.VISIBLE
+        editProfileIV.visibility = View.INVISIBLE
+        postIv.visibility = View.VISIBLE
+        editProfileCancel.visibility = View.INVISIBLE
+        editProfileConfirm.visibility = View.INVISIBLE
+        postIv.setOnClickListener{
+            mActivity.findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_local_to_postFragment)
+            Toast.makeText(mActivity, "POST", Toast.LENGTH_SHORT).show()
+        }
+        profileIV.setOnClickListener {
+            if(anonUser){
+                //todo prompt login
+            }else{
+                mActivity.findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_local_to_profile)
+            }
+        }
+        toolbarTitleTV.setOnClickListener {
+            //todo start autocomplete activity
+        }
+
+    }
+
     private fun profileEditToolbar(){
         Log.d(TAG, "Setting Toolbar to ProfileEdit")
         toolbarTitleTV.text = "Edit Profile"
@@ -41,7 +71,7 @@ class ToolbarWorker constructor(activity: Activity){
         editProfileIV.visibility = View.INVISIBLE
         toolbarSendTv.visibility = View.INVISIBLE
         toolbarCancelTv.visibility = View.INVISIBLE
-        bottomNavigation.visibility = View.VISIBLE
+       // bottomNavigation.visibility = View.VISIBLE
         editProfileCancel.visibility = View.VISIBLE
         editProfileConfirm.visibility = View.VISIBLE
         editProfileConfirm.setOnClickListener {
@@ -61,7 +91,7 @@ class ToolbarWorker constructor(activity: Activity){
         editProfileIV.visibility = View.VISIBLE
         toolbarSendTv.visibility = View.INVISIBLE
         toolbarCancelTv.visibility = View.INVISIBLE
-        bottomNavigation.visibility = View.VISIBLE
+        //bottomNavigation.visibility = View.VISIBLE
         editProfileCancel.visibility = View.INVISIBLE
         editProfileConfirm.visibility = View.INVISIBLE
 
@@ -70,28 +100,13 @@ class ToolbarWorker constructor(activity: Activity){
             mActivity.findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_profile_to_profileEditFragment)
         }
     }
-    private fun localToolbar(){
-        Log.d(TAG, "Setting Toolbar to Local")
-        toolbarTitleTV.text = "Local"
-        toolbarSendTv.visibility = View.INVISIBLE
-        toolbarCancelTv.visibility = View.INVISIBLE
-        bottomNavigation.visibility = View.VISIBLE
-        editProfileIV.visibility = View.INVISIBLE
-        postIv.visibility = View.VISIBLE
-        editProfileCancel.visibility = View.INVISIBLE
-        editProfileConfirm.visibility = View.INVISIBLE
-        postIv.setOnClickListener{
-            mActivity.findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_local_to_postFragment)
-            Toast.makeText(mActivity, "POST", Toast.LENGTH_SHORT).show()
-        }
-    }
     private fun roamToolbar(){
         Log.d(TAG, "Setting Toolbar to Roam")
         toolbarTitleTV.text = "Roam"
         toolbarSendTv.visibility = View.INVISIBLE
         toolbarCancelTv.visibility = View.INVISIBLE
         postIv.visibility = View.INVISIBLE
-        bottomNavigation.visibility = View.VISIBLE
+        //bottomNavigation.visibility = View.VISIBLE
         editProfileIV.visibility = View.INVISIBLE
         editProfileCancel.visibility = View.INVISIBLE
         editProfileConfirm.visibility = View.INVISIBLE
@@ -101,7 +116,7 @@ class ToolbarWorker constructor(activity: Activity){
         Log.d(TAG, "Setting Toolbar to Post")
         toolbarTitleTV.text = "Post"
         postIv.visibility = View.INVISIBLE
-        bottomNavigation.visibility = View.INVISIBLE
+        //bottomNavigation.visibility = View.INVISIBLE
         toolbarSendTv.visibility = View.VISIBLE
         toolbarCancelTv.visibility = View.VISIBLE
         editProfileIV.visibility = View.INVISIBLE

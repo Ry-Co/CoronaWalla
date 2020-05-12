@@ -32,6 +32,9 @@
         <action
             android:id="@+id/action_local_to_postFragment"
             app:destination="@id/postFragment" />
+        <action
+            android:id="@+id/action_local_to_profile"
+            app:destination="@id/profile" />
     </fragment>
     <fragment
         android:id="@+id/postFragment"

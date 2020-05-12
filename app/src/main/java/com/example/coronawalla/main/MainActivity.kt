@@ -33,7 +33,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import org.imperiumlabs.geofirestore.GeoFirestore
 import org.imperiumlabs.geofirestore.extension.getAtLocation
 import java.io.ByteArrayOutputStream
-
+//todo check extras if user is anon
 class MainActivity : AppCompatActivity() {
     private val TAG: String? = MainActivity::class.simpleName
     private lateinit var flp: FusedLocationProviderClient
@@ -64,8 +64,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar_main))
-        val navController = findNavController(R.id.main_nav_host_fragment)
-        bottomNavigation.setupWithNavController(navController)
+        //val navController = findNavController(R.id.main_nav_host_fragment)
+        val anon:Boolean = intent.getBooleanExtra("anon",true)
+        //bottomNavigation.setupWithNavController(navController)
         flp = LocationServices.getFusedLocationProviderClient(this)
         getLocationUpdates()
         getCurrentUser()
@@ -75,7 +76,7 @@ class MainActivity : AppCompatActivity() {
             updateLocalPostList(loc)
         })
 
-        val tb = ToolbarWorker(this)
+        val tb = ToolbarWorker(this,anon)
         viewModel.toolbarMode.observe(this, Observer {
             tb.switchBox(it)
         })

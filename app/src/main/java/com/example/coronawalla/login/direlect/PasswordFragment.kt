@@ -1,4 +1,4 @@
-package com.example.coronawalla.login.ui
+package com.example.coronawalla.login.direlect
 
 import android.content.Intent
 import android.os.Bundle

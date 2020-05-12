@@ -9,7 +9,7 @@
 
 
     <Button
-        android:id="@+id/verifyOTPButton"
+        android:id="@+id/anonymous_button"
         android:layout_width="294dp"
         android:layout_height="47dp"
         android:text="Verify"

@@ -12,7 +12,7 @@
         tools:layout="@layout/fragment_cover" />
     <fragment
         android:id="@+id/signUpFragment"
-        android:name="com.example.coronawalla.login.ui.SignUpFragment"
+        android:name="com.example.coronawalla.login.direlect.SignUpFragment"
         android:label="SignUpFragment" >
         <action
             android:id="@+id/action_signUpFragment_to_signInFragment"
@@ -26,7 +26,7 @@
     </fragment>
     <fragment
         android:id="@+id/signInFragment"
-        android:name="com.example.coronawalla.login.ui.SignInFragment"
+        android:name="com.example.coronawalla.login.direlect.SignInFragment"
         android:label="SignInFragment" >
         <action
             android:id="@+id/action_signInFragment_to_signUpFragment"
@@ -48,10 +48,13 @@
         <action
             android:id="@+id/action_coverFragment_to_signUpFragment"
             app:destination="@id/signUpFragment" />
+        <action
+            android:id="@+id/action_coverFragment_to_numberFormatFragment"
+            app:destination="@id/numberFormatFragment" />
     </fragment>
     <fragment
         android:id="@+id/passwordFragment"
-        android:name="com.example.coronawalla.login.ui.PasswordFragment"
+        android:name="com.example.coronawalla.login.direlect.PasswordFragment"
         android:label="fragment_password"
         tools:layout="@layout/fragment_password" />
     <fragment

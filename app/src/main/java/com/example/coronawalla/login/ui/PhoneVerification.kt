@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.example.coronawalla.LauncherActivity
 import com.example.coronawalla.login.LoginActivityViewModel
 import com.example.coronawalla.R
+import com.example.coronawalla.login.direlect.PasswordFragment
 import com.example.coronawalla.main.ui.profile.UserClass
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
@@ -42,7 +43,7 @@ class PhoneVerification : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val verifyButton = view.findViewById<Button>(R.id.verifyOTPButton)
+        val verifyButton = view.findViewById<Button>(R.id.anonymous_button)
         val codeET = view.findViewById<EditText>(R.id.SMScode_ET)
         sendCode()
         verifyButton.setOnClickListener {
@@ -104,7 +105,7 @@ class PhoneVerification : Fragment() {
                             FirebaseFirestore.getInstance().collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
                                 if(it.isSuccessful){
                                     Log.d(TAG, "User added")
-                                    val intent = Intent(activity, LauncherActivity::class.java)
+                                    val intent = Intent(activity, LauncherActivity::class.java).putExtra("anon", false)
                                     startActivity(intent)
                                 }else{
                                     Log.e(TAG, "Error:: "+it.exception.toString())
