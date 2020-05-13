@@ -18,6 +18,9 @@
         <action
             android:id="@+id/action_profile_to_profileEditFragment"
             app:destination="@id/profileEditFragment" />
+        <action
+            android:id="@+id/action_profile_to_local"
+            app:destination="@id/local" />
     </fragment>
     <fragment
         android:id="@+id/roam"

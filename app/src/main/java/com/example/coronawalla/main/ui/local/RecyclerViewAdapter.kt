@@ -23,6 +23,7 @@ class RecyclerViewAdapter(private val postList: List<PostClass>) : RecyclerView.
 
     override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {
         var currentItem = postList[position]
+        //todo make the uid call more robust, we are getting nullpointers sometimes
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
         val ageHours = (System.currentTimeMillis() - currentItem.post_date_long) / 3600000 // milliseconds per hour
         var prevVote = getPrevVoteAndSetLocalConditions(currentItem,uid)

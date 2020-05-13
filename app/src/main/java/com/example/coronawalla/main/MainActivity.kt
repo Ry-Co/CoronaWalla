@@ -65,7 +65,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar_main))
         //val navController = findNavController(R.id.main_nav_host_fragment)
-        val anon:Boolean = intent.getBooleanExtra("anon",true)
+        val anon = FirebaseAuth.getInstance().currentUser!!.isAnonymous
+        //val anon:Boolean = intent.getBooleanExtra("anon",true)
         //bottomNavigation.setupWithNavController(navController)
         flp = LocationServices.getFusedLocationProviderClient(this)
         getLocationUpdates()

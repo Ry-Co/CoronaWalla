@@ -8,4 +8,5 @@ class LoginActivityViewModel : ViewModel() {
     var password : String? = null
     var phoneNumber : String? = null
     var isSignIn : Boolean = false
+    var goToPhone:Boolean = false
 }

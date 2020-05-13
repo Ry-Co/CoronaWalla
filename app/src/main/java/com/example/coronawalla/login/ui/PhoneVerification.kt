@@ -90,44 +90,86 @@ class PhoneVerification : Fragment() {
         }
 
     private fun addPhoneNumber(p0: PhoneAuthCredential) {
-        FirebaseAuth.getInstance().signInWithCredential(p0).addOnCompleteListener {
-            if (it.isSuccessful) {
-                Toast.makeText(context, "Signed in!", Toast.LENGTH_SHORT).show()
-                //update user info
-                FirebaseAuth.getInstance().currentUser?.updatePhoneNumber(p0)
-                    ?.addOnCompleteListener {
-                        if (it.isSuccessful) {
-                            //Toast.makeText(context, "Phone added!", Toast.LENGTH_SHORT).show()
-                            val mAuth = FirebaseAuth.getInstance()
-                            val user = UserClass()
-                            user.user_id = mAuth.currentUser!!.uid
+        if(FirebaseAuth.getInstance().currentUser==null){
+            FirebaseAuth.getInstance().signInWithCredential(p0).addOnCompleteListener {
+                if (it.isSuccessful) {
+                    Toast.makeText(context, "Signed in!", Toast.LENGTH_SHORT).show()
+                    //update user info
+                    FirebaseAuth.getInstance().currentUser?.updatePhoneNumber(p0)
+                        ?.addOnCompleteListener {
+                            if (it.isSuccessful) {
+                                //Toast.makeText(context, "Phone added!", Toast.LENGTH_SHORT).show()
+                                val mAuth = FirebaseAuth.getInstance()
+                                val user = UserClass()
+                                user.user_id = mAuth.currentUser!!.uid
 
-                            FirebaseFirestore.getInstance().collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
-                                if(it.isSuccessful){
-                                    Log.d(TAG, "User added")
-                                    val intent = Intent(activity, LauncherActivity::class.java).putExtra("anon", false)
-                                    startActivity(intent)
-                                }else{
-                                    Log.e(TAG, "Error:: "+it.exception.toString())
+                                FirebaseFirestore.getInstance().collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
+                                    if(it.isSuccessful){
+                                        Log.d(TAG, "User added")
+                                        val intent = Intent(activity, LauncherActivity::class.java).putExtra("anon", false)
+                                        startActivity(intent)
+                                    }else{
+                                        Log.e(TAG, "Error:: "+it.exception.toString())
+                                    }
                                 }
-                            }
 
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "There was an error:: " + it.exception?.message,
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "There was an error:: " + it.exception?.message,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
-                    }
-            } else {
-                Toast.makeText(
-                    context,
-                    "There was an error:: " + it.exception?.message,
-                    Toast.LENGTH_SHORT
-                ).show()
+                } else {
+                    Toast.makeText(
+                        context,
+                        "There was an error:: " + it.exception?.message,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }else if(FirebaseAuth.getInstance().currentUser!!.isAnonymous){
+            FirebaseAuth.getInstance().currentUser!!.linkWithCredential(p0).addOnCompleteListener {
+                if (it.isSuccessful) {
+                    Toast.makeText(context, "Account Created!", Toast.LENGTH_SHORT).show()
+                    //update user info
+                    FirebaseAuth.getInstance().currentUser?.updatePhoneNumber(p0)
+                        ?.addOnCompleteListener {
+                            if (it.isSuccessful) {
+                                //Toast.makeText(context, "Phone added!", Toast.LENGTH_SHORT).show()
+                                val mAuth = FirebaseAuth.getInstance()
+                                val user = UserClass()
+                                user.user_id = mAuth.currentUser!!.uid
+
+                                FirebaseFirestore.getInstance().collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
+                                    if(it.isSuccessful){
+                                        Log.d(TAG, "User added")
+                                        val intent = Intent(activity, LauncherActivity::class.java).putExtra("anon", false)
+                                        startActivity(intent)
+                                    }else{
+                                        Log.e(TAG, "Error:: "+it.exception.toString())
+                                    }
+                                }
+
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "There was an error:: " + it.exception?.message,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                } else {
+                    Toast.makeText(
+                        context,
+                        "There was an error:: " + it.exception?.message,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
+
     }
 
 

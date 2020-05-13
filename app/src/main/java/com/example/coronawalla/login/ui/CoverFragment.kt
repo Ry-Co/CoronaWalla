@@ -8,14 +8,18 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.example.coronawalla.R
+import com.example.coronawalla.login.LoginActivityViewModel
 import com.example.coronawalla.main.MainActivity
 import com.google.firebase.auth.FirebaseAuth
 
 
 class CoverFragment : Fragment() {
-
+    private val viewModel by lazy {
+        activity?.let { ViewModelProviders.of(it).get(LoginActivityViewModel::class.java) }
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -28,6 +32,7 @@ class CoverFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val anonButton = view.findViewById<Button>(R.id.anonymous_button)
         val signInButton = view.findViewById<Button>(R.id.sign_in_button)
+
 
         anonButton.setOnClickListener {
             //straight to main activity as anonymous
