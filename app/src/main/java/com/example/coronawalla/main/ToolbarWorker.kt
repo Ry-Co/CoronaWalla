@@ -19,9 +19,8 @@ import com.google.firebase.auth.FirebaseAuth
  * We will handle visual changes here, but handle user input locally in fragment
  */
 
-class ToolbarWorker constructor(activity: Activity, userIsAnon:Boolean){
+class ToolbarWorker constructor(activity: Activity){
     private val TAG: String? = ToolbarWorker::class.simpleName
-    private val anonUser:Boolean = userIsAnon
     private val mActivity: Activity = activity
     private val toolbarTitleTV = mActivity.findViewById<TextView>(R.id.toolbar_title_tv)
     private val toolbarSendTv = mActivity.findViewById<TextView>(R.id.toolbar_send_tv)
@@ -92,25 +91,4 @@ class ToolbarWorker constructor(activity: Activity, userIsAnon:Boolean){
         toolbarSendTv.visibility = View.INVISIBLE
         toolbarCancelTv.visibility = View.INVISIBLE
     }
-
-    private fun showSignInDialog(){
-        AlertDialog.Builder(mActivity)
-            .setCancelable(false)
-            .setTitle("Create Account")
-            .setMessage("You must create an account to continue")
-            .setPositiveButton("Ok"){dialog, id->
-                Toast.makeText(mActivity, "GO TO PHONE NUMBER", Toast.LENGTH_SHORT).show()
-                val intent  = Intent(mActivity, LoginActivity::class.java)
-                intent.putExtra("phone", true)
-                mActivity.startActivity(intent)
-                dialog.dismiss()
-            }
-            .setNegativeButton("cancel"){dialog, id->
-                Toast.makeText(mActivity, "Cancel", Toast.LENGTH_SHORT).show()
-                dialog.cancel()
-            }
-            .show()
-
-    }
-
 }

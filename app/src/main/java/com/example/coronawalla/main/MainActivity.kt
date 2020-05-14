@@ -64,11 +64,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar_main))
-        //val navController = findNavController(R.id.main_nav_host_fragment)
-        val anon = FirebaseAuth.getInstance().currentUser!!.isAnonymous
-        //val anon:Boolean = intent.getBooleanExtra("anon",true)
-        //bottomNavigation.setupWithNavController(navController)
+        val tb = ToolbarWorker(this)
         flp = LocationServices.getFusedLocationProviderClient(this)
+
         getLocationUpdates()
         getCurrentUser()
 
@@ -77,7 +75,6 @@ class MainActivity : AppCompatActivity() {
             updateLocalPostList(loc)
         })
 
-        val tb = ToolbarWorker(this,anon)
         viewModel.toolbarMode.observe(this, Observer {
             tb.switchBox(it)
         })
@@ -87,7 +84,7 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun getCurrentUser(){
+    fun getCurrentUser(){
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
         FirebaseFirestore.getInstance().collection("users").document(uid).get().addOnCompleteListener{
             if(it.isSuccessful){

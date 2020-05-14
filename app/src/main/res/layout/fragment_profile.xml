@@ -18,7 +18,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline8">
 
         <TextView
-            android:id="@+id/postsTV"
+            android:id="@+id/posts_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
@@ -35,7 +35,7 @@
     </LinearLayout>
 
     <com.mikhaellopez.circularimageview.CircularImageView
-        android:id="@+id/profileImageViewEdit"
+        android:id="@+id/profile_iv"
         android:layout_width="220dp"
         android:layout_height="220dp"
         android:src="@drawable/ic_account_box_black_24dp"
@@ -46,7 +46,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/handleTV"
+        android:id="@+id/handle_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="'@Nickname"
@@ -59,7 +59,7 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView
-        android:id="@+id/nicknameTV"
+        android:id="@+id/username_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="John Smith"
@@ -81,7 +81,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline8">
 
         <TextView
-            android:id="@+id/karmaTV"
+            android:id="@+id/karma_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
@@ -109,7 +109,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline4">
 
         <TextView
-            android:id="@+id/followersTV"
+            android:id="@+id/followers_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
@@ -137,7 +137,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline4">
 
         <TextView
-            android:id="@+id/ratioTV"
+            android:id="@+id/ratio_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
@@ -165,7 +165,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline4">
 
         <TextView
-            android:id="@+id/followingTV"
+            android:id="@+id/following_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"

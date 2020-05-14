@@ -32,17 +32,12 @@ class PostPreviewFragment : Fragment() {
     private val mAuth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel?.toolbarMode?.value = 3
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_post_preview, container, false)
     }
@@ -90,28 +85,10 @@ class PostPreviewFragment : Fragment() {
     }
 
     private fun getPostMap(): PostClass{
-
-//        val upvotes = ArrayList<String>()
-//        upvotes.add(mAuth.currentUser!!.uid)
-//        val downvotes = ArrayList<String>()
-//        val post = HashMap<String, Any>()
-//        post["mPostText"] = postViewModel?.postText?.value.toString()
-//        post["mPosterID"] = mAuth.currentUser!!.uid
-//        post["mPostGeoPoint"] = currentGeoPoint
-//        post["mVoteCount"] = 1
-//        post["mPostDateLong"] = postTime
-//        post["mMultiplier"] = 1
-//        post["mPayoutDateLong"] = postTime + 3600000*24
-//        post["mUpvoteIDs"] = upvotes
-//        post["mDownvoteIDs"] = downvotes
-//        post["mUserVote"] =  ""
-//        return
         val currentGeoPoint = GeoPoint(viewModel!!.currentLocation.value!!.latitude, viewModel!!.currentLocation.value!!.longitude)
         val postTime = System.currentTimeMillis()
         val mVotes = mutableMapOf<String, Boolean?>()
         mVotes[mAuth.currentUser!!.uid] = true
-
-
         return PostClass(
             post_id = "",
             post_text = postViewModel?.postText?.value.toString(),
