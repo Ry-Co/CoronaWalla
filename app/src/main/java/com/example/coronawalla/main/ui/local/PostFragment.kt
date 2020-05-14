@@ -38,8 +38,10 @@ class PostFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val postET = view.findViewById<EditText>(R.id.postText_ET)
-        val titleTV = activity!!.findViewById<TextView>(R.id.toolbar_title_tv)
-        val sendTV = activity!!.findViewById<TextView>(R.id.toolbar_send_tv)
+        val titleTV = requireActivity().findViewById<TextView>(R.id.toolbar_title_tv)
+        val sendTV = requireActivity().findViewById<TextView>(R.id.toolbar_send_tv)
+        val cancelTV = requireActivity().findViewById<TextView>(R.id.toolbar_cancel_tv)
+
         sendTV.setOnClickListener {
             postViewModel?.postText?.value = postET.text.toString()
             findNavController().navigate(R.id.action_postFragment_to_postPreviewFragment)
@@ -66,6 +68,10 @@ class PostFragment : Fragment() {
                 }
             }
         })
+
+        cancelTV.setOnClickListener {
+            findNavController().navigate(R.id.action_postFragment_to_local)
+        }
     }
 
 }

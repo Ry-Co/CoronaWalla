@@ -15,6 +15,10 @@ import com.example.coronawalla.R
 import com.example.coronawalla.login.LoginActivity
 import com.google.firebase.auth.FirebaseAuth
 
+/**
+ * We will handle visual changes here, but handle user input locally in fragment
+ */
+
 class ToolbarWorker constructor(activity: Activity, userIsAnon:Boolean){
     private val TAG: String? = ToolbarWorker::class.simpleName
     private val anonUser:Boolean = userIsAnon
@@ -45,27 +49,6 @@ class ToolbarWorker constructor(activity: Activity, userIsAnon:Boolean){
         leftImageButton.setImageResource(R.drawable.ic_person_white_24dp)
         rightImageButton.visibility = View.VISIBLE
         leftImageButton.visibility = View.VISIBLE
-
-        rightImageButton.setOnClickListener {
-            if(anonUser){
-                //showSignInDialog()
-                FirebaseAuth.getInstance().signOut()
-            }else{
-                mActivity.findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_local_to_postFragment)
-                Toast.makeText(mActivity, "POST", Toast.LENGTH_SHORT).show()
-            }
-        }
-        leftImageButton.setOnClickListener {
-            if(anonUser){
-                showSignInDialog()
-            }else{
-                mActivity.findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_local_to_profile)
-            }
-        }
-        toolbarTitleTV.setOnClickListener {
-            //todo start autocomplete activity
-            Toast.makeText(mActivity, "OPEN TOWN SELECT", Toast.LENGTH_SHORT).show()
-        }
     }
 
     private fun profileToolbar(){
@@ -77,13 +60,6 @@ class ToolbarWorker constructor(activity: Activity, userIsAnon:Boolean){
         rightImageButton.setImageResource(R.drawable.ic_arrow_forward_white_24dp)
         leftImageButton.visibility = View.VISIBLE
         rightImageButton.visibility = View.VISIBLE
-        leftImageButton.setOnClickListener {
-            Log.e(TAG, "Edit Profile!!!!")
-            mActivity.findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_profile_to_profileEditFragment)
-        }
-        rightImageButton.setOnClickListener {
-            mActivity.findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_profile_to_local)
-        }
     }
 
     private fun profileEditToolbar(){
@@ -95,16 +71,6 @@ class ToolbarWorker constructor(activity: Activity, userIsAnon:Boolean){
         leftImageButton.setImageResource(R.drawable.ic_clear_white_24dp)
         rightImageButton.visibility = View.VISIBLE
         leftImageButton.visibility = View.VISIBLE
-        rightImageButton.setOnClickListener {
-            //send changes server side and close edit
-            mActivity.findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_profileEditFragment_to_profile)
-            //todo send update to server and update viewmodel
-
-        }
-        leftImageButton.setOnClickListener {
-            //close edit
-            mActivity.findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_profileEditFragment_to_profile)
-        }
     }
     private fun roamToolbar(){
         Log.d(TAG, "Setting Toolbar to Roam")
@@ -119,14 +85,6 @@ class ToolbarWorker constructor(activity: Activity, userIsAnon:Boolean){
         toolbarCancelTv.visibility = View.VISIBLE
         rightImageButton.visibility = View.INVISIBLE
         leftImageButton.visibility = View.INVISIBLE
-
-        toolbarSendTv.setOnClickListener {
-            //todo send post to server and go back to local, update local list with this post
-
-        }
-        toolbarCancelTv.setOnClickListener {
-            mActivity.findNavController(R.id.main_nav_host_fragment).navigate(R.id.action_postFragment_to_local)
-        }
     }
     private fun postPreviewToolbar(){
         Log.d(TAG, "Setting Toolbar to Post-Preview")

@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
 import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivityViewModel
 import com.github.dhaval2404.imagepicker.ImagePicker
@@ -67,6 +68,15 @@ class ProfileEditFragment : Fragment() {
         viewModel!!.currentProfileBitmap.observe(viewLifecycleOwner, Observer{
             profImg.setImageBitmap(it)
         })
+
+        //navgiation
+        val confirmImageButton = requireActivity().findViewById<ImageView>(R.id.right_button_iv)
+        val cancelImageButton = requireActivity().findViewById<ImageView>(R.id.left_button_iv)
+        confirmImageButton.setOnClickListener {
+            //todo: update local and server data
+            findNavController().navigate(R.id.action_profileEditFragment_to_profile)
+        }
+        cancelImageButton.setOnClickListener { findNavController().navigate(R.id.action_profileEditFragment_to_profile) }
 
 
 

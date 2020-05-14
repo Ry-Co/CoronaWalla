@@ -5,10 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
 import com.example.coronawalla.LauncherActivity
 import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivityViewModel
@@ -92,6 +94,12 @@ class ProfileFragment : Fragment() {
 
             //TODO: add a .placeholder at some point
         }
+
+        //navigation
+        val backToLocalImage = requireActivity().findViewById<ImageView>(R.id.right_button_iv)
+        val toEditProfile = requireActivity().findViewById<ImageView>(R.id.left_button_iv)
+        backToLocalImage.setOnClickListener { findNavController().navigate(R.id.action_profile_to_local) }
+        toEditProfile.setOnClickListener { findNavController().navigate(R.id.action_profile_to_profileEditFragment) }
 
     }
 }
