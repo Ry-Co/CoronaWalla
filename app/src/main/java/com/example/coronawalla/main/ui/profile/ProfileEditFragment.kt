@@ -23,7 +23,7 @@ import com.google.firebase.firestore.QuerySnapshot
 import com.livinglifetechway.quickpermissions_kotlin.util.QuickPermissionsOptions
 
 //TODO: add background color selector a nd profile image selector
-//TODO: turn this into an activity so the imagepicker works
+//TODO: ---> turn this into an activity so the imagepicker works
 
 class ProfileEditFragment : Fragment() {
     private val TAG: String? = ProfileEditFragment::class.simpleName
@@ -42,8 +42,7 @@ class ProfileEditFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        //TODO: update user info from viewmodel
-        viewModel!!.updateUserServer.value = true
+        //viewModel!!.updateUserServer.value = true
     }
 
     override fun onResume() {
@@ -86,7 +85,6 @@ class ProfileEditFragment : Fragment() {
         val confirmImageButton = requireActivity().findViewById<ImageView>(R.id.right_button_iv)
         val cancelImageButton = requireActivity().findViewById<ImageView>(R.id.left_button_iv)
         confirmImageButton.setOnClickListener {
-            //todo: update local and server data
             updateUserVals(view)
             findNavController().navigate(R.id.action_profileEditFragment_to_profile)
         }

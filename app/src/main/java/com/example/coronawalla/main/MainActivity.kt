@@ -79,9 +79,9 @@ class MainActivity : AppCompatActivity() {
             tb.switchBox(it)
         })
 
-        viewModel.updateUserServer.observe(this,Observer{
-            //updateCurrentUserValues()
-        })
+//        viewModel.updateUserServer.observe(this,Observer{
+//            //updateCurrentUserValues()
+//        })
     }
 
     fun getCurrentUser(){

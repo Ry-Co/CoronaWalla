@@ -32,7 +32,7 @@ class LocalFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         updatePostsServer()
-        viewModel!!.updateUserServer.value = true
+        //viewModel!!.updateUserServer.value = true
     }
 
     override fun onResume() {

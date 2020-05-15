@@ -20,7 +20,7 @@ class MainActivityViewModel: ViewModel() {
     var currentUser = MutableLiveData<UserClass>()
     var currentProfileBitmap = MutableLiveData<Bitmap>()
     var localPostList = MutableLiveData<ArrayList<PostClass>>()
-    var updateUserServer = MutableLiveData<Boolean>()
+    //var updateUserServer = MutableLiveData<Boolean>()
     val takenHandleSet = hashSetOf<String>()
 
 
