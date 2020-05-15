@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -19,11 +18,8 @@ import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivityViewModel
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QuerySnapshot
-import com.livinglifetechway.quickpermissions_kotlin.util.QuickPermissionsOptions
 
-//TODO: add background color selector a nd profile image selector
-//TODO: ---> turn this into an activity so the imagepicker works
+//TODO: add background color selector and profile image selector
 
 class ProfileEditFragment : Fragment() {
     private val TAG: String? = ProfileEditFragment::class.simpleName
@@ -32,27 +28,17 @@ class ProfileEditFragment : Fragment() {
     }
     private var takenHandles = hashSetOf<String>()
     private var prevHandle:String? = null
-    private lateinit var takenHandleGrab:QuerySnapshot
-    val IMAGE_REQUEST_CODE = 0x1
-    private val permOptions = QuickPermissionsOptions(
-        handleRationale = true,
-        rationaleMessage = "Location permissions are required for core functionality!",
-        handlePermanentlyDenied = true,
-        permanentlyDeniedMessage = "Location permissions are needed for the core functionality of this app. Please enable these permissions to continue")
 
-    override fun onPause() {
-        super.onPause()
-        //viewModel!!.updateUserServer.value = true
-    }
 
     override fun onResume() {
         super.onResume()
         viewModel?.toolbarMode?.value = -2
+        val profImg:ImageView = requireView().findViewById(R.id.profile_edit_iv)
+        if(viewModel!!.currentProfileBitmap.value!=null){
+            profImg.setImageBitmap(viewModel!!.currentProfileBitmap.value)
+        }
     }
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_profile_edit, container, false)
     }
@@ -67,7 +53,10 @@ class ProfileEditFragment : Fragment() {
         }
 
         //handle image
-        val profImg:ImageView = view.findViewById(R.id.profile_iv)
+        val profImg:ImageView = view.findViewById(R.id.profile_edit_iv)
+        if(viewModel!!.currentProfileBitmap.value!=null){
+            profImg.setImageBitmap(viewModel!!.currentProfileBitmap.value)
+        }
         val profEditTV = view.findViewById<TextView>(R.id.changeProfilePic_TV)
         profImg.setOnClickListener{
             getImageFromGallery()
@@ -75,10 +64,6 @@ class ProfileEditFragment : Fragment() {
         profEditTV.setOnClickListener {
             getImageFromGallery()
         }
-        viewModel!!.currentProfileBitmap.observe(viewLifecycleOwner, Observer{
-            profImg.setImageBitmap(it)
-        })
-
         //handle text
 
         //navgiation
@@ -93,11 +78,17 @@ class ProfileEditFragment : Fragment() {
     }
 
     private fun getImageFromGallery(){
-        ImagePicker.with(this)
+//        val intent = Intent()
+//        intent.type = "image/*"
+//        intent.action = Intent.ACTION_GET_CONTENT
+//        startActivityForResult(intent, 1)
+
+        ImagePicker.with(requireActivity())
             .galleryOnly()
             .cropSquare()
-            .compress(1024)
-            .start()
+            .compress(512)
+            .start(1)
+
     }
 
     private fun setCurrentUserVals(view:View, user:UserClass){
@@ -161,7 +152,6 @@ class ProfileEditFragment : Fragment() {
     }
 
     private fun updateUserVals(view:View){
-        //todo update profile image too
         val handleET: EditText = view.findViewById(R.id.handle_et)
         val usernameET:EditText = view.findViewById(R.id.username_et)
         val username = usernameET.text.toString()
@@ -201,6 +191,5 @@ class ProfileEditFragment : Fragment() {
 
         viewModel!!.currentUser.value!!.username = username
         viewModel!!.currentUser.value!!.handle= handle
-
     }
 }

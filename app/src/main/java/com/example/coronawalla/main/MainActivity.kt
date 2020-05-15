@@ -4,7 +4,9 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
+import android.graphics.drawable.Drawable
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
@@ -13,9 +15,13 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
+import androidx.transition.Transition
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
 import com.example.coronawalla.R
 import com.example.coronawalla.main.ui.local.PostClass
 import com.example.coronawalla.main.ui.profile.UserClass
@@ -33,15 +39,17 @@ import kotlinx.android.synthetic.main.activity_main.*
 import org.imperiumlabs.geofirestore.GeoFirestore
 import org.imperiumlabs.geofirestore.extension.getAtLocation
 import java.io.ByteArrayOutputStream
-//todo check extras if user is anon
+import java.net.URL
+
 class MainActivity : AppCompatActivity() {
     private val TAG: String? = MainActivity::class.simpleName
     private lateinit var flp: FusedLocationProviderClient
     private lateinit var locReq: LocationRequest
     private lateinit var locationCallback: LocationCallback
-    private val viewModel by lazy{
-        this.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
-    }
+    private lateinit var viewModel:MainActivityViewModel
+//    private val viewModel by lazy{
+//        this.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
+//    }
     private val permOptions = QuickPermissionsOptions(
         handleRationale = true,
         rationaleMessage = "Location permissions are required for core functionality!",
@@ -56,12 +64,11 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         stopLocationUpdates()
-        //todo: update user vals
-        //updateCurrentUserValues()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        viewModel =  ViewModelProvider(this).get(MainActivityViewModel::class.java)
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar_main))
         val tb = ToolbarWorker(this)
@@ -69,6 +76,7 @@ class MainActivity : AppCompatActivity() {
 
         getLocationUpdates()
         getCurrentUser()
+
 
         viewModel.currentLocation.observe(this, Observer{ loc ->
             Log.e(TAG,"location updated")
@@ -79,16 +87,29 @@ class MainActivity : AppCompatActivity() {
             tb.switchBox(it)
         })
 
-//        viewModel.updateUserServer.observe(this,Observer{
-//            //updateCurrentUserValues()
-//        })
     }
+
 
     fun getCurrentUser(){
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
         FirebaseFirestore.getInstance().collection("users").document(uid).get().addOnCompleteListener{
             if(it.isSuccessful){
                 viewModel.currentUser.value =  it.result!!.toObject(UserClass::class.java)
+                //we could probably bundle the below into a method
+                if(viewModel.currentUser.value!!.profile_image_url != null){
+                    //build the bitmap and push it to the viewmodel
+                    val uid = viewModel.currentUser.value!!.user_id
+                    val profRef = FirebaseStorage.getInstance().reference.child("images/$uid")
+                    val ONE_MEGABYTE: Long = 1024 * 1024
+                    profRef.getBytes(ONE_MEGABYTE).addOnCompleteListener{
+                        if( it.isSuccessful){
+                            val bmp = BitmapFactory.decodeByteArray(it.result, 0, it.result!!.size)
+                            viewModel.currentProfileBitmap.value = bmp
+                        }else{
+                            Log.e(TAG, it.exception.toString())
+                        }
+                    }
+                }
             }else{
                 Log.d(TAG, "Error:: "+it.exception)
             }
@@ -162,12 +183,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        //we are only using on activity result for the image so we just dont bother with request code
         when (resultCode) {
             Activity.RESULT_OK -> {
                 val uid = viewModel.currentUser.value!!.user_id
                 val storageRef = FirebaseStorage.getInstance().reference.child("images/$uid")
                 val fileUri = data?.data
-
                 try{
                     fileUri?.let {
                         if(Build.VERSION.SDK_INT<28){
@@ -179,12 +200,12 @@ class MainActivity : AppCompatActivity() {
                             val bitmap = ImageDecoder.decodeBitmap(source)
                             uploadBitmap(bitmap,storageRef)
                             viewModel.currentProfileBitmap.value = bitmap
+                            Log.e(TAG, "main-activity- bitmap uploaded and viewmodel changed")
                         }
                     }
                 }catch (e:Exception){
                     e.printStackTrace()
                 }
-
             }
             ImagePicker.RESULT_ERROR -> {
                 Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_SHORT).show()
@@ -197,13 +218,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun uploadBitmap(bitmap: Bitmap, storageRef:StorageReference){
         val baos = ByteArrayOutputStream()
+        val db = FirebaseFirestore.getInstance()
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
         val data = baos.toByteArray()
         val uploadTask = storageRef.putBytes(data)
+
         uploadTask.addOnCompleteListener{
             if (it.isSuccessful){
-                val downloadURL = it.result
-                viewModel.currentUser.value!!.profile_image_url = downloadURL.toString()
+                storageRef.downloadUrl.addOnCompleteListener{ dlURL ->
+                    if(dlURL.isSuccessful){
+                        val downloadURL = dlURL.result.toString()
+                        viewModel.currentUser.value!!.profile_image_url = downloadURL.toString()
+                        db.collection("users").document(viewModel.currentUser.value!!.user_id).update("profile_image_url", downloadURL.toString())
+                    }else{
+                        Log.e(TAG, dlURL.exception.toString())
+                    }
+                }
             }else{
                 Toast.makeText(this,it.exception.toString(),Toast.LENGTH_LONG).show()
             }
@@ -211,29 +241,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun updateCurrentUserValues(){
-        val mAuth = FirebaseAuth.getInstance()
-        val currentUser = viewModel.currentUser.value
-        val dbUserRef = FirebaseFirestore.getInstance().collection("users").document(currentUser!!.user_id)
-        val activePostMap = HashMap<String, String>()
 
 
-//        dbUserRef.update(
-//            "mActivePosts", activePostMap,
-//            "mAnonPostCount",currentUser.mAnonPostCount,
-//            "mAuthUser",mAuth.currentUser,
-//            "mFollowersCount",currentUser.mFollowersCount,
-//            "mFollowingCount",currentUser.mFollowingCount,
-//            "field","value",
-//            "field","value",
-//            "field","value",
-//            "field","value"
-//        ).addOnCompleteListener{
-//            if(it.isSuccessful){
-//                Log.i(TAG,"UserUpdateSuccessful")
-//            }else{
-//                Toast.makeText(this,it.exception.toString(), Toast.LENGTH_LONG).show()
-//            }
-//        }
-    }
 }

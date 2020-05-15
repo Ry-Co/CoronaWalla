@@ -8,7 +8,7 @@
     tools:context=".main.ui.profile.ProfileEditFragment">
 
     <com.mikhaellopez.circularimageview.CircularImageView
-        android:id="@+id/profile_iv"
+        android:id="@+id/profile_edit_iv"
         android:layout_width="220dp"
         android:layout_height="220dp"
         android:scaleType="centerCrop"
@@ -24,9 +24,9 @@
         android:text="Change Profile Picture"
 
         android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="@+id/profile_iv"
-        app:layout_constraintStart_toStartOf="@+id/profile_iv"
-        app:layout_constraintTop_toBottomOf="@+id/profile_iv" />
+        app:layout_constraintEnd_toEndOf="@+id/profile_edit_iv"
+        app:layout_constraintStart_toStartOf="@+id/profile_edit_iv"
+        app:layout_constraintTop_toBottomOf="@+id/profile_edit_iv" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline10"

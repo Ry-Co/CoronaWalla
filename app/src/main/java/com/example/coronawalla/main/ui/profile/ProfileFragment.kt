@@ -1,6 +1,8 @@
 package com.example.coronawalla.main.ui.profile
 
+import android.graphics.Bitmap
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +17,8 @@ import com.example.coronawalla.main.MainActivity
 import com.example.coronawalla.main.MainActivityViewModel
 
 class ProfileFragment : Fragment() {
+    private val TAG: String? = ProfileFragment::class.simpleName
+
     private val viewModel by lazy{
         activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
@@ -25,6 +29,11 @@ class ProfileFragment : Fragment() {
         viewModel?.toolbarMode?.value = -1
         if(viewModel?.currentUser?.value != null){
             currentUser = viewModel!!.currentUser.value!!
+        }
+
+        val profImg:ImageView = requireView().findViewById(R.id.profile_iv)
+        if(viewModel!!.currentProfileBitmap.value!=null){
+            profImg.setImageBitmap(viewModel!!.currentProfileBitmap.value)
         }
     }
 
@@ -47,9 +56,12 @@ class ProfileFragment : Fragment() {
         viewModel!!.currentUser.observe(viewLifecycleOwner, Observer{
             updateProfileView(view, it)
         })
+
+
     }
 
     private fun updateProfileView(view:View, currentUser:UserClass){
+        Log.e(TAG, "update profile view")
         //set view items
         val profIV = view.findViewById<ImageView>(R.id.profile_iv)
         val handle = view.findViewById<TextView>(R.id.handle_tv)
@@ -60,6 +72,10 @@ class ProfileFragment : Fragment() {
         val following = view.findViewById<TextView>(R.id.following_tv)
         //handle image
         //todo handle image
+//        if(viewModel!!.currentProfileBitmap.value != null){
+//            profIV.setImageBitmap(viewModel!!.currentProfileBitmap.value)
+//        }
+
         //handle text
         handle.text = "@"+currentUser.handle
         nickname.text = currentUser.username
@@ -68,5 +84,7 @@ class ProfileFragment : Fragment() {
         followers.text=currentUser.followers.size.toString()
         following.text = currentUser.following.size.toString()
     }
+
+
 
 }
