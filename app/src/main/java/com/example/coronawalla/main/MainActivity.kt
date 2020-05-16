@@ -47,9 +47,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var locReq: LocationRequest
     private lateinit var locationCallback: LocationCallback
     private lateinit var viewModel:MainActivityViewModel
-//    private val viewModel by lazy{
-//        this.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
-//    }
+
     private val permOptions = QuickPermissionsOptions(
         handleRationale = true,
         rationaleMessage = "Location permissions are required for core functionality!",
@@ -58,12 +56,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        startLocationUpdates()
+        if(this::locReq.isInitialized && this::locationCallback.isInitialized){
+            startLocationUpdates()
+        }
     }
 
     override fun onPause() {
         super.onPause()
-        stopLocationUpdates()
+        if(this::locReq.isInitialized && this::locationCallback.isInitialized){
+            stopLocationUpdates()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +77,8 @@ class MainActivity : AppCompatActivity() {
         flp = LocationServices.getFusedLocationProviderClient(this)
 
         getLocationUpdates()
-        getCurrentUser()
+        if(!FirebaseAuth.getInstance().currentUser!!.isAnonymous){getCurrentUser()}
+
 
 
         viewModel.currentLocation.observe(this, Observer{ loc ->
@@ -89,27 +92,31 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
     fun getCurrentUser(){
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
         FirebaseFirestore.getInstance().collection("users").document(uid).get().addOnCompleteListener{
             if(it.isSuccessful){
                 viewModel.currentUser.value =  it.result!!.toObject(UserClass::class.java)
                 //we could probably bundle the below into a method
-                if(viewModel.currentUser.value!!.profile_image_url != null){
-                    //build the bitmap and push it to the viewmodel
-                    val uid = viewModel.currentUser.value!!.user_id
-                    val profRef = FirebaseStorage.getInstance().reference.child("images/$uid")
-                    val ONE_MEGABYTE: Long = 1024 * 1024
-                    profRef.getBytes(ONE_MEGABYTE).addOnCompleteListener{
-                        if( it.isSuccessful){
-                            val bmp = BitmapFactory.decodeByteArray(it.result, 0, it.result!!.size)
-                            viewModel.currentProfileBitmap.value = bmp
-                        }else{
-                            Log.e(TAG, it.exception.toString())
+                if(FirebaseAuth.getInstance().currentUser!!.isAnonymous){
+
+                }else{
+                    if(viewModel.currentUser.value!!.profile_image_url != null){
+                        //build the bitmap and push it to the viewmodel
+                        val uid = viewModel.currentUser.value!!.user_id
+                        val profRef = FirebaseStorage.getInstance().reference.child("images/$uid")
+                        val ONE_MEGABYTE: Long = 1024 * 1024
+                        profRef.getBytes(ONE_MEGABYTE).addOnCompleteListener{
+                            if( it.isSuccessful){
+                                val bmp = BitmapFactory.decodeByteArray(it.result, 0, it.result!!.size)
+                                viewModel.currentProfileBitmap.value = bmp
+                            }else{
+                                Log.e(TAG, it.exception.toString())
+                            }
                         }
                     }
                 }
+
             }else{
                 Log.d(TAG, "Error:: "+it.exception)
             }
@@ -137,6 +144,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     private fun startLocationUpdates() {
+
         flp.requestLocationUpdates(
             locReq,
             locationCallback,

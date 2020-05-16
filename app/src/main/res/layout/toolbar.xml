@@ -31,7 +31,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:focusable="true" />
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
 
         <TextView
             android:id="@+id/toolbar_send_tv"
@@ -51,7 +52,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.976"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
         <ImageView
             android:id="@+id/right_button_iv"
             android:layout_width="33dp"
@@ -63,20 +65,8 @@
             android:src="@drawable/ic_create_white_24dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/toolbar_send_tv"
-            app:layout_constraintTop_toTopOf="parent" />
-
-<!--        <ImageView-->
-<!--            android:id="@+id/editProfile_confirm"-->
-<!--            android:layout_width="33dp"-->
-<!--            android:layout_height="32dp"-->
-<!--            android:layout_marginEnd="24dp"-->
-<!--            android:clickable="true"-->
-<!--            android:contentDescription="Post"-->
-<!--            android:focusable="true"-->
-<!--            android:src="@drawable/ic_check_white_24dp"-->
-<!--            app:layout_constraintBottom_toBottomOf="parent"-->
-<!--            app:layout_constraintEnd_toEndOf="@+id/toolbar_send_tv"-->
-<!--            app:layout_constraintTop_toTopOf="parent" />-->
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
 
         <TextView
             android:id="@+id/toolbar_cancel_tv"
@@ -96,9 +86,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.024"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
 
         <ImageView
             android:id="@+id/left_button_iv"
@@ -111,39 +100,9 @@
             android:src="@drawable/ic_settings_white_24dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-<!--        <ImageView-->
-<!--            android:id="@+id/profile_IV"-->
-<!--            android:layout_width="33dp"-->
-<!--            android:layout_height="32dp"-->
-<!--            android:layout_marginStart="24dp"-->
-<!--            android:clickable="true"-->
-<!--            android:contentDescription="profile"-->
-<!--            android:focusable="true"-->
-<!--            android:src="@drawable/ic_person_white_24dp"-->
-<!--            app:layout_constraintBottom_toBottomOf="parent"-->
-<!--            app:layout_constraintStart_toStartOf="parent"-->
-<!--            app:layout_constraintTop_toTopOf="parent" />-->
-
-<!--        -->
-
-<!--        <ImageView-->
-<!--            android:id="@+id/editProfile_cancel"-->
-<!--            android:layout_width="33dp"-->
-<!--            android:layout_height="32dp"-->
-<!--            android:layout_marginStart="24dp"-->
-<!--            android:clickable="true"-->
-<!--            android:contentDescription="Post"-->
-<!--            android:focusable="true"-->
-<!--            android:src="@drawable/ic_clear_white_24dp"-->
-<!--            app:layout_constraintBottom_toBottomOf="parent"-->
-<!--            app:layout_constraintStart_toStartOf="parent"-->
-<!--            app:layout_constraintTop_toTopOf="parent" />-->
-
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
 </androidx.appcompat.widget.Toolbar>
 

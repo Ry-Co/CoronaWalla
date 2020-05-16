@@ -19,6 +19,7 @@ import com.example.coronawalla.R
 import com.example.coronawalla.login.LoginActivity
 import com.example.coronawalla.main.MainActivity
 import com.example.coronawalla.main.MainActivityViewModel
+import com.example.coronawalla.main.ToolbarWorker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_local.*
@@ -31,7 +32,10 @@ class LocalFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        updatePostsServer()
+        if(recyclerView.adapter != null){
+
+            updatePostsServer()
+        }
         //viewModel!!.updateUserServer.value = true
     }
 
@@ -47,6 +51,7 @@ class LocalFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         //navigation handeling
+        val tb = ToolbarWorker(requireActivity())
         val anon = FirebaseAuth.getInstance().currentUser!!.isAnonymous
         val townTextView = requireActivity().findViewById<TextView>(R.id.toolbar_title_tv)
         val postImageButton = requireActivity().findViewById<ImageView>(R.id.right_button_iv)
@@ -55,6 +60,8 @@ class LocalFragment : Fragment() {
             if(anon){
                 showSignInDialog()
             }else{
+                tb.buttonEffect(postImageButton)
+
                 findNavController().navigate(R.id.action_local_to_postFragment)
             }
         }
@@ -62,6 +69,7 @@ class LocalFragment : Fragment() {
             if(anon){
                 showSignInDialog()
             }else{
+                tb.buttonEffect(profileImageButton)
                 findNavController().navigate(R.id.action_local_to_profile)
             }
         }

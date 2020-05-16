@@ -158,6 +158,7 @@ class PhoneVerification : Fragment() {
                                     "There was an error:: " + it.exception?.message,
                                     Toast.LENGTH_SHORT
                                 ).show()
+                                Log.e(TAG, it.exception!!.message.toString())
                             }
                         }
                 } else {
@@ -166,6 +167,7 @@ class PhoneVerification : Fragment() {
                         "There was an error:: " + it.exception?.message,
                         Toast.LENGTH_SHORT
                     ).show()
+                    Log.e(TAG, it.exception!!.message.toString())
                 }
             }
         }
