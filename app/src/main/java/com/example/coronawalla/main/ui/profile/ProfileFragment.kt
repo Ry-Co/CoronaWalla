@@ -73,18 +73,12 @@ class ProfileFragment : Fragment() {
     private fun updateProfileView(view:View, currentUser:UserClass){
         Log.e(TAG, "update profile view")
         //set view items
-        val profIV = view.findViewById<ImageView>(R.id.profile_iv)
         val handle = view.findViewById<TextView>(R.id.handle_tv)
         val nickname = view.findViewById<TextView>(R.id.username_tv)
         val postsCount = view.findViewById<TextView>(R.id.posts_tv)
         val karma = view.findViewById<TextView>(R.id.karma_tv)
         val followers = view.findViewById<TextView>(R.id.followers_tv)
         val following = view.findViewById<TextView>(R.id.following_tv)
-        //handle image
-        //todo handle image
-//        if(viewModel!!.currentProfileBitmap.value != null){
-//            profIV.setImageBitmap(viewModel!!.currentProfileBitmap.value)
-//        }
 
         //handle text
         handle.text = "@"+currentUser.handle

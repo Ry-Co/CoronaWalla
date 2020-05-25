@@ -98,9 +98,9 @@ class PostPreviewFragment : Fragment() {
             post_date_long = postTime,
             post_multiplier = 1,
             payout_date_long = postTime + 3600000*24,
-            votes_map = mVotes,
-            vote_count = 1,
-            users_vote = true
+            votes_map = mVotes
+            //vote_count = 1,
+            //users_vote = true
         )
     }
 }

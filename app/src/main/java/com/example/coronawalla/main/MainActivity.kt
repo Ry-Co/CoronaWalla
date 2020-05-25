@@ -6,7 +6,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
-import android.graphics.drawable.Drawable
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
@@ -16,12 +15,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.findNavController
-import androidx.navigation.ui.setupWithNavController
-import androidx.transition.Transition
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
 import com.example.coronawalla.R
 import com.example.coronawalla.main.ui.local.PostClass
 import com.example.coronawalla.main.ui.profile.UserClass
@@ -35,11 +28,9 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import com.livinglifetechway.quickpermissions_kotlin.util.QuickPermissionsOptions
-import kotlinx.android.synthetic.main.activity_main.*
 import org.imperiumlabs.geofirestore.GeoFirestore
 import org.imperiumlabs.geofirestore.extension.getAtLocation
 import java.io.ByteArrayOutputStream
-import java.net.URL
 
 class MainActivity : AppCompatActivity() {
     private val TAG: String? = MainActivity::class.simpleName
@@ -47,6 +38,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var locReq: LocationRequest
     private lateinit var locationCallback: LocationCallback
     private lateinit var viewModel:MainActivityViewModel
+
 
     private val permOptions = QuickPermissionsOptions(
         handleRationale = true,
@@ -103,7 +95,7 @@ class MainActivity : AppCompatActivity() {
                 }else{
                     if(viewModel.currentUser.value!!.profile_image_url != null){
                         //build the bitmap and push it to the viewmodel
-                        val uid = viewModel.currentUser.value!!.user_id
+                        //val uid = viewModel.currentUser.value!!.user_id
                         val profRef = FirebaseStorage.getInstance().reference.child("images/$uid")
                         val ONE_MEGABYTE: Long = 1024 * 1024
                         profRef.getBytes(ONE_MEGABYTE).addOnCompleteListener{

@@ -32,12 +32,13 @@ class ToolbarWorker constructor(activity: Activity){
 
     fun switchBox(int:Int){
         when(int){
+            3 -> postPreviewToolbar() //preview
+            2 -> postToolbar() //post creation toolbar
             1 -> roamToolbar() //roam
             0 -> localToolbar() //local
             -1 -> profileToolbar() //profile
             -2 -> profileEditToolbar() // profile edit
-            2 -> postToolbar() //post creation toolbar
-            3 -> postPreviewToolbar() //preview
+            -3 -> discussionToolbar()
         }
     }
 
@@ -79,6 +80,14 @@ class ToolbarWorker constructor(activity: Activity){
         toolbarSendTv.visibility = View.INVISIBLE
         toolbarCancelTv.visibility = View.INVISIBLE
     }
+
+    private fun discussionToolbar(){
+        Log.d(TAG, "Setting Toolbar to Discussion")
+        toolbarTitleTV.text = "Discussion"
+        rightImageButton.visibility = View.INVISIBLE
+        leftImageButton.setImageResource(R.drawable.ic_arrow_back_white_24dp)
+        leftImageButton.visibility = View.VISIBLE
+    }
     private fun postToolbar(){
         Log.d(TAG, "Setting Toolbar to Post")
         toolbarTitleTV.text = "Post"
@@ -94,6 +103,7 @@ class ToolbarWorker constructor(activity: Activity){
         toolbarCancelTv.visibility = View.INVISIBLE
     }
 
+    //todo maybe remove
     fun buttonEffect(button: View) {
         button.setOnTouchListener { v, event ->
             when (event.action) {

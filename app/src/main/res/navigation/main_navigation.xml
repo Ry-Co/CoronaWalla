@@ -23,11 +23,6 @@
             app:destination="@id/local" />
     </fragment>
     <fragment
-        android:id="@+id/roam"
-        android:name="com.example.coronawalla.main.ui.roam.RoamFragment"
-        android:label="fragment_roam"
-        tools:layout="@layout/fragment_roam" />
-    <fragment
         android:id="@+id/local"
         android:name="com.example.coronawalla.main.ui.local.LocalFragment"
         android:label="fragment_local"
@@ -38,6 +33,11 @@
         <action
             android:id="@+id/action_local_to_profile"
             app:destination="@id/profile" />
+        <action
+            android:id="@+id/action_local_to_discussionFragment"
+            app:destination="@id/discussionFragment">
+
+        </action>
     </fragment>
     <fragment
         android:id="@+id/postFragment"
@@ -68,5 +68,15 @@
         <action
             android:id="@+id/action_profileEditFragment_to_profile"
             app:destination="@id/profile" />
+    </fragment>
+    <fragment
+        android:id="@+id/discussionFragment"
+        android:name="com.example.coronawalla.main.ui.discussion.DiscussionFragment"
+        android:label="DiscussionFragment" >
+        <action
+            android:id="@+id/action_discussionFragment_to_local"
+            app:destination="@id/local">
+
+        </action>
     </fragment>
 </navigation>

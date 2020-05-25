@@ -46,10 +46,10 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/handle_tv"
+        android:id="@+id/username_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="'@Nickname"
+        android:text="John Smith"
         android:textSize="48sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/guideline7"
@@ -59,10 +59,10 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView
-        android:id="@+id/username_tv"
+        android:id="@+id/handle_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="John Smith"
+        android:text="'@nickname"
         android:textSize="40sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline8"
         app:layout_constraintEnd_toEndOf="parent"

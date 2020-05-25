@@ -19,7 +19,7 @@ import com.example.coronawalla.main.MainActivityViewModel
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.firestore.FirebaseFirestore
 
-//TODO: add background color selector and profile image selector
+//add background color selection?
 
 class ProfileEditFragment : Fragment() {
     private val TAG: String? = ProfileEditFragment::class.simpleName
@@ -78,17 +78,11 @@ class ProfileEditFragment : Fragment() {
     }
 
     private fun getImageFromGallery(){
-//        val intent = Intent()
-//        intent.type = "image/*"
-//        intent.action = Intent.ACTION_GET_CONTENT
-//        startActivityForResult(intent, 1)
-
         ImagePicker.with(requireActivity())
             .galleryOnly()
             .cropSquare()
             .compress(512)
             .start(1)
-
     }
 
     private fun setCurrentUserVals(view:View, user:UserClass){

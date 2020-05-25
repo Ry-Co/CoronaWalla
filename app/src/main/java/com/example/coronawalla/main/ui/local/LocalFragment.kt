@@ -32,11 +32,9 @@ class LocalFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        if(recyclerView.adapter != null){
-
+        if(posts_recyclerView.adapter != null){
             updatePostsServer()
         }
-        //viewModel!!.updateUserServer.value = true
     }
 
     override fun onResume() {
@@ -61,7 +59,6 @@ class LocalFragment : Fragment() {
                 showSignInDialog()
             }else{
                 tb.buttonEffect(postImageButton)
-
                 findNavController().navigate(R.id.action_local_to_postFragment)
             }
         }
@@ -74,33 +71,34 @@ class LocalFragment : Fragment() {
             }
         }
         townTextView.setOnClickListener {
-            //todo start autocomplete activity
+            //todo start autocomplete town select activity
             Toast.makeText(activity, "OPEN TOWN SELECT", Toast.LENGTH_SHORT).show()
         }
 
         //post list recycler handeling
         if( viewModel!!.localPostList.value != null){
-            recyclerView.adapter = RecyclerViewAdapter(viewModel!!.localPostList.value!!)
+            posts_recyclerView.adapter = PostsRecyclerViewAdapter(viewModel!!.localPostList.value!!, findNavController())
         }
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        posts_recyclerView.layoutManager = LinearLayoutManager(requireContext())
         viewModel!!.localPostList.observe(viewLifecycleOwner, Observer{
-            recyclerView.adapter = RecyclerViewAdapter(it)
+            posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
 
         })
-        refreshLayout.setOnRefreshListener {
+        posts_refreshLayout.setOnRefreshListener {
             //This is a safe cast because of the fragment we are in
             Log.e(TAG, "REFRESH")
+            updatePostsServer()
             val mA:MainActivity = activity as MainActivity
             mA.updateLocalPostList(viewModel!!.currentLocation.value!!)
             viewModel!!.localPostList.observe(viewLifecycleOwner, Observer{
-                recyclerView.adapter = RecyclerViewAdapter(it)
+                posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
             })
-            refreshLayout.isRefreshing = false
+            posts_refreshLayout.isRefreshing = false
         }
     }
 
     private fun updatePostsServer(){
-        val t = recyclerView.adapter as RecyclerViewAdapter
+        val t = posts_recyclerView.adapter as PostsRecyclerViewAdapter
         t.getChangedList()
         val db = FirebaseFirestore.getInstance()
         val oldPostList = t.getChangedList()
@@ -108,7 +106,7 @@ class LocalFragment : Fragment() {
         val colRef = db.collection("posts")
         for(post in oldPostList){
             val docRef = colRef.document(post.post_id)
-            batch.update(docRef,"vote_count",post.vote_count)
+            //batch.update(docRef,"vote_count",post.vote_count)
             batch.update(docRef,"votes_map",post.votes_map)
         }
 

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardView"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="0dp"
+    app:cardElevation="2dp"
+    app:cardUseCompatPadding="true">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.mikhaellopez.circularimageview.CircularImageView
+            android:id="@+id/commenter_prof_iv"
+            android:layout_width="57dp"
+            android:layout_height="56dp"
+
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:src="@drawable/ic_account_box_black_24dp"
+            app:layout_constraintEnd_toStartOf="@+id/guideline14"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline14"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.15" />
+
+        <ImageView
+            android:id="@+id/comment_upvote_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/comment_karma_tv"
+            app:layout_constraintEnd_toEndOf="@+id/comment_karma_tv"
+            app:layout_constraintStart_toStartOf="@+id/comment_karma_tv"
+            app:srcCompat="@drawable/ic_arrow_upward_black_24dp" />
+
+        <TextView
+            android:id="@+id/comment_karma_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="000"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline15"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/comment_downvote_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="@+id/comment_karma_tv"
+            app:layout_constraintStart_toStartOf="@+id/comment_karma_tv"
+            app:layout_constraintTop_toBottomOf="@+id/comment_karma_tv"
+            app:srcCompat="@drawable/ic_arrow_downward_black_24dp" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline15"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.9" />
+
+        <TextView
+            android:id="@+id/comment_text_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="2dp"
+            android:scrollHorizontally="false"
+            android:text="'@targeted_user Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium."
+            android:textSize="12sp"
+            app:layout_constraintBottom_toTopOf="@+id/guideline17"
+            app:layout_constraintEnd_toStartOf="@+id/guideline15"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/guideline14"
+            app:layout_constraintTop_toBottomOf="@+id/commenters_handle_tv" />
+
+        <TextView
+            android:id="@+id/commenters_handle_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="posting_users_handle"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/guideline14"
+            app:layout_constraintTop_toTopOf="@+id/commenter_prof_iv" />
+
+        <TextView
+            android:id="@+id/comment_reply_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginBottom="2dp"
+            android:text="Reply"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</androidx.cardview.widget.CardView>
