@@ -86,7 +86,7 @@ class LocalFragment : Fragment() {
         })
         posts_refreshLayout.setOnRefreshListener {
             //This is a safe cast because of the fragment we are in
-            Log.e(TAG, "REFRESH")
+            Log.e(TAG, "REFRESH-POSTS")
             updatePostsServer()
             val mA:MainActivity = activity as MainActivity
             mA.updateLocalPostList(viewModel!!.currentLocation.value!!)

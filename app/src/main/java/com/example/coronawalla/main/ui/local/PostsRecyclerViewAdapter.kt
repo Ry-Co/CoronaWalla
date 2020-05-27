@@ -1,5 +1,6 @@
 package com.example.coronawalla.main.ui.local
 
+import android.graphics.BitmapFactory
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -7,10 +8,13 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.os.bundleOf
+import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coronawalla.R
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.list_item.view.*
 
 class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private val navController:NavController) : RecyclerView.Adapter<PostsRecyclerViewAdapter.PostsRecyclerViewHolder>() {
@@ -44,6 +48,19 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
         }
 
 
+        val ONE_MEGABYTE: Long = 1024 * 1024
+        val profRef = FirebaseStorage.getInstance().reference.child("images/$uid")
+
+        profRef.getBytes(ONE_MEGABYTE).addOnCompleteListener {
+            if( it.isSuccessful){
+                val bmp = BitmapFactory.decodeByteArray(it.result, 0, it.result!!.size)
+                holder.userProfIV.setImageBitmap(bmp)
+            }else{
+                Log.e(TAG, it.exception.toString())
+            }
+        }
+
+
         holder.postTextTV.text = currentItem.post_text
         holder.postAgeTV.text = ageHours.toString() + "h"
         holder.voteCountTV.text = voteCount.toString()
@@ -72,6 +89,7 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
 
         holder.itemView.setOnClickListener {
             Log.e(TAG, "Go to discussion")
+            // todo get post id, get comment list and pass postclass and comment list to the discussion fragment
             goToDiscussion(holder.layoutPosition)
         }
         holder.postTextTV.setOnClickListener {
@@ -88,6 +106,7 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
         val postAgeTV: TextView = itemView.duration_TV
         val upvoteIV: ImageView = itemView.upvote_IV
         val downvoteIV: ImageView = itemView.downvote_IV
+        val userProfIV: ImageView = itemView.poster_prof_iv
     }
 
     private fun vote(state: Boolean?, action: Boolean, holder: PostsRecyclerViewHolder): Boolean? {
@@ -212,7 +231,6 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
     }
 
     private fun getPrevVoteAndSetLocalConditions(currentItem:PostClass, uid:String):Boolean?{
-
         return if(currentItem.votes_map!!.containsKey(uid)){
             when {
                 currentItem.votes_map!![uid] == true -> {
@@ -266,8 +284,9 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
     private fun goToDiscussion(position:Int){
         //add bundles
         //https://medium.com/incwell-innovations/passing-data-in-android-navigation-architecture-component-part-2-5f1ebc466935
+        val postReference = FirebaseFirestore.getInstance().collection("posts").document(postList[position].post_id)
         val bundle = bundleOf("post" to postList[position])
-
+        //todo get comments and pass them
         navController.navigate(R.id.action_local_to_discussionFragment, bundle)
 
     }

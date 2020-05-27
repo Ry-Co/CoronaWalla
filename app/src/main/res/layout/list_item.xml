@@ -72,7 +72,7 @@
             app:layout_constraintVertical_bias="0" />
 
         <com.mikhaellopez.circularimageview.CircularImageView
-            android:id="@+id/commenter_prof_iv"
+            android:id="@+id/poster_prof_iv"
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:src="@drawable/ic_account_box_black_24dp"
@@ -83,11 +83,10 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
             android:text="Anonymous"
             app:layout_constraintBottom_toBottomOf="@+id/commenter_prof_iv"
-            app:layout_constraintStart_toEndOf="@+id/commenter_prof_iv"
-            app:layout_constraintTop_toTopOf="@+id/commenter_prof_iv" />
+            app:layout_constraintStart_toEndOf="@+id/poster_prof_iv"
+            app:layout_constraintTop_toTopOf="@+id/poster_prof_iv" />
 
         <TextView
             android:id="@+id/duration_TV"

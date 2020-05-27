@@ -154,7 +154,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:background="?attr/selectableItemBackgroundBorderless">
 
             <EditText
                 android:id="@+id/current_comment_et"
@@ -167,6 +168,7 @@
                 android:padding="10dp" />
 
             <LinearLayout
+                android:id="@+id/comment_confirm_iv"
                 android:layout_width="50dp"
                 android:layout_height="match_parent"
                 android:background="@color/colorAccent"

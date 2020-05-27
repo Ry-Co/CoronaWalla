@@ -64,20 +64,20 @@ class PostPreviewFragment : Fragment() {
 
         postButton.setOnClickListener {
             val post = getPostMap()
-            db.collection("posts").add(post).addOnCompleteListener{
-                if (it.isSuccessful){
+            db.collection("posts").add(post).addOnCompleteListener{ postTask ->
+                if (postTask.isSuccessful){
                     Log.d(TAG, "Post Sent!")
                     val geoFirestore = GeoFirestore(db.collection("posts"))
-                    db.collection("posts").document(it.result!!.id).update("post_id", it.result!!.id).addOnCompleteListener{
+                    db.collection("posts").document(postTask.result!!.id).update("post_id", postTask.result!!.id).addOnCompleteListener{
                         if(it.isSuccessful){
                             Log.i(TAG, "Updated mPostID")
                         }else{
                             Log.e(TAG, it.exception.toString())
                         }
                     }
-                    geoFirestore.setLocation(it!!.result!!.id,currentGeoPoint)
+                    geoFirestore.setLocation(postTask!!.result!!.id,currentGeoPoint)
                 }else{
-                    Log.e(TAG, "Error:: "+it.exception.toString())
+                    Log.e(TAG, "Error:: "+postTask.exception.toString())
                 }
             }
             findNavController().navigate(R.id.action_postPreviewFragment_to_local)
@@ -99,8 +99,6 @@ class PostPreviewFragment : Fragment() {
             post_multiplier = 1,
             payout_date_long = postTime + 3600000*24,
             votes_map = mVotes
-            //vote_count = 1,
-            //users_vote = true
         )
     }
 }
