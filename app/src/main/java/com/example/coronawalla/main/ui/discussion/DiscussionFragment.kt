@@ -16,9 +16,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 
 import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivityViewModel
+import com.example.coronawalla.main.VoteWorker
 import com.example.coronawalla.main.ui.local.PostClass
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_discussion.*
+import kotlinx.android.synthetic.main.fragment_discussion.view.*
 
 /***
  * to bold username/@_other_user
@@ -29,6 +32,8 @@ class DiscussionFragment : Fragment() {
         activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
     private lateinit var currentPost: PostClass
+    private lateinit var ph: String
+    private var usersVote:Boolean? = null
     private val TAG: String? = DiscussionFragment::class.simpleName
 
 
@@ -52,6 +57,7 @@ class DiscussionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         currentPost = arguments?.get("post") as PostClass
+        ph = arguments?.get("posterHandle") as String
         getCommentsFromServer(currentPost){commentsList->
             //recycler handeling
             comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
@@ -73,20 +79,34 @@ class DiscussionFragment : Fragment() {
     }
 
     private fun setViewValues(v:View){
+        val uid = FirebaseAuth.getInstance().currentUser!!.uid
         val commentConfirmIV = v.findViewById<LinearLayout>(R.id.comment_confirm_iv)
         val currentCommentET = v.findViewById<EditText>(R.id.current_comment_et)
         val postText = v.findViewById<TextView>(R.id.post_text_tv)
         val postKarma = v.findViewById<TextView>(R.id.post_karma_tv)
         val postDuration = v.findViewById<TextView>(R.id.post_duration_tv)
+        val posterHandle = v.findViewById<TextView>(R.id.disc_posters_handle_tv)
         //val replyTV = v.findViewById<TextView>(R.id.reply_tv)
         val shareTV = v.findViewById<TextView>(R.id.share_tv)
         val upvoteIV = v.findViewById<ImageView>(R.id.disc_upvote_iv)
         val downvoteIV = v.findViewById<ImageView>(R.id.disc_downvote_iv)
         val backButton = requireActivity().findViewById<ImageView>(R.id.left_button_iv)
         //set vote status
+        //var prevVote = getPrevVoteAndSetLocalConditions(currentPost,uid)
+        val voteWorker = VoteWorker()
+        var prevVote = voteWorker.getPrevVote(uid, currentPost.votes_map!!)
+        //voteVisual(v, usersVote)
+        voteWorker.voteVisual(upvoteIV, downvoteIV, prevVote)
+        upvoteIV.setOnClickListener {
 
+        }
+
+        downvoteIV.setOnClickListener {
+
+        }
 
         //set post values
+        posterHandle.text = ph
         var voteCount = 0
         if(currentPost.votes_map!!.isEmpty()){
             //do nothing
@@ -100,11 +120,11 @@ class DiscussionFragment : Fragment() {
             voteCount = counter
         }
         postKarma.text = voteCount.toString()
-
         val ageHours = (System.currentTimeMillis() - currentPost.post_date_long) / 3600000 // milliseconds per hour
         postDuration.text = ageHours.toString()+"h"
-
         postText.text = currentPost.post_text
+
+
 
 
         shareTV.setOnClickListener {
@@ -142,6 +162,7 @@ class DiscussionFragment : Fragment() {
 
             }
         }
+
     }
 
     private fun updateCommentsServer(){
@@ -196,6 +217,7 @@ class DiscussionFragment : Fragment() {
             commenter_handle = handle
         )
     }
+
 
     // function triplet copy/paste for hiding keyboard functionality
     fun Fragment.hideKeyboard() {
