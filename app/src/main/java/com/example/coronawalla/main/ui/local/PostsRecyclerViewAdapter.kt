@@ -48,18 +48,14 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
         }
 
 
-        val ONE_MEGABYTE: Long = 1024 * 1024
-        val profRef = FirebaseStorage.getInstance().reference.child("images/$uid")
-
-        profRef.getBytes(ONE_MEGABYTE).addOnCompleteListener {
-            if( it.isSuccessful){
-                val bmp = BitmapFactory.decodeByteArray(it.result, 0, it.result!!.size)
-                holder.userProfIV.setImageBitmap(bmp)
-            }else{
-                Log.e(TAG, it.exception.toString())
-            }
-        }
-
+//        FirebaseFirestore.getInstance().collection("users").document(currentItem.poster_id).get().addOnCompleteListener {
+//            if(it.isSuccessful){
+//                val userDoc = it.result
+//                holder.posterHandleTV.text = "@"+userDoc!!.get("handle").toString()
+//            }else{
+//                Log.e(TAG, it.exception.toString())
+//            }
+//        }
 
         holder.postTextTV.text = currentItem.post_text
         holder.postAgeTV.text = ageHours.toString() + "h"
@@ -106,7 +102,8 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
         val postAgeTV: TextView = itemView.duration_TV
         val upvoteIV: ImageView = itemView.upvote_IV
         val downvoteIV: ImageView = itemView.downvote_IV
-        val userProfIV: ImageView = itemView.poster_prof_iv
+        //val posterHandleTV:TextView = itemView.poster_handle_tv
+        //val userProfIV: ImageView = itemView.poster_prof_iv
     }
 
     private fun vote(state: Boolean?, action: Boolean, holder: PostsRecyclerViewHolder): Boolean? {

@@ -1,7 +1,5 @@
 package com.example.coronawalla.main.ui.discussion
 
-import android.graphics.BitmapFactory
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,8 +7,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coronawalla.R
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.comment.view.*
 
 class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) : RecyclerView.Adapter<CommentsRecyclerViewAdapter.CommentsRecyclerViewHolder>() {
@@ -28,32 +24,12 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
         val uid = currentItem.commenter_id
         var prevVote = getPrevVoteAndSetLocalConditions(currentItem,uid)
         var voteCount = 0
-        val ONE_MEGABYTE: Long = 1024 * 1024
-        val profRef = FirebaseStorage.getInstance().reference.child("images/$uid")
 
-        profRef.getBytes(ONE_MEGABYTE).addOnCompleteListener {
-            if( it.isSuccessful){
-                val bmp = BitmapFactory.decodeByteArray(it.result, 0, it.result!!.size)
-                holder.commentersProfIV.setImageBitmap(bmp)
-            }else{
-                Log.e(TAG, it.exception.toString())
-            }
-        }
-
-        FirebaseFirestore.getInstance().collection("users").document(uid).get().addOnCompleteListener{
-            if(it.isSuccessful){
-                val userDoc = it.result
-                holder.commentersHandleTV.text = userDoc!!.get("handle").toString()
-            }else{
-                Log.e(TAG, it.exception.toString())
-            }
-        }
-
-        if(currentItem.comment_votes_map!!.isEmpty()){
+        if(currentItem.votes_map!!.isEmpty()){
             //do nothing
         }else{
             var counter = 0
-            for(item in currentItem.comment_votes_map!!){
+            for(item in currentItem.votes_map!!){
                 if(item.value == true){
                     counter += 1
                 }
@@ -83,10 +59,6 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
             currentItem = updatePostLists(currentItem,uid)
             changedComments.add(currentItem)
         }
-
-
-
-        holder.replyTV.setOnClickListener {  }
     }
 
     override fun getItemCount() = commentList.size
@@ -94,23 +66,19 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
     class CommentsRecyclerViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         val commentTextTV: TextView = itemView.comment_text_tv
         val voteCountTV: TextView = itemView.comment_karma_tv
-        val replyTV: TextView = itemView.comment_reply_tv
         val upvoteIV:ImageView = itemView.comment_upvote_iv
         val downvoteIV : ImageView = itemView.comment_downvote_iv
-        val commentersHandleTV : TextView = itemView.commenters_handle_tv
-        val commentersProfIV: ImageView = itemView.commenter_prof_iv
-
     }
 
     private fun getPrevVoteAndSetLocalConditions(currentItem:CommentClass, uid:String):Boolean?{
-        return if(currentItem.comment_votes_map!!.containsKey(uid)){
+        return if(currentItem.votes_map!!.containsKey(uid)){
             when {
-                currentItem.comment_votes_map!![uid] == true -> {
+                currentItem.votes_map!![uid] == true -> {
                     //currentItem.users_vote = true
                     usersVote = true
                     true
                 }
-                currentItem.comment_votes_map!![uid] == false -> {
+                currentItem.votes_map!![uid] == false -> {
                     //currentItem.users_vote = false
                     usersVote = false
                     false
@@ -254,22 +222,25 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
         return changedComments
     }
 
+
+
+
     private fun updatePostLists(currentItem: CommentClass, uid:String): CommentClass {
         return when (usersVote) {
             null -> {
                 //we are using this instead of replace for api requirements
-                currentItem.comment_votes_map!!.remove(uid)
-                currentItem.comment_votes_map!![uid] = null
+                currentItem.votes_map!!.remove(uid)
+                currentItem.votes_map!![uid] = null
                 currentItem
             }
             true -> {
-                currentItem.comment_votes_map!!.remove(uid)
-                currentItem.comment_votes_map!![uid] = true
+                currentItem.votes_map!!.remove(uid)
+                currentItem.votes_map!![uid] = true
                 currentItem
             }
             else -> {
-                currentItem.comment_votes_map!!.remove(uid)
-                currentItem.comment_votes_map!![uid] = false
+                currentItem.votes_map!!.remove(uid)
+                currentItem.votes_map!![uid] = false
                 currentItem
             }
         }

@@ -63,50 +63,54 @@
             android:scrollHorizontally="false"
             android:text="Lorem ipsum ducib labore et dolore magna aliqua. Libero id faucibus "
             android:textSize="22sp"
-            app:layout_constraintBottom_toTopOf="@+id/topOfDuration"
-            app:layout_constraintLeft_toRightOf="@+id/leftOfPost"
             app:layout_constraintRight_toLeftOf="@+id/rightOfPost"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/topOfPost"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0" />
-
-        <com.mikhaellopez.circularimageview.CircularImageView
-            android:id="@+id/poster_prof_iv"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/ic_account_box_black_24dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/duration_TV" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Anonymous"
-            app:layout_constraintBottom_toBottomOf="@+id/commenter_prof_iv"
-            app:layout_constraintStart_toEndOf="@+id/poster_prof_iv"
-            app:layout_constraintTop_toTopOf="@+id/poster_prof_iv" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/duration_TV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
             android:text="12h"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/rightOfPost"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/postText_TV" />
 
-        <androidx.constraintlayout.widget.Barrier
-            android:id="@+id/topOfDuration"
+        <TextView
+            android:id="@+id/duration_TV2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:barrierDirection="top"
-            app:constraint_referenced_ids="duration_TV"
-            tools:layout_editor_absoluteX="24dp"
-            tools:layout_editor_absoluteY="148dp" />
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginBottom="4dp"
+            android:text="Share"
+            android:textStyle="italic"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/voteCounter_TV"
+            app:layout_constraintHorizontal_bias=".9"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/postText_TV"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <TextView
+            android:id="@+id/posters_handle_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:text="@posters_handle"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/duration_TV2"
+            app:layout_constraintHorizontal_bias=".5"
+            app:layout_constraintStart_toEndOf="@+id/duration_TV"
+            app:layout_constraintTop_toBottomOf="@+id/postText_TV"
+            app:layout_constraintVertical_bias="1.0" />
 
         <androidx.constraintlayout.widget.Barrier
             android:id="@+id/rightOfPost"
@@ -114,14 +118,6 @@
             android:layout_height="wrap_content"
             app:barrierDirection="left"
             app:constraint_referenced_ids="upvote_IV,downvote_IV,voteCounter_TV"
-            tools:layout_editor_absoluteX="403dp" />
-
-        <androidx.constraintlayout.widget.Barrier
-            android:id="@+id/leftOfPost"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:barrierDirection="left"
-            app:constraint_referenced_ids="duration_TV"
             tools:layout_editor_absoluteX="403dp" />
 
         <androidx.constraintlayout.widget.Barrier

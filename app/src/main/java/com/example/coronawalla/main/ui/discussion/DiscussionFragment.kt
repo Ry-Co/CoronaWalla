@@ -3,7 +3,6 @@ package com.example.coronawalla.main.ui.discussion
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
-import android.os.Parcelable
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -18,10 +17,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivityViewModel
 import com.example.coronawalla.main.ui.local.PostClass
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_discussion.*
-import java.util.ArrayList
 
 /***
  * to bold username/@_other_user
@@ -81,7 +78,7 @@ class DiscussionFragment : Fragment() {
         val postText = v.findViewById<TextView>(R.id.post_text_tv)
         val postKarma = v.findViewById<TextView>(R.id.post_karma_tv)
         val postDuration = v.findViewById<TextView>(R.id.post_duration_tv)
-        val replyTV = v.findViewById<TextView>(R.id.report_tv)
+        //val replyTV = v.findViewById<TextView>(R.id.reply_tv)
         val shareTV = v.findViewById<TextView>(R.id.share_tv)
         val upvoteIV = v.findViewById<ImageView>(R.id.disc_upvote_iv)
         val downvoteIV = v.findViewById<ImageView>(R.id.disc_downvote_iv)
@@ -109,14 +106,12 @@ class DiscussionFragment : Fragment() {
 
         postText.text = currentPost.post_text
 
-        replyTV.setOnClickListener {
-            Log.e(TAG, "Report TV")
-        }
+
         shareTV.setOnClickListener {
             Log.e(TAG, "Share TV")
         }
         backButton.setOnClickListener {
-            //update the post list locally and on the server
+            updateCommentsServer()
             findNavController().navigate(R.id.action_discussionFragment_to_local)
         }
         commentConfirmIV.setOnClickListener {
@@ -150,6 +145,24 @@ class DiscussionFragment : Fragment() {
     }
 
     private fun updateCommentsServer(){
+        val t = comments_recyclerView.adapter as CommentsRecyclerViewAdapter
+        t.getChangedList()
+        val db = FirebaseFirestore.getInstance()
+        val oldCommentList = t.getChangedList()
+        val batch = db.batch()
+
+        val commentsColRef = db.collection("posts").document(currentPost.post_id).collection("comments")
+        for(comment in oldCommentList){
+            val docRef = commentsColRef.document(comment.comment_id)
+            batch.update(docRef, "votes_map", comment.votes_map)
+        }
+        batch.commit().addOnCompleteListener{
+            if(it.isSuccessful){
+                Log.i(TAG,"comments updated!")
+            }else{
+                Log.e(TAG,it.exception.toString())
+            }
+        }
 
     }
 
@@ -178,7 +191,7 @@ class DiscussionFragment : Fragment() {
         return CommentClass(
             comment_id = "",
             comment_text = postText,
-            comment_votes_map = mVotes,
+            votes_map = mVotes,
             commenter_id = uid,
             commenter_handle = handle
         )

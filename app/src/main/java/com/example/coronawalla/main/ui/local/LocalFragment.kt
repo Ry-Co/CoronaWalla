@@ -20,8 +20,10 @@ import com.example.coronawalla.login.LoginActivity
 import com.example.coronawalla.main.MainActivity
 import com.example.coronawalla.main.MainActivityViewModel
 import com.example.coronawalla.main.ToolbarWorker
+import com.example.coronawalla.main.ui.discussion.CommentsRecyclerViewAdapter
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.android.synthetic.main.fragment_discussion.*
 import kotlinx.android.synthetic.main.fragment_local.*
 
 class LocalFragment : Fragment() {
@@ -106,7 +108,6 @@ class LocalFragment : Fragment() {
         val colRef = db.collection("posts")
         for(post in oldPostList){
             val docRef = colRef.document(post.post_id)
-            //batch.update(docRef,"vote_count",post.vote_count)
             batch.update(docRef,"votes_map",post.votes_map)
         }
 
@@ -118,6 +119,7 @@ class LocalFragment : Fragment() {
             }
         }
     }
+
 
     private fun showSignInDialog(){
         AlertDialog.Builder(activity)

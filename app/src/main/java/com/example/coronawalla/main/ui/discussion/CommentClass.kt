@@ -9,5 +9,5 @@ data class CommentClass(
     val commenter_handle: String = "",
     val commenter_id: String = "",
     val comment_text: String = "",
-    var comment_votes_map: MutableMap<String, Boolean?>? = null
+    var votes_map: MutableMap<String, Boolean?>? = null
 ) : Parcelable

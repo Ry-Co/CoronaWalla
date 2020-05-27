@@ -82,6 +82,7 @@ class ToolbarWorker constructor(activity: Activity){
     }
 
     private fun discussionToolbar(){
+        //todo add report functionality to right button
         Log.d(TAG, "Setting Toolbar to Discussion")
         toolbarTitleTV.text = "Discussion"
         rightImageButton.visibility = View.INVISIBLE

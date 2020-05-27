@@ -14,23 +14,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.mikhaellopez.circularimageview.CircularImageView
-            android:id="@+id/commenter_prof_iv"
-            android:layout_width="57dp"
-            android:layout_height="57dp"
-
-            android:src="@drawable/ic_account_box_black_24dp"
-            app:layout_constraintEnd_toStartOf="@+id/guideline14"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline14"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.15" />
-
         <ImageView
             android:id="@+id/comment_upvote_iv"
             android:layout_width="30dp"
@@ -70,42 +53,55 @@
             android:id="@+id/comment_text_tv"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="2dp"
-            android:layout_marginTop="2dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="4dp"
             android:layout_marginEnd="2dp"
             android:scrollHorizontally="false"
             android:text="'@targeted_user Lorem ipsum dolor sit amet"
-            android:textSize="14sp"
-            app:layout_constraintBottom_toTopOf="@+id/guideline17"
+            android:textSize="16sp"
             app:layout_constraintEnd_toStartOf="@+id/guideline15"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="@+id/guideline14"
-            app:layout_constraintTop_toBottomOf="@+id/commenters_handle_tv" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/comment_age_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:text="12h"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/comment_text_tv"
+            app:layout_constraintVertical_bias="1.0" />
 
         <TextView
             android:id="@+id/commenters_handle_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="posting_users_handle"
-            android:textSize="14sp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:text="@commenters_handle"
+            android:textSize="16sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@+id/guideline14"
-            app:layout_constraintTop_toTopOf="@+id/commenter_prof_iv" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/guideline15"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/comment_text_tv"
+            app:layout_constraintVertical_bias="1.0" />
 
         <TextView
-            android:id="@+id/comment_reply_tv"
+            android:id="@+id/report_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:text="Reply"
-            android:textSize="12sp"
+            android:text="Share"
+            android:textSize="16sp"
+            android:textStyle="italic"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/guideline14"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/commenter_prof_iv" />
+            app:layout_constraintEnd_toStartOf="@+id/guideline15"
+            app:layout_constraintHorizontal_bias="1"
+            app:layout_constraintStart_toEndOf="@+id/commenters_handle_tv" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
