@@ -19,11 +19,8 @@ import com.example.coronawalla.R
 import com.example.coronawalla.login.LoginActivity
 import com.example.coronawalla.main.MainActivity
 import com.example.coronawalla.main.MainActivityViewModel
-import com.example.coronawalla.main.ToolbarWorker
-import com.example.coronawalla.main.ui.discussion.CommentsRecyclerViewAdapter
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.android.synthetic.main.fragment_discussion.*
 import kotlinx.android.synthetic.main.fragment_local.*
 
 class LocalFragment : Fragment() {
@@ -42,6 +39,8 @@ class LocalFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         viewModel?.toolbarMode?.value = 0
+
+
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -50,51 +49,8 @@ class LocalFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        //navigation handeling
-        val tb = ToolbarWorker(requireActivity())
-        val anon = FirebaseAuth.getInstance().currentUser!!.isAnonymous
-        val townTextView = requireActivity().findViewById<TextView>(R.id.toolbar_title_tv)
-        val postImageButton = requireActivity().findViewById<ImageView>(R.id.right_button_iv)
-        val profileImageButton = requireActivity().findViewById<ImageView>(R.id.left_button_iv)
-        postImageButton.setOnClickListener {
-            if(anon){
-                showSignInDialog()
-            }else{
-                findNavController().navigate(R.id.action_local_to_postFragment)
-            }
-        }
-        profileImageButton.setOnClickListener {
-            if(anon){
-                showSignInDialog()
-            }else{
-                findNavController().navigate(R.id.action_local_to_profile)
-            }
-        }
-        townTextView.setOnClickListener {
-            //todo start autocomplete town select activity
-            Toast.makeText(activity, "OPEN TOWN SELECT", Toast.LENGTH_SHORT).show()
-        }
-
-        //post list recycler handeling
-        if( viewModel!!.localPostList.value != null){
-            posts_recyclerView.adapter = PostsRecyclerViewAdapter(viewModel!!.localPostList.value!!, findNavController())
-        }
-        posts_recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        viewModel!!.localPostList.observe(viewLifecycleOwner, Observer{
-            posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
-
-        })
-        posts_refreshLayout.setOnRefreshListener {
-            //This is a safe cast because of the fragment we are in
-            Log.e(TAG, "REFRESH-POSTS")
-            updatePostsServer()
-            val mA:MainActivity = activity as MainActivity
-            mA.updateLocalPostList(viewModel!!.currentLocation.value!!)
-            viewModel!!.localPostList.observe(viewLifecycleOwner, Observer{
-                posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
-            })
-            posts_refreshLayout.isRefreshing = false
-        }
+        navigation()
+        recyclerHandeling()
     }
 
     private fun updatePostsServer(){
@@ -136,5 +92,51 @@ class LocalFragment : Fragment() {
             }
             .show()
 
+    }
+
+    private fun navigation(){
+        val anon = FirebaseAuth.getInstance().currentUser!!.isAnonymous
+        val postImageButton = requireActivity().findViewById<ImageView>(R.id.right_button_iv)
+        val profileImageButton = requireActivity().findViewById<ImageView>(R.id.left_button_iv)
+        val townTextView = requireActivity().findViewById<TextView>(R.id.toolbar_title_tv)
+
+        postImageButton.setOnClickListener {
+            if(anon){
+                showSignInDialog()
+            }else{
+                findNavController().navigate(R.id.action_local_to_postFragment)
+            }
+        }
+        profileImageButton.setOnClickListener {
+            if(anon){
+                showSignInDialog()
+            }else{
+                findNavController().navigate(R.id.action_local_to_profile)
+            }
+        }
+        townTextView.setOnClickListener {
+            //todo start autocomplete town select activity
+            Toast.makeText(activity, "OPEN TOWN SELECT", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun recyclerHandeling(){
+        if( viewModel!!.localPostList.value != null){
+            posts_recyclerView.adapter = PostsRecyclerViewAdapter(viewModel!!.localPostList.value!!, findNavController())
+        }
+        posts_recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        viewModel!!.localPostList.observe(viewLifecycleOwner, Observer{
+            posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
+
+        })
+        posts_refreshLayout.setOnRefreshListener {
+            //This is a safe cast because of the fragment we are in
+            Log.e(TAG, "REFRESH-POSTS")
+            val mA:MainActivity = activity as MainActivity
+            mA.getPostsFromServer(){
+                posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
+            }
+            posts_refreshLayout.isRefreshing = false
+        }
     }
 }

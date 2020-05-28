@@ -31,13 +31,40 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
     override fun onBindViewHolder(holder: PostsRecyclerViewHolder, position: Int) {
         val currentItem = postList[position]
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
-        //val ageHours = (System.currentTimeMillis() - currentItem.post_date_long) / 3600000 // milliseconds per hour
+        navigation(holder)
+        voting(holder, uid, currentItem)
+        holder.postTextTV.text = currentItem.post_text
+        FirebaseFirestore.getInstance().collection("users").document(currentItem.poster_id).get().addOnCompleteListener {
+            if(it.isSuccessful){
+                val userDoc = it.result
+                holder.posterHandleTV.text = "@"+userDoc!!.get("handle").toString()
+            }else{
+                Log.e(TAG, it.exception.toString())
+            }
+        }
+    }
+
+    override fun getItemCount() = postList.size
+
+    class PostsRecyclerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val postTextTV: TextView = itemView.postText_TV
+        val voteCountTV: TextView = itemView.voteCounter_TV
+        val postAgeTV: TextView = itemView.duration_TV
+        val upvoteIV: ImageView = itemView.upvote_IV
+        val downvoteIV: ImageView = itemView.downvote_IV
+        val posterHandleTV:TextView = itemView.posters_handle_tv
+    }
+
+    fun getChangedList(): ArrayList<PostClass>{
+        return changedPosts
+    }
+
+    private fun voting(holder:PostsRecyclerViewHolder, uid:String, currentItem:PostClass){
         val voteWorker = VoteWorker()
         var prevVote = voteWorker.getPrevVote(uid, currentItem.votes_map!!)
         var voteCount = voteWorker.getVoteCount(currentItem.votes_map!!)
 
 
-        holder.postTextTV.text = currentItem.post_text
         holder.postAgeTV.text = voteWorker.getAgeString(currentItem.post_date_long)
         holder.voteCountTV.text = voteCount.toString()
 
@@ -53,7 +80,6 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
             currentItem.votes_map = voteWorker.updateVoteMap(usersVote,uid, currentItem.votes_map!!)
             changedPosts.add(currentItem)
         }
-
         holder.downvoteIV.setOnClickListener {
             usersVote = voteWorker.vote(usersVote, false,holder.upvoteIV, holder.downvoteIV)
             val voteCountString = voteWorker.updateVoteCountString(usersVote,prevVote,voteCount.toString())
@@ -63,38 +89,15 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
             currentItem.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentItem.votes_map!!)
             changedPosts.add(currentItem)
         }
+    }
 
-        FirebaseFirestore.getInstance().collection("users").document(currentItem.poster_id).get().addOnCompleteListener {
-            if(it.isSuccessful){
-                val userDoc = it.result
-                holder.posterHandleTV.text = "@"+userDoc!!.get("handle").toString()
-            }else{
-                Log.e(TAG, it.exception.toString())
-            }
-        }
-
+    private fun navigation(holder:PostsRecyclerViewHolder){
         holder.itemView.setOnClickListener {
             goToDiscussion(holder.layoutPosition, holder.posterHandleTV.text.toString())
         }
         holder.postTextTV.setOnClickListener {
             goToDiscussion(holder.layoutPosition,holder.posterHandleTV.text.toString())
         }
-
-    }
-
-    override fun getItemCount() = postList.size
-
-    class PostsRecyclerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val postTextTV: TextView = itemView.postText_TV
-        val voteCountTV: TextView = itemView.voteCounter_TV
-        val postAgeTV: TextView = itemView.duration_TV
-        val upvoteIV: ImageView = itemView.upvote_IV
-        val downvoteIV: ImageView = itemView.downvote_IV
-        val posterHandleTV:TextView = itemView.posters_handle_tv
-    }
-
-    public fun getChangedList(): ArrayList<PostClass>{
-        return changedPosts
     }
 
     private fun goToDiscussion(position:Int, posterHandle:String){

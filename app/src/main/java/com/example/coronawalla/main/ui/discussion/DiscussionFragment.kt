@@ -21,7 +21,6 @@ import com.example.coronawalla.main.ui.local.PostClass
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_discussion.*
-import kotlinx.android.synthetic.main.fragment_discussion.view.*
 
 /***
  * to bold username/@_other_user
@@ -59,108 +58,20 @@ class DiscussionFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         currentPost = arguments?.get("post") as PostClass
         ph = arguments?.get("posterHandle") as String
-        getCommentsFromServer(currentPost){commentsList->
-            //recycler handeling
-            comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
-        }
-        comments_recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        comments_refreshLayout.setOnRefreshListener {
-            Log.e(TAG, "REFRESH-COMMENTS")
-            getCommentsFromServer(currentPost){commentsList->
-                //recycler handeling
-                comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
-                comments_refreshLayout.isRefreshing = false
-
-            }
-        }
+        recyclerHandeling()
         setViewValues(view)
     }
 
     private fun setViewValues(v:View){
-        val uid = FirebaseAuth.getInstance().currentUser!!.uid
-        val commentConfirmIV = v.findViewById<LinearLayout>(R.id.comment_confirm_iv)
-        val currentCommentET = v.findViewById<EditText>(R.id.current_comment_et)
+        navigation(v)
+        voting(v)
+        commenting(v)
+
+        //declare and set post values
         val postText = v.findViewById<TextView>(R.id.post_text_tv)
-        val postKarma = v.findViewById<TextView>(R.id.post_karma_tv)
-        val postDuration = v.findViewById<TextView>(R.id.post_duration_tv)
         val posterHandle = v.findViewById<TextView>(R.id.disc_posters_handle_tv)
-        val shareTV = v.findViewById<TextView>(R.id.share_tv)
-        val upvoteIV = v.findViewById<ImageView>(R.id.disc_upvote_iv)
-        val downvoteIV = v.findViewById<ImageView>(R.id.disc_downvote_iv)
-        val backButton = requireActivity().findViewById<ImageView>(R.id.left_button_iv)
-        //set vote status
-        val voteWorker = VoteWorker()
-        var voteCount = voteWorker.getVoteCount(currentPost.votes_map!!)
-        postKarma.text = voteCount.toString()
-        var prevVote = voteWorker.getPrevVote(uid, currentPost.votes_map!!)
-        voteWorker.voteVisual(upvoteIV, downvoteIV, prevVote)
-
-        upvoteIV.setOnClickListener {
-            usersVote = voteWorker.vote(usersVote, true, upvoteIV, downvoteIV)
-            val voteCountString = voteWorker.updateVoteCountString(usersVote, prevVote, voteCount.toString())
-            postKarma.text = voteCountString
-            prevVote = usersVote
-            voteCount = voteCountString.toInt()
-            currentPost.votes_map = voteWorker.updateVoteMap(usersVote,uid, currentPost.votes_map!!)
-            changedPosts.add(currentPost)
-        }
-
-        downvoteIV.setOnClickListener {
-            usersVote = voteWorker.vote(usersVote, false,upvoteIV,downvoteIV)
-            val voteCountString = voteWorker.updateVoteCountString(usersVote,prevVote,voteCount.toString())
-            postKarma.text = voteCountString
-            prevVote = usersVote
-            voteCount = voteCountString.toInt()
-            currentPost.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentPost.votes_map!!)
-            changedPosts.add(currentPost)
-        }
-
-        //set post values
         posterHandle.text = ph
-
-        //val ageHours = (System.currentTimeMillis() - currentPost.post_date_long) / 3600000 // milliseconds per hour
-        postDuration.text = voteWorker.getAgeString(currentPost.post_date_long)
         postText.text = currentPost.post_text
-
-
-
-
-        shareTV.setOnClickListener {
-            Log.e(TAG, "Share TV")
-        }
-        backButton.setOnClickListener {
-            updateCommentsServer()
-            findNavController().navigate(R.id.action_discussionFragment_to_local)
-        }
-        commentConfirmIV.setOnClickListener {
-            val commentText = currentCommentET.text.toString()
-            val postRef =FirebaseFirestore.getInstance().collection("posts").document(currentPost.post_id)
-            if(commentText.isEmpty()){
-                Toast.makeText(context, "Comments can't be empty!", Toast.LENGTH_SHORT).show()
-            }else{
-                // build comment and send text to server and refresh the layout after
-                val commentMap = getCommentMap(commentText)
-                postRef.collection("comments").add(commentMap).addOnCompleteListener { commentTask ->
-                    if(commentTask.isSuccessful){
-                        postRef.collection("comments").document(commentTask.result!!.id).update("comment_id", commentTask.result!!.id).addOnCompleteListener {
-                            if(it.isSuccessful){
-                                Log.d(TAG, "comment_id updated")
-                                Toast.makeText(context, "Comments Sent!", Toast.LENGTH_SHORT).show()
-                                currentCommentET.setText("")
-                                hideKeyboard()
-                                //todo refresh list
-                            }else{
-                                Log.e(TAG, it.exception.toString())
-                            }
-                        }
-                    }else{
-                        Log.e(TAG, commentTask.exception.toString())
-                    }
-                }
-
-            }
-        }
-
     }
 
     private fun updateCommentsServer(){
@@ -221,6 +132,106 @@ class DiscussionFragment : Fragment() {
         if(changedPosts.size > 0){
             val post = changedPosts[0]
             db.collection("posts").document(post.post_id).update("votes_map", post.votes_map)
+        }
+    }
+
+    private fun navigation(v:View){
+        val shareTV = v.findViewById<TextView>(R.id.share_tv)
+        val backButton = requireActivity().findViewById<ImageView>(R.id.left_button_iv)
+        shareTV.setOnClickListener {
+            Log.e(TAG, "Share TV")
+        }
+        backButton.setOnClickListener {
+            updateCommentsServer()
+            findNavController().navigate(R.id.action_discussionFragment_to_local)
+        }
+    }
+
+    private fun voting(v:View){
+        val voteWorker = VoteWorker()
+        val uid = FirebaseAuth.getInstance().currentUser!!.uid
+        val upvoteIV = v.findViewById<ImageView>(R.id.disc_upvote_iv)
+        val downvoteIV = v.findViewById<ImageView>(R.id.disc_downvote_iv)
+        val postKarma = v.findViewById<TextView>(R.id.post_karma_tv)
+        //including postDuration here because it uses the voteWorker util function getAgeString()
+        val postDuration = v.findViewById<TextView>(R.id.post_duration_tv)
+
+
+        var voteCount = voteWorker.getVoteCount(currentPost.votes_map!!)
+        postKarma.text = voteCount.toString()
+        var prevVote = voteWorker.getPrevVote(uid, currentPost.votes_map!!)
+        voteWorker.voteVisual(upvoteIV, downvoteIV, prevVote)
+        postDuration.text = voteWorker.getAgeString(currentPost.post_date_long)
+
+
+        upvoteIV.setOnClickListener {
+            usersVote = voteWorker.vote(usersVote, true, upvoteIV, downvoteIV)
+            val voteCountString = voteWorker.updateVoteCountString(usersVote, prevVote, voteCount.toString())
+            postKarma.text = voteCountString
+            prevVote = usersVote
+            voteCount = voteCountString.toInt()
+            currentPost.votes_map = voteWorker.updateVoteMap(usersVote,uid, currentPost.votes_map!!)
+            changedPosts.add(currentPost)
+        }
+        downvoteIV.setOnClickListener {
+            usersVote = voteWorker.vote(usersVote, false,upvoteIV,downvoteIV)
+            val voteCountString = voteWorker.updateVoteCountString(usersVote,prevVote,voteCount.toString())
+            postKarma.text = voteCountString
+            prevVote = usersVote
+            voteCount = voteCountString.toInt()
+            currentPost.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentPost.votes_map!!)
+            changedPosts.add(currentPost)
+        }
+
+    }
+
+    private fun commenting(v:View){
+        val commentConfirmIV = v.findViewById<LinearLayout>(R.id.comment_confirm_iv)
+        val currentCommentET = v.findViewById<EditText>(R.id.current_comment_et)
+        commentConfirmIV.setOnClickListener {
+            val commentText = currentCommentET.text.toString()
+            val postRef =FirebaseFirestore.getInstance().collection("posts").document(currentPost.post_id)
+            if(commentText.isEmpty()){
+                Toast.makeText(context, "Comments can't be empty!", Toast.LENGTH_SHORT).show()
+            }else{
+                // build comment and send text to server and refresh the layout after
+                val commentMap = getCommentMap(commentText)
+                postRef.collection("comments").add(commentMap).addOnCompleteListener { commentTask ->
+                    if(commentTask.isSuccessful){
+                        postRef.collection("comments").document(commentTask.result!!.id).update("comment_id", commentTask.result!!.id).addOnCompleteListener {
+                            if(it.isSuccessful){
+                                Log.d(TAG, "comment_id updated")
+                                Toast.makeText(context, "Comments Sent!", Toast.LENGTH_SHORT).show()
+                                currentCommentET.setText("")
+                                hideKeyboard()
+                                //todo refresh list
+                            }else{
+                                Log.e(TAG, it.exception.toString())
+                            }
+                        }
+                    }else{
+                        Log.e(TAG, commentTask.exception.toString())
+                    }
+                }
+
+            }
+        }
+    }
+
+    private fun recyclerHandeling(){
+        getCommentsFromServer(currentPost){commentsList->
+            //recycler handeling
+            comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
+        }
+        comments_recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        comments_refreshLayout.setOnRefreshListener {
+            Log.e(TAG, "REFRESH-COMMENTS")
+            getCommentsFromServer(currentPost){commentsList->
+                //recycler handeling
+                comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
+                comments_refreshLayout.isRefreshing = false
+
+            }
         }
     }
 

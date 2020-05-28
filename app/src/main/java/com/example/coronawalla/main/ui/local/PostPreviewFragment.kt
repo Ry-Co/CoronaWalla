@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Switch
 import android.widget.TextView
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 
@@ -22,15 +23,9 @@ import org.imperiumlabs.geofirestore.GeoFirestore
 
 class PostPreviewFragment : Fragment() {
     private val TAG: String? = PostPreviewFragment::class.simpleName
-
     private val viewModel by lazy{
         activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
-    private val postViewModel by lazy{
-        activity?.let { ViewModelProviders.of(it).get(PostViewModel::class.java) }
-    }
-    private val mAuth = FirebaseAuth.getInstance()
-    private val db = FirebaseFirestore.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,13 +39,16 @@ class PostPreviewFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val postText = arguments?.get("postText") as String
+        val db = FirebaseFirestore.getInstance()
+
         val postTextView = view.findViewById<TextView>(R.id.postTV)
         val multiplierTV = view.findViewById<TextView>(R.id.multiplierTV)
         val postAsText = view.findViewById<TextView>(R.id.postAsTV)
         val postAsSwitch = view.findViewById<Switch>(R.id.postAsSwitch)
         val postButton = view.findViewById<Button>(R.id.postButton)
         val currentGeoPoint = GeoPoint(viewModel!!.currentLocation.value!!.latitude, viewModel!!.currentLocation.value!!.longitude)
-        postTextView.text = postViewModel?.postText?.value.toString()
+        postTextView.text = postText
 
         postAsSwitch.setOnClickListener {
             if(postAsSwitch.isChecked){
@@ -63,7 +61,7 @@ class PostPreviewFragment : Fragment() {
         }
 
         postButton.setOnClickListener {
-            val post = getPostMap()
+            val post = getPostMap(postText)
             db.collection("posts").add(post).addOnCompleteListener{ postTask ->
                 if (postTask.isSuccessful){
                     Log.d(TAG, "Post Sent!")
@@ -84,14 +82,15 @@ class PostPreviewFragment : Fragment() {
         }
     }
 
-    private fun getPostMap(): PostClass{
+    private fun getPostMap(postText:String): PostClass{
+        val mAuth = FirebaseAuth.getInstance()
         val currentGeoPoint = GeoPoint(viewModel!!.currentLocation.value!!.latitude, viewModel!!.currentLocation.value!!.longitude)
         val postTime = System.currentTimeMillis()
         val mVotes = mutableMapOf<String, Boolean?>()
         mVotes[mAuth.currentUser!!.uid] = true
         return PostClass(
             post_id = "",
-            post_text = postViewModel?.postText?.value.toString(),
+            post_text = postText,
             poster_id = mAuth.currentUser!!.uid,
             active = true,
             post_geo_point = currentGeoPoint,

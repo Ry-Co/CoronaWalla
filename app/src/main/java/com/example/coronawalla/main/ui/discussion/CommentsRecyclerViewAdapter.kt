@@ -24,15 +24,33 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
     override fun onBindViewHolder(holder: CommentsRecyclerViewHolder, position: Int) {
         val currentItem = commentList[position]
         val uid = currentItem.commenter_id
-        val voteWorker = VoteWorker()
-        var prevVote = voteWorker.getPrevVote(uid, currentItem.votes_map!!)
-        var voteCount = voteWorker.getVoteCount(currentItem.votes_map!!)
-
+        voting(holder, uid, currentItem)
+        holder.commentTextTV.text = currentItem.comment_text
         FirebaseFirestore.getInstance().collection("users").document(currentItem.commenter_id).get().addOnSuccessListener {
             holder.commentersHandleTV.text = "@"+it.get("handle")
             currentItem.commenter_handle = it.get("handle").toString()
         }
-        holder.commentTextTV.text = currentItem.comment_text
+    }
+
+    override fun getItemCount() = commentList.size
+
+    class CommentsRecyclerViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
+        val commentTextTV: TextView = itemView.comment_text_tv
+        val commentersHandleTV : TextView = itemView.commenters_handle_tv
+        val voteCountTV: TextView = itemView.comment_karma_tv
+        val upvoteIV:ImageView = itemView.comment_upvote_iv
+        val downvoteIV : ImageView = itemView.comment_downvote_iv
+    }
+
+    fun getChangedList(): ArrayList<CommentClass>{
+        return changedComments
+    }
+
+    private fun voting(holder:CommentsRecyclerViewHolder, uid:String, currentItem:CommentClass){
+        val voteWorker = VoteWorker()
+        var prevVote = voteWorker.getPrevVote(uid, currentItem.votes_map!!)
+        var voteCount = voteWorker.getVoteCount(currentItem.votes_map!!)
+
         voteWorker.voteVisual(holder.upvoteIV, holder.downvoteIV, prevVote)
         holder.voteCountTV.text = voteCount.toString()
 
@@ -54,19 +72,5 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
             currentItem.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentItem.votes_map!!)
             changedComments.add(currentItem)
         }
-    }
-
-    override fun getItemCount() = commentList.size
-
-    class CommentsRecyclerViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
-        val commentTextTV: TextView = itemView.comment_text_tv
-        val commentersHandleTV : TextView = itemView.commenters_handle_tv
-        val voteCountTV: TextView = itemView.comment_karma_tv
-        val upvoteIV:ImageView = itemView.comment_upvote_iv
-        val downvoteIV : ImageView = itemView.comment_downvote_iv
-    }
-
-    fun getChangedList(): ArrayList<CommentClass>{
-        return changedComments
     }
 }

@@ -5,8 +5,6 @@ import com.example.coronawalla.R
 import kotlin.math.round
 
 class VoteWorker() {
-
-
     fun updateVoteMap(
         usersVote: Boolean?,
         uid: String,

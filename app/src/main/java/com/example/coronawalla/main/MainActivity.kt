@@ -39,7 +39,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var locationCallback: LocationCallback
     private lateinit var viewModel:MainActivityViewModel
 
-
     private val permOptions = QuickPermissionsOptions(
         handleRationale = true,
         rationaleMessage = "Location permissions are required for core functionality!",
@@ -69,9 +68,10 @@ class MainActivity : AppCompatActivity() {
         flp = LocationServices.getFusedLocationProviderClient(this)
 
         getLocationUpdates()
-        if(!FirebaseAuth.getInstance().currentUser!!.isAnonymous){getCurrentUser()}
-
-
+        if(!FirebaseAuth.getInstance().currentUser!!.isAnonymous){
+            val uid = FirebaseAuth.getInstance().currentUser!!.uid
+            updateVMUserValues(uid)
+        }
 
         viewModel.currentLocation.observe(this, Observer{ loc ->
             Log.e(TAG,"location updated")
@@ -84,33 +84,39 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun getCurrentUser(){
-        val uid = FirebaseAuth.getInstance().currentUser!!.uid
-        FirebaseFirestore.getInstance().collection("users").document(uid).get().addOnCompleteListener{
-            if(it.isSuccessful){
-                viewModel.currentUser.value =  it.result!!.toObject(UserClass::class.java)
-                //we could probably bundle the below into a method
-                if(FirebaseAuth.getInstance().currentUser!!.isAnonymous){
 
-                }else{
-                    if(viewModel.currentUser.value!!.profile_image_url != null){
-                        //build the bitmap and push it to the viewmodel
-                        //val uid = viewModel.currentUser.value!!.user_id
-                        val profRef = FirebaseStorage.getInstance().reference.child("images/$uid")
-                        val ONE_MEGABYTE: Long = 1024 * 1024
-                        profRef.getBytes(ONE_MEGABYTE).addOnCompleteListener{
-                            if( it.isSuccessful){
-                                val bmp = BitmapFactory.decodeByteArray(it.result, 0, it.result!!.size)
-                                viewModel.currentProfileBitmap.value = bmp
-                            }else{
-                                Log.e(TAG, it.exception.toString())
-                            }
-                        }
-                    }
+    fun updateVMUserValues(uid:String){
+        getUserClassFromUID(uid){user->
+            viewModel.currentUser.value = user
+            if(user.profile_image_url != null){
+                getBitmapFromUID(uid){bmp ->
+                    viewModel.currentProfileBitmap.value = bmp
                 }
+            }
+        }
+    }
 
-            }else{
-                Log.d(TAG, "Error:: "+it.exception)
+    private fun getUserClassFromUID(uid:String, callback:(UserClass)->Unit){
+        FirebaseFirestore.getInstance().collection("users").document(uid).get().addOnCompleteListener {
+            if (it.isSuccessful) {
+                val uidUserClass = it.result!!.toObject(UserClass::class.java)
+                callback.invoke(uidUserClass!!)
+            } else {
+                Log.d(TAG, "Error:: " + it.exception)
+            }
+        }
+
+    }
+
+    private fun getBitmapFromUID(uid:String, callback:(Bitmap)->Unit){
+        val profRef = FirebaseStorage.getInstance().reference.child("images/$uid")
+        val ONE_MEGABYTE: Long = 1024 * 1024
+        profRef.getBytes(ONE_MEGABYTE).addOnCompleteListener {
+            if (it.isSuccessful) {
+                val bmp = BitmapFactory.decodeByteArray(it.result, 0, it.result!!.size)
+                callback.invoke(bmp)
+            } else {
+                Log.e(TAG, it.exception.toString())
             }
         }
     }
@@ -136,7 +142,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
     private fun startLocationUpdates() {
-
         flp.requestLocationUpdates(
             locReq,
             locationCallback,
@@ -147,7 +152,7 @@ class MainActivity : AppCompatActivity() {
         flp.removeLocationUpdates(locationCallback)
     }
 
-    fun updateLocalPostList(loc:Location){
+    private fun updateLocalPostList(loc:Location){
         getLocalDocs(loc){docs ->
             val posts = buildPostList(docs)
             //sorting posts by upvotes/hour
@@ -266,6 +271,37 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
+    fun getPostsFromServer(callback: (MutableList<PostClass>) -> Unit){
+        val postList = mutableListOf<PostClass>()
+        getLocalDocs(viewModel.currentLocation.value!!){ docs ->
+            val posts = buildPostList(docs)
+            //sorting posts by upvotes/hour
+            val myCustomComparator =  Comparator<PostClass> { a, b ->
+                val vw = VoteWorker()
+                val tic = System.currentTimeMillis()
+                val aAgeHours  = (tic - a.post_date_long) / 3600000.0
+                val aRate = vw.getVoteCount(a.votes_map!!)/aAgeHours
+                val bAgeHours  = (tic - b.post_date_long) / 3600000.0
+                val bRate = vw.getVoteCount(b.votes_map!!)/bAgeHours
+                //Log.e(TAG, "a ="+a.post_id+" b ="+b.post_id+" aRate= $aRate  bRate= $bRate")
+                when {
+                    aRate == bRate -> {
+                        //Log.e(TAG, "EQUAL")
+                        0
+                    }
+                    aRate < bRate -> {
+                        //Log.e(TAG, "a < b")
+                        1
+                    }
+                    else -> {
+                        //Log.e(TAG, "a > b")
+                        -1
+                    }
+                }
+            }
+            val postsSorted = posts.sortedWith(myCustomComparator)
+            callback.invoke(postsSorted.toMutableList())
+        }
+    }
 
 }

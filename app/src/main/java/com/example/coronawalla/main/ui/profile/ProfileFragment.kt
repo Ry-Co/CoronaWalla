@@ -1,7 +1,6 @@
 package com.example.coronawalla.main.ui.profile
 
 import android.content.Intent
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -25,14 +24,10 @@ class ProfileFragment : Fragment() {
     private val viewModel by lazy{
         activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
-    lateinit var currentUser:UserClass
 
     override fun onResume() {
         super.onResume()
         viewModel?.toolbarMode?.value = -1
-        if(viewModel?.currentUser?.value != null){
-            currentUser = viewModel!!.currentUser.value!!
-        }
 
         val profImg:ImageView = requireView().findViewById(R.id.profile_iv)
         if(viewModel!!.currentProfileBitmap.value!=null){
@@ -47,27 +42,19 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        navigation()
+
+        val uid = FirebaseAuth.getInstance().currentUser!!.uid
         val act = activity as MainActivity
-        act.getCurrentUser()
-        //navigation
-        val backToLocalImage = requireActivity().findViewById<ImageView>(R.id.right_button_iv)
-        val toEditProfile = requireActivity().findViewById<ImageView>(R.id.left_button_iv)
-        backToLocalImage.setOnClickListener { findNavController().navigate(R.id.action_profile_to_local) }
-        toEditProfile.setOnClickListener { findNavController().navigate(R.id.action_profile_to_profileEditFragment) }
+        act.updateVMUserValues(uid)
+
         //get the users values
         //plug them into the profile
         viewModel!!.currentUser.observe(viewLifecycleOwner, Observer{
             updateProfileView(view, it)
         })
 
-        val profpic = requireActivity().findViewById<ImageView>(R.id.profile_iv)
-        profpic.setOnClickListener {
-            FirebaseAuth.getInstance().signOut()
-            val intent = Intent(context, LauncherActivity::class.java)
-            startActivity(intent)
-        }
-
-
+        util_sign_out_prof_Img()
     }
 
     private fun updateProfileView(view:View, currentUser:UserClass){
@@ -87,6 +74,22 @@ class ProfileFragment : Fragment() {
         karma.text = currentUser.karma.toString()
         followers.text=currentUser.followers.size.toString()
         following.text = currentUser.following.size.toString()
+    }
+
+    private fun navigation(){
+        val backToLocalImage = requireActivity().findViewById<ImageView>(R.id.right_button_iv)
+        val toEditProfile = requireActivity().findViewById<ImageView>(R.id.left_button_iv)
+        backToLocalImage.setOnClickListener { findNavController().navigate(R.id.action_profile_to_local) }
+        toEditProfile.setOnClickListener { findNavController().navigate(R.id.action_profile_to_profileEditFragment) }
+    }
+
+    private fun util_sign_out_prof_Img(){
+        val profpic = requireActivity().findViewById<ImageView>(R.id.profile_iv)
+        profpic.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+            val intent = Intent(context, LauncherActivity::class.java)
+            startActivity(intent)
+        }
     }
 
 
