@@ -150,7 +150,32 @@ class MainActivity : AppCompatActivity() {
     fun updateLocalPostList(loc:Location){
         getLocalDocs(loc){docs ->
             val posts = buildPostList(docs)
-            viewModel.localPostList.value = posts
+            //sorting posts by upvotes/hour
+            val myCustomComparator =  Comparator<PostClass> { a, b ->
+                val vw = VoteWorker()
+                val tic = System.currentTimeMillis()
+                val aAgeHours  = (tic - a.post_date_long) / 3600000.0
+                val aRate = vw.getVoteCount(a.votes_map!!)/aAgeHours
+                val bAgeHours  = (tic - b.post_date_long) / 3600000.0
+                val bRate = vw.getVoteCount(b.votes_map!!)/bAgeHours
+                //Log.e(TAG, "a ="+a.post_id+" b ="+b.post_id+" aRate= $aRate  bRate= $bRate")
+                when {
+                    aRate == bRate -> {
+                        //Log.e(TAG, "EQUAL")
+                        0
+                    }
+                    aRate < bRate -> {
+                        //Log.e(TAG, "a < b")
+                        1
+                    }
+                    else -> {
+                        //Log.e(TAG, "a > b")
+                        -1
+                    }
+                }
+            }
+            val postsSorted = posts.sortedWith(myCustomComparator)
+            viewModel.localPostList.value = ArrayList(postsSorted)
         }
     }
 

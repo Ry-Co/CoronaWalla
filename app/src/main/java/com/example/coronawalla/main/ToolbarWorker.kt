@@ -104,21 +104,6 @@ class ToolbarWorker constructor(activity: Activity){
         toolbarCancelTv.visibility = View.INVISIBLE
     }
 
-    //todo maybe remove
-    fun buttonEffect(button: View) {
-        button.setOnTouchListener { v, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    v.background.setColorFilter(-0x1f0b8adf, PorterDuff.Mode.SRC_ATOP)
-                    v.invalidate()
-                }
-                MotionEvent.ACTION_UP -> {
-                    v.background.clearColorFilter()
-                    v.invalidate()
-                }
-            }
-            false
-        }
-    }
+   
 
 }

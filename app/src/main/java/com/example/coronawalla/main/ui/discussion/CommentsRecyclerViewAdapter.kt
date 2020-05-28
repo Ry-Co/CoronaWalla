@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coronawalla.R
 import com.example.coronawalla.main.VoteWorker
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.comment.view.*
 
 class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) : RecyclerView.Adapter<CommentsRecyclerViewAdapter.CommentsRecyclerViewHolder>() {
@@ -27,9 +28,12 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
         var prevVote = voteWorker.getPrevVote(uid, currentItem.votes_map!!)
         var voteCount = voteWorker.getVoteCount(currentItem.votes_map!!)
 
-        holder.commentersHandleTV.text = "@"+currentItem.commenter_handle
+        FirebaseFirestore.getInstance().collection("users").document(currentItem.commenter_id).get().addOnSuccessListener {
+            holder.commentersHandleTV.text = "@"+it.get("handle")
+            currentItem.commenter_handle = it.get("handle").toString()
+        }
         holder.commentTextTV.text = currentItem.comment_text
-        voteWorker.voteVisual(holder.upvoteIV, holder.downvoteIV, usersVote)
+        voteWorker.voteVisual(holder.upvoteIV, holder.downvoteIV, prevVote)
         holder.voteCountTV.text = voteCount.toString()
 
         holder.upvoteIV.setOnClickListener {

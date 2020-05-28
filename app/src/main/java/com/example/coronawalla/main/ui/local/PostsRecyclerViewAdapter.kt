@@ -31,14 +31,14 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
     override fun onBindViewHolder(holder: PostsRecyclerViewHolder, position: Int) {
         val currentItem = postList[position]
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
-        val ageHours = (System.currentTimeMillis() - currentItem.post_date_long) / 3600000 // milliseconds per hour
+        //val ageHours = (System.currentTimeMillis() - currentItem.post_date_long) / 3600000 // milliseconds per hour
         val voteWorker = VoteWorker()
         var prevVote = voteWorker.getPrevVote(uid, currentItem.votes_map!!)
         var voteCount = voteWorker.getVoteCount(currentItem.votes_map!!)
 
 
         holder.postTextTV.text = currentItem.post_text
-        holder.postAgeTV.text = ageHours.toString() + "h"
+        holder.postAgeTV.text = voteWorker.getAgeString(currentItem.post_date_long)
         holder.voteCountTV.text = voteCount.toString()
 
         voteWorker.voteVisual(holder.upvoteIV, holder.downvoteIV, prevVote)

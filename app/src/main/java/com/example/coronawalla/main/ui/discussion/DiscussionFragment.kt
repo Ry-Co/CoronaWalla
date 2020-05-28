@@ -32,10 +32,10 @@ class DiscussionFragment : Fragment() {
         activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
     }
     private lateinit var currentPost: PostClass
+    private val changedPosts = ArrayList<PostClass>()
     private lateinit var ph: String
     private var usersVote:Boolean? = null
     private val TAG: String? = DiscussionFragment::class.simpleName
-
 
     override fun onResume() {
         super.onResume()
@@ -47,6 +47,7 @@ class DiscussionFragment : Fragment() {
         if(comments_recyclerView.adapter != null){
             updateCommentsServer()
         }
+        updatePostServer()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -63,17 +64,14 @@ class DiscussionFragment : Fragment() {
             comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
         }
         comments_recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        //todo add observer for comment changes?
         comments_refreshLayout.setOnRefreshListener {
             Log.e(TAG, "REFRESH-COMMENTS")
-//            updatePostsServer()
-//            val mA:MainActivity = activity as MainActivity
-//            mA.updateLocalPostList(viewModel!!.currentLocation.value!!)
-//            viewModel!!.localPostList.observe(viewLifecycleOwner, Observer{
-//                posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
-//            })
-            comments_refreshLayout.isRefreshing = false
+            getCommentsFromServer(currentPost){commentsList->
+                //recycler handeling
+                comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
+                comments_refreshLayout.isRefreshing = false
 
+            }
         }
         setViewValues(view)
     }
@@ -86,42 +84,42 @@ class DiscussionFragment : Fragment() {
         val postKarma = v.findViewById<TextView>(R.id.post_karma_tv)
         val postDuration = v.findViewById<TextView>(R.id.post_duration_tv)
         val posterHandle = v.findViewById<TextView>(R.id.disc_posters_handle_tv)
-        //val replyTV = v.findViewById<TextView>(R.id.reply_tv)
         val shareTV = v.findViewById<TextView>(R.id.share_tv)
         val upvoteIV = v.findViewById<ImageView>(R.id.disc_upvote_iv)
         val downvoteIV = v.findViewById<ImageView>(R.id.disc_downvote_iv)
         val backButton = requireActivity().findViewById<ImageView>(R.id.left_button_iv)
         //set vote status
-        //var prevVote = getPrevVoteAndSetLocalConditions(currentPost,uid)
         val voteWorker = VoteWorker()
+        var voteCount = voteWorker.getVoteCount(currentPost.votes_map!!)
+        postKarma.text = voteCount.toString()
         var prevVote = voteWorker.getPrevVote(uid, currentPost.votes_map!!)
-        //voteVisual(v, usersVote)
         voteWorker.voteVisual(upvoteIV, downvoteIV, prevVote)
-        upvoteIV.setOnClickListener {
 
+        upvoteIV.setOnClickListener {
+            usersVote = voteWorker.vote(usersVote, true, upvoteIV, downvoteIV)
+            val voteCountString = voteWorker.updateVoteCountString(usersVote, prevVote, voteCount.toString())
+            postKarma.text = voteCountString
+            prevVote = usersVote
+            voteCount = voteCountString.toInt()
+            currentPost.votes_map = voteWorker.updateVoteMap(usersVote,uid, currentPost.votes_map!!)
+            changedPosts.add(currentPost)
         }
 
         downvoteIV.setOnClickListener {
-
+            usersVote = voteWorker.vote(usersVote, false,upvoteIV,downvoteIV)
+            val voteCountString = voteWorker.updateVoteCountString(usersVote,prevVote,voteCount.toString())
+            postKarma.text = voteCountString
+            prevVote = usersVote
+            voteCount = voteCountString.toInt()
+            currentPost.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentPost.votes_map!!)
+            changedPosts.add(currentPost)
         }
 
         //set post values
         posterHandle.text = ph
-        var voteCount = 0
-        if(currentPost.votes_map!!.isEmpty()){
-            //do nothing
-        }else{
-            var counter = 0
-            for(item in currentPost.votes_map!!){
-                if(item.value == true){
-                    counter += 1
-                }
-            }
-            voteCount = counter
-        }
-        postKarma.text = voteCount.toString()
-        val ageHours = (System.currentTimeMillis() - currentPost.post_date_long) / 3600000 // milliseconds per hour
-        postDuration.text = ageHours.toString()+"h"
+
+        //val ageHours = (System.currentTimeMillis() - currentPost.post_date_long) / 3600000 // milliseconds per hour
+        postDuration.text = voteWorker.getAgeString(currentPost.post_date_long)
         postText.text = currentPost.post_text
 
 
@@ -218,6 +216,13 @@ class DiscussionFragment : Fragment() {
         )
     }
 
+    private fun updatePostServer(){
+        val db = FirebaseFirestore.getInstance()
+        if(changedPosts.size > 0){
+            val post = changedPosts[0]
+            db.collection("posts").document(post.post_id).update("votes_map", post.votes_map)
+        }
+    }
 
     // function triplet copy/paste for hiding keyboard functionality
     fun Fragment.hideKeyboard() {

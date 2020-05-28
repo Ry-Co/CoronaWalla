@@ -6,7 +6,7 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 data class CommentClass(
     val comment_id: String = "",
-    val commenter_handle: String = "",
+    var commenter_handle: String = "",
     val commenter_id: String = "",
     val comment_text: String = "",
     var votes_map: MutableMap<String, Boolean?>? = null

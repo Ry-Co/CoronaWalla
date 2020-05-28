@@ -60,7 +60,6 @@ class LocalFragment : Fragment() {
             if(anon){
                 showSignInDialog()
             }else{
-                tb.buttonEffect(postImageButton)
                 findNavController().navigate(R.id.action_local_to_postFragment)
             }
         }
@@ -68,7 +67,6 @@ class LocalFragment : Fragment() {
             if(anon){
                 showSignInDialog()
             }else{
-                tb.buttonEffect(profileImageButton)
                 findNavController().navigate(R.id.action_local_to_profile)
             }
         }
@@ -119,7 +117,6 @@ class LocalFragment : Fragment() {
             }
         }
     }
-
 
     private fun showSignInDialog(){
         AlertDialog.Builder(activity)
