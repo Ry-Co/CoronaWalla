@@ -18,16 +18,16 @@
             android:id="@+id/upvote_IV"
             android:layout_width="45dp"
             android:layout_height="45dp"
-            app:layout_constraintBottom_toTopOf="@+id/voteCounter_TV"
-            app:layout_constraintEnd_toEndOf="@+id/voteCounter_TV"
+            app:layout_constraintBottom_toTopOf="@+id/post_karma_tv"
+            app:layout_constraintEnd_toEndOf="@+id/post_karma_tv"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="@+id/voteCounter_TV"
+            app:layout_constraintStart_toStartOf="@+id/post_karma_tv"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.5"
             tools:srcCompat="@tools:sample/avatars" />
 
         <TextView
-            android:id="@+id/voteCounter_TV"
+            android:id="@+id/post_karma_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="20dp"
@@ -43,10 +43,10 @@
             android:layout_width="45dp"
             android:layout_height="45dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="@+id/voteCounter_TV"
+            app:layout_constraintEnd_toEndOf="@+id/post_karma_tv"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="@+id/voteCounter_TV"
-            app:layout_constraintTop_toBottomOf="@+id/voteCounter_TV"
+            app:layout_constraintStart_toStartOf="@+id/post_karma_tv"
+            app:layout_constraintTop_toBottomOf="@+id/post_karma_tv"
             app:layout_constraintVertical_bias="0.5"
             tools:srcCompat="@tools:sample/avatars" />
         <!--
@@ -91,7 +91,7 @@
             android:text="Share"
             android:textStyle="italic"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/voteCounter_TV"
+            app:layout_constraintEnd_toStartOf="@+id/post_karma_tv"
             app:layout_constraintHorizontal_bias=".9"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/postText_TV"
@@ -116,7 +116,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:barrierDirection="left"
-            app:constraint_referenced_ids="upvote_IV,downvote_IV,voteCounter_TV"
+            app:constraint_referenced_ids="upvote_IV,downvote_IV,post_karma_tv"
             tools:layout_editor_absoluteX="403dp" />
 
         <androidx.constraintlayout.widget.Barrier

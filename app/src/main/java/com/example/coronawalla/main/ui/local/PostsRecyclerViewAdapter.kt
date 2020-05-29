@@ -48,7 +48,7 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
 
     class PostsRecyclerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val postTextTV: TextView = itemView.postText_TV
-        val voteCountTV: TextView = itemView.voteCounter_TV
+        val postKarma: TextView = itemView.post_karma_tv
         val postAgeTV: TextView = itemView.duration_TV
         val upvoteIV: ImageView = itemView.upvote_IV
         val downvoteIV: ImageView = itemView.downvote_IV
@@ -59,35 +59,35 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
         return changedPosts
     }
 
-    private fun voting(holder:PostsRecyclerViewHolder, uid:String, currentItem:PostClass){
+    private fun voting(holder:PostsRecyclerViewHolder, uid:String, currentPost:PostClass){
         val voteWorker = VoteWorker()
-        var prevVote = voteWorker.getPrevVote(uid, currentItem.votes_map!!)
-        var voteCount = voteWorker.getVoteCount(currentItem.votes_map!!)
+        var prevVote = voteWorker.getPrevVote(uid, currentPost.votes_map!!)
+        var voteCount = voteWorker.getVoteCount(currentPost.votes_map!!)
 
 
-        holder.postAgeTV.text = voteWorker.getAgeString(currentItem.post_date_long)
-        holder.voteCountTV.text = voteCount.toString()
+        holder.postAgeTV.text = voteWorker.getAgeString(currentPost.post_date_long)
+        holder.postKarma.text = voteCount.toString()
 
         voteWorker.voteVisual(holder.upvoteIV, holder.downvoteIV, prevVote)
-        holder.voteCountTV.text = voteCount.toString()
+        holder.postKarma.text = voteCount.toString()
 
         holder.upvoteIV.setOnClickListener {
             usersVote = voteWorker.vote(usersVote, true, holder.upvoteIV, holder.downvoteIV)
-            val voteCountString = voteWorker.updateVoteCountString(usersVote, prevVote, voteCount.toString())
-            holder.voteCountTV.text = voteCountString
-            prevVote = usersVote
+            currentPost.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentPost.votes_map!!)
+            val voteCountString = voteWorker.getVoteCount(currentPost.votes_map!!).toString()
+            holder.postKarma.text = voteCountString
             voteCount = voteCountString.toInt()
-            currentItem.votes_map = voteWorker.updateVoteMap(usersVote,uid, currentItem.votes_map!!)
-            changedPosts.add(currentItem)
+            prevVote = usersVote
+            changedPosts.add(currentPost)
         }
         holder.downvoteIV.setOnClickListener {
             usersVote = voteWorker.vote(usersVote, false,holder.upvoteIV, holder.downvoteIV)
-            val voteCountString = voteWorker.updateVoteCountString(usersVote,prevVote,voteCount.toString())
-            holder.voteCountTV.text = voteCountString
-            prevVote = usersVote
+            currentPost.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentPost.votes_map!!)
+            val voteCountString = voteWorker.getVoteCount(currentPost.votes_map!!).toString()
+            holder.postKarma.text = voteCountString
             voteCount = voteCountString.toInt()
-            currentItem.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentItem.votes_map!!)
-            changedPosts.add(currentItem)
+            prevVote = usersVote
+            changedPosts.add(currentPost)
         }
     }
 
@@ -107,6 +107,5 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
         val postReference = FirebaseFirestore.getInstance().collection("posts").document(postList[position].post_id)
         val bundle = bundleOf("post" to postList[position], "posterHandle" to posterHandle)
         navController.navigate(R.id.action_local_to_discussionFragment, bundle)
-
     }
 }

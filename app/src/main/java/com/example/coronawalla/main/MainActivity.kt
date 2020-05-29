@@ -74,8 +74,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewModel.currentLocation.observe(this, Observer{ loc ->
-            Log.e(TAG,"location updated")
-            updateLocalPostList(loc)
+            getPostsFromServer {posts ->
+                viewModel.localPostList.value = posts as ArrayList<PostClass>
+            }
         })
 
         viewModel.toolbarMode.observe(this, Observer {
@@ -83,7 +84,6 @@ class MainActivity : AppCompatActivity() {
         })
 
     }
-
 
     fun updateVMUserValues(uid:String){
         getUserClassFromUID(uid){user->
@@ -133,10 +133,13 @@ class MainActivity : AppCompatActivity() {
                 locationResult ?: return
                 if (locationResult.locations.isNotEmpty()) {
                     // get latest location
+
                     val location = locationResult.lastLocation
                     // use your location object
                     // get latitude , longitude and other info from this
                     viewModel.currentLocation.value = location
+                    Log.e(TAG,"location updated")
+
                 }
             }
         }
@@ -150,38 +153,6 @@ class MainActivity : AppCompatActivity() {
     }
     private fun stopLocationUpdates() {
         flp.removeLocationUpdates(locationCallback)
-    }
-
-    private fun updateLocalPostList(loc:Location){
-        getLocalDocs(loc){docs ->
-            val posts = buildPostList(docs)
-            //sorting posts by upvotes/hour
-            val myCustomComparator =  Comparator<PostClass> { a, b ->
-                val vw = VoteWorker()
-                val tic = System.currentTimeMillis()
-                val aAgeHours  = (tic - a.post_date_long) / 3600000.0
-                val aRate = vw.getVoteCount(a.votes_map!!)/aAgeHours
-                val bAgeHours  = (tic - b.post_date_long) / 3600000.0
-                val bRate = vw.getVoteCount(b.votes_map!!)/bAgeHours
-                //Log.e(TAG, "a ="+a.post_id+" b ="+b.post_id+" aRate= $aRate  bRate= $bRate")
-                when {
-                    aRate == bRate -> {
-                        //Log.e(TAG, "EQUAL")
-                        0
-                    }
-                    aRate < bRate -> {
-                        //Log.e(TAG, "a < b")
-                        1
-                    }
-                    else -> {
-                        //Log.e(TAG, "a > b")
-                        -1
-                    }
-                }
-            }
-            val postsSorted = posts.sortedWith(myCustomComparator)
-            viewModel.localPostList.value = ArrayList(postsSorted)
-        }
     }
 
     private fun getLocalDocs(loc:Location, callback: (List<DocumentSnapshot>) -> Unit){
@@ -272,36 +243,71 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun getPostsFromServer(callback: (MutableList<PostClass>) -> Unit){
-        val postList = mutableListOf<PostClass>()
-        getLocalDocs(viewModel.currentLocation.value!!){ docs ->
-            val posts = buildPostList(docs)
-            //sorting posts by upvotes/hour
-            val myCustomComparator =  Comparator<PostClass> { a, b ->
-                val vw = VoteWorker()
-                val tic = System.currentTimeMillis()
-                val aAgeHours  = (tic - a.post_date_long) / 3600000.0
-                val aRate = vw.getVoteCount(a.votes_map!!)/aAgeHours
-                val bAgeHours  = (tic - b.post_date_long) / 3600000.0
-                val bRate = vw.getVoteCount(b.votes_map!!)/bAgeHours
-                //Log.e(TAG, "a ="+a.post_id+" b ="+b.post_id+" aRate= $aRate  bRate= $bRate")
-                when {
-                    aRate == bRate -> {
-                        //Log.e(TAG, "EQUAL")
-                        0
-                    }
-                    aRate < bRate -> {
-                        //Log.e(TAG, "a < b")
-                        1
-                    }
-                    else -> {
-                        //Log.e(TAG, "a > b")
-                        -1
+        Log.e(TAG, "contacting server for post List")
+        if(viewModel.currentLocation.value != null){
+            getLocalDocs(viewModel.currentLocation.value!!){ docs ->
+                val posts = buildPostList(docs)
+                //sorting posts by upvotes/hour
+                val myCustomComparator =  Comparator<PostClass> { a, b ->
+                    val vw = VoteWorker()
+                    val tic = System.currentTimeMillis()
+                    val aAgeHours  = (tic - a.post_date_long) / 3600000.0
+                    val aRate = vw.getVoteCount(a.votes_map!!)/aAgeHours
+                    val bAgeHours  = (tic - b.post_date_long) / 3600000.0
+                    val bRate = vw.getVoteCount(b.votes_map!!)/bAgeHours
+                    //Log.e(TAG, "a ="+a.post_id+" b ="+b.post_id+" aRate= $aRate  bRate= $bRate")
+                    when {
+                        aRate == bRate -> {
+                            //Log.e(TAG, "EQUAL")
+                            0
+                        }
+                        aRate < bRate -> {
+                            //Log.e(TAG, "a < b")
+                            1
+                        }
+                        else -> {
+                            //Log.e(TAG, "a > b")
+                            -1
+                        }
                     }
                 }
+                val postsSorted = posts.sortedWith(myCustomComparator)
+                callback.invoke(postsSorted.toMutableList())
             }
-            val postsSorted = posts.sortedWith(myCustomComparator)
-            callback.invoke(postsSorted.toMutableList())
+        }else{
+            getLocationUpdates()
+            viewModel.currentLocation.observe(this, Observer {
+                getLocalDocs(viewModel.currentLocation.value!!){ docs ->
+                    val posts = buildPostList(docs)
+                    //sorting posts by upvotes/hour
+                    val myCustomComparator =  Comparator<PostClass> { a, b ->
+                        val vw = VoteWorker()
+                        val tic = System.currentTimeMillis()
+                        val aAgeHours  = (tic - a.post_date_long) / 3600000.0
+                        val aRate = vw.getVoteCount(a.votes_map!!)/aAgeHours
+                        val bAgeHours  = (tic - b.post_date_long) / 3600000.0
+                        val bRate = vw.getVoteCount(b.votes_map!!)/bAgeHours
+                        //Log.e(TAG, "a ="+a.post_id+" b ="+b.post_id+" aRate= $aRate  bRate= $bRate")
+                        when {
+                            aRate == bRate -> {
+                                //Log.e(TAG, "EQUAL")
+                                0
+                            }
+                            aRate < bRate -> {
+                                //Log.e(TAG, "a < b")
+                                1
+                            }
+                            else -> {
+                                //Log.e(TAG, "a > b")
+                                -1
+                            }
+                        }
+                    }
+                    val postsSorted = posts.sortedWith(myCustomComparator)
+                    callback.invoke(postsSorted.toMutableList())
+                }
+            })
         }
-    }
 
+    }
 }

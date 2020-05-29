@@ -1,6 +1,7 @@
 package com.example.coronawalla.main.ui.local
 
 import android.app.AlertDialog
+import android.content.ComponentCallbacks
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -12,6 +13,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,36 +26,34 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_local.*
 
 class LocalFragment : Fragment() {
-    private val viewModel by lazy{
-        activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
-    }
+    private lateinit var viewModel:MainActivityViewModel
     private val TAG: String? = LocalFragment::class.simpleName
 
     override fun onPause() {
         super.onPause()
         if(posts_recyclerView.adapter != null){
-            updatePostsServer()
+            updatePostsServer {}
         }
     }
 
     override fun onResume() {
         super.onResume()
-        viewModel?.toolbarMode?.value = 0
-
-
+        viewModel.toolbarMode.value = 0
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        viewModel = ViewModelProviders.of(requireActivity()).get(MainActivityViewModel::class.java)
         return inflater.inflate(R.layout.fragment_local, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        posts_recyclerView.layoutManager = LinearLayoutManager(requireContext())
         navigation()
-        recyclerHandeling()
+        recyclerHandling()
     }
 
-    private fun updatePostsServer(){
+    private fun updatePostsServer(callback:(Boolean) -> Unit ){
         val t = posts_recyclerView.adapter as PostsRecyclerViewAdapter
         t.getChangedList()
         val db = FirebaseFirestore.getInstance()
@@ -68,6 +68,7 @@ class LocalFragment : Fragment() {
         batch.commit().addOnCompleteListener{
             if(it.isSuccessful){
                 Log.i(TAG,"Posts updated!")
+                callback.invoke(true)
             }else{
                 Log.e(TAG,it.exception.toString())
             }
@@ -120,23 +121,29 @@ class LocalFragment : Fragment() {
         }
     }
 
-    private fun recyclerHandeling(){
-        if( viewModel!!.localPostList.value != null){
-            posts_recyclerView.adapter = PostsRecyclerViewAdapter(viewModel!!.localPostList.value!!, findNavController())
+    private fun recyclerHandling(){
+        //if the list is null or empty, set an observer and wait for values. Otherwise use the one currently available
+        if(viewModel.localPostList.value == null || viewModel.localPostList.value!!.isEmpty()){
+            viewModel.localPostList.observe(viewLifecycleOwner, Observer{
+                posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
+            })
+        }else{
+            val list = viewModel.localPostList.value
+            posts_recyclerView.adapter = PostsRecyclerViewAdapter(list!!.toList(), findNavController())
         }
-        posts_recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        viewModel!!.localPostList.observe(viewLifecycleOwner, Observer{
-            posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
-
-        })
         posts_refreshLayout.setOnRefreshListener {
             //This is a safe cast because of the fragment we are in
-            Log.e(TAG, "REFRESH-POSTS")
-            val mA:MainActivity = activity as MainActivity
-            mA.getPostsFromServer(){
-                posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
+            updatePostsServer {
+                if(it){
+                    val mA:MainActivity = activity as MainActivity
+                    mA.getPostsFromServer(){
+                        posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
+                    }
+                    posts_refreshLayout.isRefreshing = false
+                }
             }
-            posts_refreshLayout.isRefreshing = false
+
         }
     }
+
 }

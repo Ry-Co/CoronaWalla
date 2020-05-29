@@ -37,7 +37,7 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
     class CommentsRecyclerViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         val commentTextTV: TextView = itemView.comment_text_tv
         val commentersHandleTV : TextView = itemView.commenters_handle_tv
-        val voteCountTV: TextView = itemView.comment_karma_tv
+        val commentKarmaTV: TextView = itemView.comment_karma_tv
         val upvoteIV:ImageView = itemView.comment_upvote_iv
         val downvoteIV : ImageView = itemView.comment_downvote_iv
     }
@@ -46,31 +46,31 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
         return changedComments
     }
 
-    private fun voting(holder:CommentsRecyclerViewHolder, uid:String, currentItem:CommentClass){
+    private fun voting(holder:CommentsRecyclerViewHolder, uid:String, currentComment:CommentClass){
         val voteWorker = VoteWorker()
-        var prevVote = voteWorker.getPrevVote(uid, currentItem.votes_map!!)
-        var voteCount = voteWorker.getVoteCount(currentItem.votes_map!!)
+        var prevVote = voteWorker.getPrevVote(uid, currentComment.votes_map!!)
+        var voteCount = voteWorker.getVoteCount(currentComment.votes_map!!)
 
         voteWorker.voteVisual(holder.upvoteIV, holder.downvoteIV, prevVote)
-        holder.voteCountTV.text = voteCount.toString()
+        holder.commentKarmaTV.text = voteCount.toString()
 
         holder.upvoteIV.setOnClickListener {
             usersVote = voteWorker.vote(usersVote, true, holder.upvoteIV, holder.downvoteIV)
-            val voteCountString = voteWorker.updateVoteCountString(usersVote, prevVote, voteCount.toString())
-            holder.voteCountTV.text = voteCountString
-            prevVote = usersVote
+            currentComment.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentComment.votes_map!!)
+            val voteCountString = voteWorker.getVoteCount(currentComment.votes_map!!).toString()
+            holder.commentKarmaTV.text = voteCountString
             voteCount = voteCountString.toInt()
-            currentItem.votes_map = voteWorker.updateVoteMap(usersVote,uid, currentItem.votes_map!!)
-            changedComments.add(currentItem)
+            prevVote = usersVote
+            changedComments.add(currentComment)
         }
         holder.downvoteIV.setOnClickListener {
             usersVote = voteWorker.vote(usersVote, false,holder.upvoteIV, holder.downvoteIV)
-            val voteCountString = voteWorker.updateVoteCountString(usersVote,prevVote,voteCount.toString())
-            holder.voteCountTV.text = voteCountString
-            prevVote = usersVote
+            currentComment.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentComment.votes_map!!)
+            val voteCountString = voteWorker.getVoteCount(currentComment.votes_map!!).toString()
+            holder.commentKarmaTV.text = voteCountString
             voteCount = voteCountString.toInt()
-            currentItem.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentItem.votes_map!!)
-            changedComments.add(currentItem)
+            prevVote = usersVote
+            changedComments.add(currentComment)
         }
     }
 }

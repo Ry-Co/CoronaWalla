@@ -44,7 +44,7 @@ class DiscussionFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         if(comments_recyclerView.adapter != null){
-            updateCommentsServer()
+            updateCommentsServer{}
         }
         updatePostServer()
     }
@@ -58,7 +58,7 @@ class DiscussionFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         currentPost = arguments?.get("post") as PostClass
         ph = arguments?.get("posterHandle") as String
-        recyclerHandeling()
+        recyclerHandling()
         setViewValues(view)
     }
 
@@ -66,7 +66,6 @@ class DiscussionFragment : Fragment() {
         navigation(v)
         voting(v)
         commenting(v)
-
         //declare and set post values
         val postText = v.findViewById<TextView>(R.id.post_text_tv)
         val posterHandle = v.findViewById<TextView>(R.id.disc_posters_handle_tv)
@@ -74,7 +73,7 @@ class DiscussionFragment : Fragment() {
         postText.text = currentPost.post_text
     }
 
-    private fun updateCommentsServer(){
+    private fun updateCommentsServer(callback:(Boolean) -> Unit){
         val t = comments_recyclerView.adapter as CommentsRecyclerViewAdapter
         t.getChangedList()
         val db = FirebaseFirestore.getInstance()
@@ -89,11 +88,11 @@ class DiscussionFragment : Fragment() {
         batch.commit().addOnCompleteListener{
             if(it.isSuccessful){
                 Log.i(TAG,"comments updated!")
+                callback.invoke(true)
             }else{
                 Log.e(TAG,it.exception.toString())
             }
         }
-
     }
 
     private fun getCommentsFromServer(currentPost: PostClass , callback:(MutableList<CommentClass>) -> Unit){
@@ -104,7 +103,29 @@ class DiscussionFragment : Fragment() {
                     val comment = item.toObject(CommentClass::class.java)
                     commentList.add(comment)
                 }
-                callback.invoke(commentList)
+                val myCustomComparator =  Comparator<CommentClass> { a, b ->
+                    val vw = VoteWorker()
+                    val aRate = vw.getVoteCount(a.votes_map!!)
+                    val bRate = vw.getVoteCount(b.votes_map!!)
+                    //Log.e(TAG, "a ="+a.post_id+" b ="+b.post_id+" aRate= $aRate  bRate= $bRate")
+                    when {
+                        aRate == bRate -> {
+                            //Log.e(TAG, "EQUAL")
+                            0
+                        }
+                        aRate < bRate -> {
+                            //Log.e(TAG, "a < b")
+                            1
+                        }
+                        else -> {
+                            //Log.e(TAG, "a > b")
+                            -1
+                        }
+                    }
+                }
+                val commentsSorted = commentList.sortedWith(myCustomComparator)
+
+                callback.invoke(commentsSorted.toMutableList())
             }else{
                 Log.e(TAG, it.exception.toString())
                 return@addOnCompleteListener
@@ -142,7 +163,7 @@ class DiscussionFragment : Fragment() {
             Log.e(TAG, "Share TV")
         }
         backButton.setOnClickListener {
-            updateCommentsServer()
+            updateCommentsServer{}
             findNavController().navigate(R.id.action_discussionFragment_to_local)
         }
     }
@@ -166,20 +187,20 @@ class DiscussionFragment : Fragment() {
 
         upvoteIV.setOnClickListener {
             usersVote = voteWorker.vote(usersVote, true, upvoteIV, downvoteIV)
-            val voteCountString = voteWorker.updateVoteCountString(usersVote, prevVote, voteCount.toString())
+            currentPost.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentPost.votes_map!!)
+            val voteCountString = voteWorker.getVoteCount(currentPost.votes_map!!).toString()
             postKarma.text = voteCountString
-            prevVote = usersVote
             voteCount = voteCountString.toInt()
-            currentPost.votes_map = voteWorker.updateVoteMap(usersVote,uid, currentPost.votes_map!!)
+            prevVote = usersVote
             changedPosts.add(currentPost)
         }
         downvoteIV.setOnClickListener {
             usersVote = voteWorker.vote(usersVote, false,upvoteIV,downvoteIV)
-            val voteCountString = voteWorker.updateVoteCountString(usersVote,prevVote,voteCount.toString())
-            postKarma.text = voteCountString
-            prevVote = usersVote
-            voteCount = voteCountString.toInt()
             currentPost.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentPost.votes_map!!)
+            val voteCountString = voteWorker.getVoteCount(currentPost.votes_map!!).toString()
+            postKarma.text = voteCountString
+            voteCount = voteCountString.toInt()
+            prevVote = usersVote
             changedPosts.add(currentPost)
         }
 
@@ -218,7 +239,7 @@ class DiscussionFragment : Fragment() {
         }
     }
 
-    private fun recyclerHandeling(){
+    private fun recyclerHandling(){
         getCommentsFromServer(currentPost){commentsList->
             //recycler handeling
             comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
@@ -226,14 +247,19 @@ class DiscussionFragment : Fragment() {
         comments_recyclerView.layoutManager = LinearLayoutManager(requireContext())
         comments_refreshLayout.setOnRefreshListener {
             Log.e(TAG, "REFRESH-COMMENTS")
-            getCommentsFromServer(currentPost){commentsList->
-                //recycler handeling
-                comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
-                comments_refreshLayout.isRefreshing = false
+            updateCommentsServer {
+                getCommentsFromServer(currentPost){commentsList->
+                    //recycler handeling
+                    comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
+                    comments_refreshLayout.isRefreshing = false
 
+                }
             }
+
         }
     }
+
+
 
     // function triplet copy/paste for hiding keyboard functionality
     fun Fragment.hideKeyboard() {

@@ -2,14 +2,11 @@ package com.example.coronawalla.main
 
 import android.widget.ImageView
 import com.example.coronawalla.R
+import com.example.coronawalla.main.ui.local.PostClass
 import kotlin.math.round
 
 class VoteWorker() {
-    fun updateVoteMap(
-        usersVote: Boolean?,
-        uid: String,
-        votes_map: MutableMap<String, Boolean?>
-    ): MutableMap<String, Boolean?> {
+    fun updateVoteMap(usersVote: Boolean?, uid: String, votes_map: MutableMap<String, Boolean?>): MutableMap<String, Boolean?> {
         return when (usersVote) {
             null -> {
                 //we are using this instead of replace for api requirements
@@ -30,78 +27,7 @@ class VoteWorker() {
         }
     }
 
-    fun updateVoteCountString(
-        usersVote: Boolean?,
-        usersPreviousVote: Boolean?,
-        currentVoteCount: String
-    ): String {
-        var pvNum = currentVoteCount.toInt()
-        return when (usersVote) {
-            null -> {
-                when (usersPreviousVote) {
-                    null -> {
-                        //user hasn't voted on post previously
-                        pvNum.toString()
-                    }
-                    true -> {
-                        //user previously upvoted post
-                        pvNum -= 1
-                        pvNum.toString()
-                    }
-                    else -> {
-                        //user previously downvoted post
-                        pvNum += 1
-                        pvNum.toString()
-                    }
-                }
-            }
-            true -> {
-                when (usersPreviousVote) {
-                    null -> {
-                        //user hasn't voted on post previously
-                        pvNum += 1
-                        pvNum.toString()
-                    }
-                    true -> {
-                        //user previously upvoted post
-                        //pvNum += 1
-                        pvNum.toString()
-                    }
-                    else -> {
-                        //user previously downvoted post
-                        pvNum += 2
-                        pvNum.toString()
-                    }
-                }
-            }
-            false -> {
-                when (usersPreviousVote) {
-                    null -> {
-                        //user hasn't voted on post previously
-                        pvNum -= 1
-                        pvNum.toString()
-                    }
-                    true -> {
-                        //user previously upvoted post
-                        pvNum -= 2
-                        pvNum.toString()
-                    }
-                    else -> {
-                        //user previously downvoted post
-                        //pvNum += 2
-                        pvNum.toString()
-                    }
-                }
-            }
-        }
-    }
-
-    fun vote(
-        state: Boolean?,
-        action: Boolean,
-        upvoteIV: ImageView,
-        downvoteIV: ImageView
-    ): Boolean? {
+    fun vote(state: Boolean?, action: Boolean, upvoteIV: ImageView, downvoteIV: ImageView): Boolean? {
         when (state) {
             null -> return when (action) {
                 true -> {
@@ -167,8 +93,19 @@ class VoteWorker() {
         } else {
             var counter = 0
             for (item in votes_map) {
-                if (item.value == true) {
-                    counter += 1
+                when (item.value) {
+                    true -> {
+                        //upvote
+                        counter += 1
+                    }
+                    false -> {
+                        //downvote
+                        counter -= 1
+                    }
+                    else -> {
+                        //no vote
+                        counter += 0
+                    }
                 }
             }
             counter
@@ -219,4 +156,5 @@ class VoteWorker() {
         }
 
     }
+
 }
