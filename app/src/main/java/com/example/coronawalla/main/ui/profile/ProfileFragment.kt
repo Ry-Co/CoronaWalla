@@ -10,6 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.example.coronawalla.LauncherActivity
@@ -21,8 +22,11 @@ import com.google.firebase.auth.FirebaseAuth
 class ProfileFragment : Fragment() {
     private val TAG: String? = ProfileFragment::class.simpleName
 
-    private val viewModel by lazy{
-        activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
+    private lateinit var viewModel:MainActivityViewModel
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel =  ViewModelProvider(this.requireActivity()).get(MainActivityViewModel::class.java)
     }
 
     override fun onResume() {

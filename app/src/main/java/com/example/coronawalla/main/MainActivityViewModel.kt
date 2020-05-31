@@ -14,6 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivityViewModel: ViewModel() {
     private val TAG: String? = MainActivityViewModel::class.simpleName
+    val db = FirebaseFirestore.getInstance()
     var toolbarMode = MutableLiveData<Int>()
     var currentLocation = MutableLiveData<Location>()
     var currentUser = MutableLiveData<UserClass>()

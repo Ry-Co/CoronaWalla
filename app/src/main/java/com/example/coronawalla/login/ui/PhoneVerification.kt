@@ -10,6 +10,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.example.coronawalla.LauncherActivity
 import com.example.coronawalla.login.LoginActivityViewModel
@@ -26,13 +27,13 @@ import java.util.concurrent.TimeUnit
 
 class PhoneVerification : Fragment() {
     private val TAG: String? = PasswordFragment::class.simpleName
-    private val viewModel by lazy {
-        activity?.let { ViewModelProviders.of(it).get(LoginActivityViewModel::class.java) }
-    }
+    private lateinit var viewModel:LoginActivityViewModel
     private var verificationID: String? = null
 
-
-
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel =  ViewModelProvider(this.requireActivity()).get(LoginActivityViewModel::class.java)
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -103,7 +104,7 @@ class PhoneVerification : Fragment() {
                                 val user = UserClass()
                                 user.user_id = mAuth.currentUser!!.uid
 
-                                FirebaseFirestore.getInstance().collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
+                                viewModel!!.db.collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
                                     if(it.isSuccessful){
                                         Log.d(TAG, "User added")
                                         val intent = Intent(activity, LauncherActivity::class.java).putExtra("anon", false)
@@ -142,7 +143,7 @@ class PhoneVerification : Fragment() {
                                 val user = UserClass()
                                 user.user_id = mAuth.currentUser!!.uid
 
-                                FirebaseFirestore.getInstance().collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
+                                viewModel!!.db.collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
                                     if(it.isSuccessful){
                                         Log.d(TAG, "User added")
                                         val intent = Intent(activity, LauncherActivity::class.java).putExtra("anon", false)

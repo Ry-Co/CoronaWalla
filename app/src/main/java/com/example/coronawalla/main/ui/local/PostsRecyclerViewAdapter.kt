@@ -7,9 +7,11 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.os.bundleOf
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coronawalla.R
+import com.example.coronawalla.main.MainActivityViewModel
 import com.example.coronawalla.main.VoteWorker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -19,6 +21,7 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
     private val changedPosts = ArrayList<PostClass>()
     private var usersVote:Boolean? = null
     private val TAG: String? = PostsRecyclerViewAdapter::class.simpleName
+    private val db = FirebaseFirestore.getInstance()
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostsRecyclerViewHolder {
@@ -34,7 +37,7 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
         navigation(holder)
         voting(holder, uid, currentItem)
         holder.postTextTV.text = currentItem.post_text
-        FirebaseFirestore.getInstance().collection("users").document(currentItem.poster_id).get().addOnCompleteListener {
+        db.collection("users").document(currentItem.poster_id).get().addOnCompleteListener {
             if(it.isSuccessful){
                 val userDoc = it.result
                 holder.posterHandleTV.text = "@"+userDoc!!.get("handle").toString()
@@ -104,7 +107,7 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
         Log.e(TAG, "Go to discussion")
         //add bundles
         //https://medium.com/incwell-innovations/passing-data-in-android-navigation-architecture-component-part-2-5f1ebc466935
-        val postReference = FirebaseFirestore.getInstance().collection("posts").document(postList[position].post_id)
+        val postReference = db.collection("posts").document(postList[position].post_id)
         val bundle = bundleOf("post" to postList[position], "posterHandle" to posterHandle)
         navController.navigate(R.id.action_local_to_discussionFragment, bundle)
     }

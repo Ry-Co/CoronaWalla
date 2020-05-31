@@ -12,6 +12,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.example.coronawalla.R
@@ -23,9 +24,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class ProfileEditFragment : Fragment() {
     private val TAG: String? = ProfileEditFragment::class.simpleName
-    private val viewModel by lazy{
-        activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
-    }
+    private lateinit var viewModel: MainActivityViewModel
     private var takenHandles = hashSetOf<String>()
     private var prevHandle:String? = null
 
@@ -37,6 +36,12 @@ class ProfileEditFragment : Fragment() {
         if(viewModel!!.currentProfileBitmap.value!=null){
             profImg.setImageBitmap(viewModel!!.currentProfileBitmap.value)
         }
+    }
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel = ViewModelProvider(this.requireActivity()).get(MainActivityViewModel::class.java)
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
@@ -151,6 +156,7 @@ class ProfileEditFragment : Fragment() {
         val username = usernameET.text.toString()
         val handle = handleET.text.toString()
         val db = FirebaseFirestore.getInstance()
+        Log.e(TAG, "Server Call: Updating user vals")
         db.collection("users").document(viewModel!!.currentUser.value!!.user_id).update(
             "username", username,
             "handle", handle).addOnCompleteListener{
@@ -163,7 +169,9 @@ class ProfileEditFragment : Fragment() {
         //updating handles
         if(prevHandle != null){
             val update = hashMapOf("user_id" to viewModel!!.currentUser.value!!.user_id)
+            Log.e(TAG, "Server Call: Deleting Users previous handle")
             db.collection("handles").document(prevHandle.toString()).delete()
+            Log.e(TAG, "Server Call: Adding Users new handle to collection")
             db.collection("handles").document(handle.toLowerCase()).set(update).addOnCompleteListener{
                 if(it.isSuccessful){
                     Log.d(TAG, "handles updated")
@@ -173,6 +181,7 @@ class ProfileEditFragment : Fragment() {
             }
         }else{
             val update = hashMapOf("user_id" to viewModel!!.currentUser.value!!.user_id)
+            Log.e(TAG, "Server Call: Adding users handle to collection")
             db.collection("handles").document(handle.toLowerCase()).set(update).addOnCompleteListener{
                 if(it.isSuccessful){
                     Log.d(TAG, "handles updated")

@@ -41,8 +41,11 @@ class LocalFragment : Fragment() {
         viewModel.toolbarMode.value = 0
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel =  ViewModelProvider(this.requireActivity()).get(MainActivityViewModel::class.java)
+    }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        viewModel = ViewModelProviders.of(requireActivity()).get(MainActivityViewModel::class.java)
         return inflater.inflate(R.layout.fragment_local, container, false)
     }
 
@@ -56,7 +59,7 @@ class LocalFragment : Fragment() {
     private fun updatePostsServer(callback:(Boolean) -> Unit ){
         val t = posts_recyclerView.adapter as PostsRecyclerViewAdapter
         t.getChangedList()
-        val db = FirebaseFirestore.getInstance()
+        val db = viewModel.db
         val oldPostList = t.getChangedList()
         val batch = db.batch()
         val colRef = db.collection("posts")

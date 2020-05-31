@@ -10,6 +10,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.example.coronawalla.R
@@ -17,13 +18,12 @@ import com.example.coronawalla.main.MainActivityViewModel
 
 
 class PostFragment : Fragment() {
-    private val viewModel by lazy{
-        activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
-    }
+    private lateinit var  viewModel: MainActivityViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel?.toolbarMode?.value = 2
+        viewModel =  ViewModelProvider(this.requireActivity()).get(MainActivityViewModel::class.java)
+        viewModel.toolbarMode.value = 2
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
@@ -69,10 +69,7 @@ class PostFragment : Fragment() {
         val postET = view.findViewById<EditText>(R.id.postText_ET)
 
         sendTV.setOnClickListener {
-//            val bundle = bundleOf("post" to postList[position], "posterHandle" to posterHandle)
-//            navController.navigate(R.id.action_local_to_discussionFragment, bundle)
             val bundle = bundleOf("postText" to postET.text.toString())
-            //postViewModel?.postText?.value = postET.text.toString()
             findNavController().navigate(R.id.action_postFragment_to_postPreviewFragment, bundle)
         }
 

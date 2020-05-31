@@ -23,13 +23,12 @@ import org.imperiumlabs.geofirestore.GeoFirestore
 
 class PostPreviewFragment : Fragment() {
     private val TAG: String? = PostPreviewFragment::class.simpleName
-    private val viewModel by lazy{
-        activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
-    }
+    private lateinit var viewModel:MainActivityViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel?.toolbarMode?.value = 3
+        viewModel =  ViewModelProvider(this.requireActivity()).get(MainActivityViewModel::class.java)
+        viewModel.toolbarMode.value = 3
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -47,7 +46,7 @@ class PostPreviewFragment : Fragment() {
         val postAsText = view.findViewById<TextView>(R.id.postAsTV)
         val postAsSwitch = view.findViewById<Switch>(R.id.postAsSwitch)
         val postButton = view.findViewById<Button>(R.id.postButton)
-        val currentGeoPoint = GeoPoint(viewModel!!.currentLocation.value!!.latitude, viewModel!!.currentLocation.value!!.longitude)
+        val currentGeoPoint = GeoPoint(viewModel.currentLocation.value!!.latitude, viewModel.currentLocation.value!!.longitude)
         postTextView.text = postText
 
         postAsSwitch.setOnClickListener {
@@ -62,10 +61,12 @@ class PostPreviewFragment : Fragment() {
 
         postButton.setOnClickListener {
             val post = getPostMap(postText)
+            Log.e(TAG, "Server Call: Adding post to collection")
             db.collection("posts").add(post).addOnCompleteListener{ postTask ->
                 if (postTask.isSuccessful){
                     Log.d(TAG, "Post Sent!")
                     val geoFirestore = GeoFirestore(db.collection("posts"))
+                    Log.e(TAG, "Server Call: adding post ID number to post document")
                     db.collection("posts").document(postTask.result!!.id).update("post_id", postTask.result!!.id).addOnCompleteListener{
                         if(it.isSuccessful){
                             Log.i(TAG, "Updated mPostID")
@@ -73,7 +74,7 @@ class PostPreviewFragment : Fragment() {
                             Log.e(TAG, it.exception.toString())
                         }
                     }
-                    geoFirestore.setLocation(postTask!!.result!!.id,currentGeoPoint)
+                    geoFirestore.setLocation(postTask.result!!.id,currentGeoPoint)
                 }else{
                     Log.e(TAG, "Error:: "+postTask.exception.toString())
                 }
@@ -84,7 +85,7 @@ class PostPreviewFragment : Fragment() {
 
     private fun getPostMap(postText:String): PostClass{
         val mAuth = FirebaseAuth.getInstance()
-        val currentGeoPoint = GeoPoint(viewModel!!.currentLocation.value!!.latitude, viewModel!!.currentLocation.value!!.longitude)
+        val currentGeoPoint = GeoPoint(viewModel.currentLocation.value!!.latitude, viewModel.currentLocation.value!!.longitude)
         val postTime = System.currentTimeMillis()
         val mVotes = mutableMapOf<String, Boolean?>()
         mVotes[mAuth.currentUser!!.uid] = true

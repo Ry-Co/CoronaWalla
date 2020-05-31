@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,9 +28,7 @@ import kotlinx.android.synthetic.main.fragment_discussion.*
  * https://stackoverflow.com/questions/14371092/how-to-make-a-specific-text-on-textview-bold
  */
 class DiscussionFragment : Fragment() {
-    private val viewModel by lazy{
-        activity?.let { ViewModelProviders.of(it).get(MainActivityViewModel::class.java) }
-    }
+    private lateinit var viewModel: MainActivityViewModel
     private lateinit var currentPost: PostClass
     private val changedPosts = ArrayList<PostClass>()
     private lateinit var ph: String
@@ -48,6 +47,12 @@ class DiscussionFragment : Fragment() {
         }
         updatePostServer()
     }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel =  ViewModelProvider(this.requireActivity()).get(MainActivityViewModel::class.java)
+    }
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
@@ -152,6 +157,7 @@ class DiscussionFragment : Fragment() {
         val db = FirebaseFirestore.getInstance()
         if(changedPosts.size > 0){
             val post = changedPosts[0]
+            Log.e(TAG, "Server Call: Updating Votes Map")
             db.collection("posts").document(post.post_id).update("votes_map", post.votes_map)
         }
     }

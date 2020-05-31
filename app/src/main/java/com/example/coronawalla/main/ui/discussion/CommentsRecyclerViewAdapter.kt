@@ -1,5 +1,6 @@
 package com.example.coronawalla.main.ui.discussion
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +27,7 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
         val uid = currentItem.commenter_id
         voting(holder, uid, currentItem)
         holder.commentTextTV.text = currentItem.comment_text
+        Log.e(TAG, "Server Call: getting commenters doc")
         FirebaseFirestore.getInstance().collection("users").document(currentItem.commenter_id).get().addOnSuccessListener {
             holder.commentersHandleTV.text = "@"+it.get("handle")
             currentItem.commenter_handle = it.get("handle").toString()

@@ -2,8 +2,10 @@ package com.example.coronawalla.main.ui.local
 
 import android.os.Parcelable
 import com.google.firebase.firestore.GeoPoint
+import com.google.type.LatLng
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.RawValue
+import java.io.Serializable
 
 @Parcelize
 data class PostClass(
@@ -17,5 +19,5 @@ data class PostClass(
     val payout_date_long: Long = 0,
     var votes_map:MutableMap<String,Boolean?>? = null,
     val g:String?="",
-    val l:@RawValue GeoPoint?=null
-) : Parcelable
+    val l:@RawValue GeoPoint?= null
+) : Parcelable, Serializable

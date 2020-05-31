@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.example.coronawalla.login.LoginActivityViewModel
@@ -16,8 +17,12 @@ import com.hbb20.CountryCodePicker
 
 
 class NumberFormatFragment : Fragment() {
-    private val viewModel by lazy{
-        activity?.let { ViewModelProviders.of(it).get(LoginActivityViewModel::class.java) }
+    private lateinit var viewModel: LoginActivityViewModel
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel = ViewModelProvider(this.requireActivity()).get(LoginActivityViewModel::class.java)
+
     }
 
     override fun onCreateView(

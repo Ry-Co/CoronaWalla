@@ -39,6 +39,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var locationCallback: LocationCallback
     private lateinit var viewModel:MainActivityViewModel
 
+    //todo profile to local seems to not update posts vote counts?
+    //todo make share text view implication
+    //todo profile states
+
     private val permOptions = QuickPermissionsOptions(
         handleRationale = true,
         rationaleMessage = "Location permissions are required for core functionality!",
@@ -97,7 +101,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getUserClassFromUID(uid:String, callback:(UserClass)->Unit){
-        FirebaseFirestore.getInstance().collection("users").document(uid).get().addOnCompleteListener {
+        Log.e(TAG, "Server Call: ")
+        viewModel.db.collection("users").document(uid).get().addOnCompleteListener {
             if (it.isSuccessful) {
                 val uidUserClass = it.result!!.toObject(UserClass::class.java)
                 callback.invoke(uidUserClass!!)
@@ -158,7 +163,7 @@ class MainActivity : AppCompatActivity() {
     private fun getLocalDocs(loc:Location, callback: (List<DocumentSnapshot>) -> Unit){
         val usersGP = GeoPoint(loc.latitude, loc.longitude)
         val radiusInKm = 5 * 1.60934 //5 miles
-        val geoFirestore = GeoFirestore(FirebaseFirestore.getInstance().collection("posts"))
+        val geoFirestore = GeoFirestore(viewModel.db.collection("posts"))
         geoFirestore.getAtLocation(usersGP,radiusInKm){ docs, ex ->
             if(ex != null){
                 Log.e(TAG, "Error:: "+ex.message)
@@ -219,7 +224,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun uploadBitmap(bitmap: Bitmap, storageRef:StorageReference){
         val baos = ByteArrayOutputStream()
-        val db = FirebaseFirestore.getInstance()
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
         val data = baos.toByteArray()
         val uploadTask = storageRef.putBytes(data)
@@ -230,7 +234,7 @@ class MainActivity : AppCompatActivity() {
                     if(dlURL.isSuccessful){
                         val downloadURL = dlURL.result.toString()
                         viewModel.currentUser.value!!.profile_image_url = downloadURL.toString()
-                        db.collection("users").document(viewModel.currentUser.value!!.user_id).update("profile_image_url", downloadURL.toString())
+                        viewModel.db.collection("users").document(viewModel.currentUser.value!!.user_id).update("profile_image_url", downloadURL.toString())
                     }else{
                         Log.e(TAG, dlURL.exception.toString())
                     }
