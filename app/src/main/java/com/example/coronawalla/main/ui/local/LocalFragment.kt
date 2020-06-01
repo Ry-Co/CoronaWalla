@@ -1,7 +1,6 @@
 package com.example.coronawalla.main.ui.local
 
 import android.app.AlertDialog
-import android.content.ComponentCallbacks
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -14,15 +13,12 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.coronawalla.R
 import com.example.coronawalla.login.LoginActivity
 import com.example.coronawalla.main.MainActivity
 import com.example.coronawalla.main.MainActivityViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_local.*
 
 class LocalFragment : Fragment() {
@@ -83,14 +79,14 @@ class LocalFragment : Fragment() {
             .setCancelable(false)
             .setTitle("Create Account")
             .setMessage("You must create an account to continue")
-            .setPositiveButton("Ok"){dialog, id->
+            .setPositiveButton("Ok"){ dialog, _ ->
                 Toast.makeText(activity, "GO TO PHONE NUMBER", Toast.LENGTH_SHORT).show()
                 val intent  = Intent(activity, LoginActivity::class.java)
                 intent.putExtra("phone", true)
                 requireActivity().startActivity(intent)
                 dialog.dismiss()
             }
-            .setNegativeButton("cancel"){dialog, id->
+            .setNegativeButton("cancel"){ dialog, _ ->
                 Toast.makeText(activity, "Cancel", Toast.LENGTH_SHORT).show()
                 dialog.cancel()
             }

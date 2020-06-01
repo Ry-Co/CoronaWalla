@@ -11,13 +11,11 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.example.coronawalla.LauncherActivity
 import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivity
 import com.example.coronawalla.main.MainActivityViewModel
-import com.google.firebase.auth.FirebaseAuth
 
 class ProfileFragment : Fragment() {
     private val TAG: String? = ProfileFragment::class.simpleName
@@ -31,11 +29,11 @@ class ProfileFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        viewModel?.toolbarMode?.value = -1
+        viewModel.toolbarMode.value = -1
 
         val profImg:ImageView = requireView().findViewById(R.id.profile_iv)
-        if(viewModel!!.currentProfileBitmap.value!=null){
-            profImg.setImageBitmap(viewModel!!.currentProfileBitmap.value)
+        if(viewModel.currentProfileBitmap.value!=null){
+            profImg.setImageBitmap(viewModel.currentProfileBitmap.value)
         }
     }
 
@@ -54,7 +52,7 @@ class ProfileFragment : Fragment() {
 
         //get the users values
         //plug them into the profile
-        viewModel!!.currentUser.observe(viewLifecycleOwner, Observer{
+        viewModel.currentUser.observe(viewLifecycleOwner, Observer{
             updateProfileView(view, it)
         })
 

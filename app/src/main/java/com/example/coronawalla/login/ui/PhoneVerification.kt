@@ -11,17 +11,15 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.example.coronawalla.LauncherActivity
-import com.example.coronawalla.login.LoginActivityViewModel
 import com.example.coronawalla.R
+import com.example.coronawalla.login.LoginActivityViewModel
 import com.example.coronawalla.login.direlect.PasswordFragment
 import com.example.coronawalla.main.ui.profile.UserClass
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthProvider
-import com.google.firebase.firestore.FirebaseFirestore
 import java.util.concurrent.TimeUnit
 
 
@@ -94,19 +92,19 @@ class PhoneVerification : Fragment() {
 
     private fun addPhoneNumber(p0: PhoneAuthCredential) {
         if(viewModel.mAuth.currentUser==null){
-            viewModel.mAuth.signInWithCredential(p0).addOnCompleteListener {
-                if (it.isSuccessful) {
+            viewModel.mAuth.signInWithCredential(p0).addOnCompleteListener { creditionalAuthResult ->
+                if (creditionalAuthResult.isSuccessful) {
                     Toast.makeText(context, "Signed in!", Toast.LENGTH_SHORT).show()
                     //update user info
                     viewModel.mAuth.currentUser?.updatePhoneNumber(p0)
-                        ?.addOnCompleteListener {
-                            if (it.isSuccessful) {
+                        ?.addOnCompleteListener { phoneNumberTask ->
+                            if (phoneNumberTask.isSuccessful) {
                                 //Toast.makeText(context, "Phone added!", Toast.LENGTH_SHORT).show()
                                 val mAuth = viewModel.mAuth
                                 val user = UserClass()
                                 user.user_id = mAuth.currentUser!!.uid
 
-                                viewModel!!.db.collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
+                                viewModel.db.collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{
                                     if(it.isSuccessful){
                                         Log.d(TAG, "User added")
                                         val intent = Intent(activity, LauncherActivity::class.java).putExtra("anon", false)
@@ -119,7 +117,7 @@ class PhoneVerification : Fragment() {
                             } else {
                                 Toast.makeText(
                                     context,
-                                    "There was an error:: " + it.exception?.message,
+                                    "There was an error:: " + phoneNumberTask.exception?.message,
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
@@ -127,25 +125,25 @@ class PhoneVerification : Fragment() {
                 } else {
                     Toast.makeText(
                         context,
-                        "There was an error:: " + it.exception?.message,
+                        "There was an error:: " + creditionalAuthResult.exception?.message,
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             }
         }else if(viewModel.mAuth.currentUser!!.isAnonymous){
-            viewModel.mAuth.currentUser!!.linkWithCredential(p0).addOnCompleteListener {
-                if (it.isSuccessful) {
+            viewModel.mAuth.currentUser!!.linkWithCredential(p0).addOnCompleteListener { authTask ->
+                if (authTask.isSuccessful) {
                     Toast.makeText(context, "Account Created!", Toast.LENGTH_SHORT).show()
                     //update user info
                     viewModel.mAuth.currentUser?.updatePhoneNumber(p0)
-                        ?.addOnCompleteListener {
-                            if (it.isSuccessful) {
+                        ?.addOnCompleteListener { phoneAuth ->
+                            if (phoneAuth.isSuccessful) {
                                 //Toast.makeText(context, "Phone added!", Toast.LENGTH_SHORT).show()
                                 val mAuth = viewModel.mAuth
                                 val user = UserClass()
                                 user.user_id = mAuth.currentUser!!.uid
 
-                                viewModel.db.collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
+                                viewModel.db.collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{
                                     if(it.isSuccessful){
                                         Log.d(TAG, "User added")
                                         val intent = Intent(activity, LauncherActivity::class.java).putExtra("anon", false)
@@ -158,19 +156,19 @@ class PhoneVerification : Fragment() {
                             } else {
                                 Toast.makeText(
                                     context,
-                                    "There was an error:: " + it.exception?.message,
+                                    "There was an error:: " + phoneAuth.exception?.message,
                                     Toast.LENGTH_SHORT
                                 ).show()
-                                Log.e(TAG, it.exception!!.message.toString())
+                                Log.e(TAG, phoneAuth.exception!!.message.toString())
                             }
                         }
                 } else {
                     Toast.makeText(
                         context,
-                        "There was an error:: " + it.exception?.message,
+                        "There was an error:: " + authTask.exception?.message,
                         Toast.LENGTH_SHORT
                     ).show()
-                    Log.e(TAG, it.exception!!.message.toString())
+                    Log.e(TAG, authTask.exception!!.message.toString())
                 }
             }
         }

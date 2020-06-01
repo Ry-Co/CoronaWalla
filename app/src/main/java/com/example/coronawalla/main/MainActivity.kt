@@ -79,7 +79,7 @@ class MainActivity : AppCompatActivity() {
             updateVMUserValues(uid)
         }
 
-        viewModel.currentLocation.observe(this, Observer{ loc ->
+        viewModel.currentLocation.observe(this, Observer{
             getPostsFromServer {posts ->
                 viewModel.localPostList.value = posts as ArrayList<PostClass>
             }

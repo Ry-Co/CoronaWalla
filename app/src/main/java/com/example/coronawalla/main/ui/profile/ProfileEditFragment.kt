@@ -11,14 +11,13 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivityViewModel
 import com.github.dhaval2404.imagepicker.ImagePicker
-import com.google.firebase.firestore.FirebaseFirestore
+import java.util.*
+import kotlin.collections.HashSet
 
 //add background color selection?
 
@@ -31,10 +30,10 @@ class ProfileEditFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        viewModel?.toolbarMode?.value = -2
+        viewModel.toolbarMode.value = -2
         val profImg:ImageView = requireView().findViewById(R.id.profile_edit_iv)
-        if(viewModel!!.currentProfileBitmap.value!=null){
-            profImg.setImageBitmap(viewModel!!.currentProfileBitmap.value)
+        if(viewModel.currentProfileBitmap.value!=null){
+            profImg.setImageBitmap(viewModel.currentProfileBitmap.value)
         }
     }
 
@@ -51,7 +50,7 @@ class ProfileEditFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         //set current values
-        setCurrentUserVals(view, viewModel!!.currentUser.value!!)
+        setCurrentUserVals(view, viewModel.currentUser.value!!)
         getHandles {
             Log.d(TAG, "Taken handels retrived")
             takenHandles = it
@@ -59,8 +58,8 @@ class ProfileEditFragment : Fragment() {
 
         //handle image
         val profImg:ImageView = view.findViewById(R.id.profile_edit_iv)
-        if(viewModel!!.currentProfileBitmap.value!=null){
-            profImg.setImageBitmap(viewModel!!.currentProfileBitmap.value)
+        if(viewModel.currentProfileBitmap.value!=null){
+            profImg.setImageBitmap(viewModel.currentProfileBitmap.value)
         }
         val profEditTV = view.findViewById<TextView>(R.id.changeProfilePic_TV)
         profImg.setOnClickListener{
@@ -103,12 +102,12 @@ class ProfileEditFragment : Fragment() {
         handleET.addTextChangedListener(object:TextWatcher{
             override fun afterTextChanged(p0: Editable?) {
                 val currentHandle = p0.toString()
-                if(currentHandle.toLowerCase() == prevHandle){
+                if (currentHandle.toLowerCase(Locale.getDefault()) == prevHandle){
                     //is users previous handle so they can use it
                     confirm.visibility = View.VISIBLE
                     notavail.visibility = View.INVISIBLE
                 }else{
-                    if(takenHandles.contains(currentHandle.toLowerCase())){
+                    if(takenHandles.contains(currentHandle.toLowerCase(Locale.getDefault()))) {
                         //unavailable
                         confirm.visibility = View.INVISIBLE
                         notavail.visibility = View.VISIBLE
@@ -136,7 +135,7 @@ class ProfileEditFragment : Fragment() {
         viewModel.db.collection("handles").get().addOnCompleteListener{
             if(it.isSuccessful){
                 for(doc in it.result!!){
-                    if(doc.get("user_id") == viewModel!!.currentUser.value!!.user_id){
+                    if(doc.get("user_id") == viewModel.currentUser.value!!.user_id){
                         prevHandle = doc.id
                     }
                 }
@@ -157,7 +156,7 @@ class ProfileEditFragment : Fragment() {
         val handle = handleET.text.toString()
         val db = viewModel.db
         Log.e(TAG, "Server Call: Updating user vals")
-        db.collection("users").document(viewModel!!.currentUser.value!!.user_id).update(
+        db.collection("users").document(viewModel.currentUser.value!!.user_id).update(
             "username", username,
             "handle", handle).addOnCompleteListener{
             if(it.isSuccessful){
@@ -168,11 +167,11 @@ class ProfileEditFragment : Fragment() {
         }
         //updating handles
         if(prevHandle != null){
-            val update = hashMapOf("user_id" to viewModel!!.currentUser.value!!.user_id)
+            val update = hashMapOf("user_id" to viewModel.currentUser.value!!.user_id)
             Log.e(TAG, "Server Call: Deleting Users previous handle")
             db.collection("handles").document(prevHandle.toString()).delete()
             Log.e(TAG, "Server Call: Adding Users new handle to collection")
-            db.collection("handles").document(handle.toLowerCase()).set(update).addOnCompleteListener{
+            db.collection("handles").document(handle.toLowerCase(Locale.getDefault())).set(update).addOnCompleteListener{
                 if(it.isSuccessful){
                     Log.d(TAG, "handles updated")
                 }else{
@@ -180,9 +179,9 @@ class ProfileEditFragment : Fragment() {
                 }
             }
         }else{
-            val update = hashMapOf("user_id" to viewModel!!.currentUser.value!!.user_id)
+            val update = hashMapOf("user_id" to viewModel.currentUser.value!!.user_id)
             Log.e(TAG, "Server Call: Adding users handle to collection")
-            db.collection("handles").document(handle.toLowerCase()).set(update).addOnCompleteListener{
+            db.collection("handles").document(handle.toLowerCase(Locale.getDefault())).set(update).addOnCompleteListener{
                 if(it.isSuccessful){
                     Log.d(TAG, "handles updated")
                 }else{
@@ -192,7 +191,7 @@ class ProfileEditFragment : Fragment() {
 
         }
 
-        viewModel!!.currentUser.value!!.username = username
-        viewModel!!.currentUser.value!!.handle= handle
+        viewModel.currentUser.value!!.username = username
+        viewModel.currentUser.value!!.handle= handle
     }
 }
