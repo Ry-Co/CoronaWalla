@@ -2,6 +2,7 @@ package com.example.coronawalla.login
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class LoginActivityViewModel : ViewModel() {
@@ -11,4 +12,5 @@ class LoginActivityViewModel : ViewModel() {
     var isSignIn : Boolean = false
     var goToPhone:Boolean = false
     val db = FirebaseFirestore.getInstance()
+    val mAuth = FirebaseAuth.getInstance()
 }

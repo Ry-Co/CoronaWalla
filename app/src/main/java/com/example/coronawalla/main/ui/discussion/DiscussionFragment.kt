@@ -81,7 +81,7 @@ class DiscussionFragment : Fragment() {
     private fun updateCommentsServer(callback:(Boolean) -> Unit){
         val t = comments_recyclerView.adapter as CommentsRecyclerViewAdapter
         t.getChangedList()
-        val db = FirebaseFirestore.getInstance()
+        val db = viewModel.db
         val oldCommentList = t.getChangedList()
         val batch = db.batch()
 
@@ -102,7 +102,7 @@ class DiscussionFragment : Fragment() {
 
     private fun getCommentsFromServer(currentPost: PostClass , callback:(MutableList<CommentClass>) -> Unit){
         val commentList = mutableListOf<CommentClass>()
-        FirebaseFirestore.getInstance().collection("posts").document(currentPost.post_id).collection("comments").get().addOnCompleteListener {
+        viewModel.db.collection("posts").document(currentPost.post_id).collection("comments").get().addOnCompleteListener {
             if(it.isSuccessful){
                 for(item in it.result!!){
                     val comment = item.toObject(CommentClass::class.java)
@@ -154,11 +154,10 @@ class DiscussionFragment : Fragment() {
     }
 
     private fun updatePostServer(){
-        val db = FirebaseFirestore.getInstance()
         if(changedPosts.size > 0){
             val post = changedPosts[0]
             Log.e(TAG, "Server Call: Updating Votes Map")
-            db.collection("posts").document(post.post_id).update("votes_map", post.votes_map)
+            viewModel.db.collection("posts").document(post.post_id).update("votes_map", post.votes_map)
         }
     }
 
@@ -176,7 +175,7 @@ class DiscussionFragment : Fragment() {
 
     private fun voting(v:View){
         val voteWorker = VoteWorker()
-        val uid = FirebaseAuth.getInstance().currentUser!!.uid
+        val uid = viewModel.mAuth.currentUser!!.uid
         val upvoteIV = v.findViewById<ImageView>(R.id.disc_upvote_iv)
         val downvoteIV = v.findViewById<ImageView>(R.id.disc_downvote_iv)
         val postKarma = v.findViewById<TextView>(R.id.post_karma_tv)
@@ -217,7 +216,7 @@ class DiscussionFragment : Fragment() {
         val currentCommentET = v.findViewById<EditText>(R.id.current_comment_et)
         commentConfirmIV.setOnClickListener {
             val commentText = currentCommentET.text.toString()
-            val postRef =FirebaseFirestore.getInstance().collection("posts").document(currentPost.post_id)
+            val postRef =viewModel.db.collection("posts").document(currentPost.post_id)
             if(commentText.isEmpty()){
                 Toast.makeText(context, "Comments can't be empty!", Toast.LENGTH_SHORT).show()
             }else{

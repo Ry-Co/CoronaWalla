@@ -99,7 +99,7 @@ class LocalFragment : Fragment() {
     }
 
     private fun navigation(){
-        val anon = FirebaseAuth.getInstance().currentUser!!.isAnonymous
+        val anon = viewModel.mAuth.currentUser!!.isAnonymous
         val postImageButton = requireActivity().findViewById<ImageView>(R.id.right_button_iv)
         val profileImageButton = requireActivity().findViewById<ImageView>(R.id.left_button_iv)
         val townTextView = requireActivity().findViewById<TextView>(R.id.toolbar_title_tv)

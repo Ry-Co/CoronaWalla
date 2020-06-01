@@ -38,16 +38,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var locReq: LocationRequest
     private lateinit var locationCallback: LocationCallback
     private lateinit var viewModel:MainActivityViewModel
-
-    //todo profile to local seems to not update posts vote counts?
-    //todo make share text view implication
-    //todo profile states
-
+    private lateinit var mAuth : FirebaseAuth
     private val permOptions = QuickPermissionsOptions(
         handleRationale = true,
         rationaleMessage = "Location permissions are required for core functionality!",
         handlePermanentlyDenied = true,
         permanentlyDeniedMessage = "Location permissions are needed for the core functionality of this app. Please enable these permissions to continue")
+
+    //todo profile to local seems to not update posts vote counts?
+    //todo post preview and settings page
+    //todo make share text view implication
+    //todo profile stats
 
     override fun onResume() {
         super.onResume()
@@ -66,14 +67,15 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel =  ViewModelProvider(this).get(MainActivityViewModel::class.java)
+        mAuth = viewModel.mAuth
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar_main))
         val tb = ToolbarWorker(this)
         flp = LocationServices.getFusedLocationProviderClient(this)
 
         getLocationUpdates()
-        if(!FirebaseAuth.getInstance().currentUser!!.isAnonymous){
-            val uid = FirebaseAuth.getInstance().currentUser!!.uid
+        if(!mAuth.currentUser!!.isAnonymous){
+            val uid = mAuth.currentUser!!.uid
             updateVMUserValues(uid)
         }
 

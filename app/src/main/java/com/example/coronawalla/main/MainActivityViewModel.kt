@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.coronawalla.main.ui.local.PostClass
 import com.example.coronawalla.main.ui.profile.UserClass
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 //https://proandroiddev.com/when-to-load-data-in-viewmodels-ad9616940da7
@@ -15,6 +16,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 class MainActivityViewModel: ViewModel() {
     private val TAG: String? = MainActivityViewModel::class.simpleName
     val db = FirebaseFirestore.getInstance()
+    val mAuth = FirebaseAuth.getInstance()
     var toolbarMode = MutableLiveData<Int>()
     var currentLocation = MutableLiveData<Location>()
     var currentUser = MutableLiveData<UserClass>()

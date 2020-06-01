@@ -48,7 +48,7 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         navigation()
 
-        val uid = FirebaseAuth.getInstance().currentUser!!.uid
+        val uid = viewModel.mAuth.currentUser!!.uid
         val act = activity as MainActivity
         act.updateVMUserValues(uid)
 
@@ -90,7 +90,7 @@ class ProfileFragment : Fragment() {
     private fun util_sign_out_prof_Img(){
         val profpic = requireActivity().findViewById<ImageView>(R.id.profile_iv)
         profpic.setOnClickListener {
-            FirebaseAuth.getInstance().signOut()
+            viewModel.mAuth.signOut()
             val intent = Intent(context, LauncherActivity::class.java)
             startActivity(intent)
         }

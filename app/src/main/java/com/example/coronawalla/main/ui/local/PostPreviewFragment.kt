@@ -39,7 +39,7 @@ class PostPreviewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val postText = arguments?.get("postText") as String
-        val db = FirebaseFirestore.getInstance()
+        val db = viewModel.db
 
         val postTextView = view.findViewById<TextView>(R.id.postTV)
         val multiplierTV = view.findViewById<TextView>(R.id.multiplierTV)
@@ -84,7 +84,7 @@ class PostPreviewFragment : Fragment() {
     }
 
     private fun getPostMap(postText:String): PostClass{
-        val mAuth = FirebaseAuth.getInstance()
+        val mAuth = viewModel.mAuth
         val currentGeoPoint = GeoPoint(viewModel.currentLocation.value!!.latitude, viewModel.currentLocation.value!!.longitude)
         val postTime = System.currentTimeMillis()
         val mVotes = mutableMapOf<String, Boolean?>()

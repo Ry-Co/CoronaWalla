@@ -133,7 +133,7 @@ class ProfileEditFragment : Fragment() {
 
     private fun getHandles(callback:(HashSet<String>) ->Unit ){
         val takenHandleSet = hashSetOf<String>()
-        FirebaseFirestore.getInstance().collection("handles").get().addOnCompleteListener{
+        viewModel.db.collection("handles").get().addOnCompleteListener{
             if(it.isSuccessful){
                 for(doc in it.result!!){
                     if(doc.get("user_id") == viewModel!!.currentUser.value!!.user_id){
@@ -155,7 +155,7 @@ class ProfileEditFragment : Fragment() {
         val usernameET:EditText = view.findViewById(R.id.username_et)
         val username = usernameET.text.toString()
         val handle = handleET.text.toString()
-        val db = FirebaseFirestore.getInstance()
+        val db = viewModel.db
         Log.e(TAG, "Server Call: Updating user vals")
         db.collection("users").document(viewModel!!.currentUser.value!!.user_id).update(
             "username", username,

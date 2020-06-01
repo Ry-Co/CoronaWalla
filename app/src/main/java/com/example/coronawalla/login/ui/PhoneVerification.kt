@@ -29,10 +29,12 @@ class PhoneVerification : Fragment() {
     private val TAG: String? = PasswordFragment::class.simpleName
     private lateinit var viewModel:LoginActivityViewModel
     private var verificationID: String? = null
+    private lateinit var mAuth:FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel =  ViewModelProvider(this.requireActivity()).get(LoginActivityViewModel::class.java)
+        mAuth = viewModel.mAuth
     }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -63,7 +65,7 @@ class PhoneVerification : Fragment() {
     }
 
     private fun sendCode() {
-        val number = viewModel?.phoneNumber.toString().trim()
+        val number = viewModel.phoneNumber.toString().trim()
         PhoneAuthProvider.getInstance().verifyPhoneNumber(
             number,
             60,
@@ -91,16 +93,16 @@ class PhoneVerification : Fragment() {
         }
 
     private fun addPhoneNumber(p0: PhoneAuthCredential) {
-        if(FirebaseAuth.getInstance().currentUser==null){
-            FirebaseAuth.getInstance().signInWithCredential(p0).addOnCompleteListener {
+        if(viewModel.mAuth.currentUser==null){
+            viewModel.mAuth.signInWithCredential(p0).addOnCompleteListener {
                 if (it.isSuccessful) {
                     Toast.makeText(context, "Signed in!", Toast.LENGTH_SHORT).show()
                     //update user info
-                    FirebaseAuth.getInstance().currentUser?.updatePhoneNumber(p0)
+                    viewModel.mAuth.currentUser?.updatePhoneNumber(p0)
                         ?.addOnCompleteListener {
                             if (it.isSuccessful) {
                                 //Toast.makeText(context, "Phone added!", Toast.LENGTH_SHORT).show()
-                                val mAuth = FirebaseAuth.getInstance()
+                                val mAuth = viewModel.mAuth
                                 val user = UserClass()
                                 user.user_id = mAuth.currentUser!!.uid
 
@@ -130,20 +132,20 @@ class PhoneVerification : Fragment() {
                     ).show()
                 }
             }
-        }else if(FirebaseAuth.getInstance().currentUser!!.isAnonymous){
-            FirebaseAuth.getInstance().currentUser!!.linkWithCredential(p0).addOnCompleteListener {
+        }else if(viewModel.mAuth.currentUser!!.isAnonymous){
+            viewModel.mAuth.currentUser!!.linkWithCredential(p0).addOnCompleteListener {
                 if (it.isSuccessful) {
                     Toast.makeText(context, "Account Created!", Toast.LENGTH_SHORT).show()
                     //update user info
-                    FirebaseAuth.getInstance().currentUser?.updatePhoneNumber(p0)
+                    viewModel.mAuth.currentUser?.updatePhoneNumber(p0)
                         ?.addOnCompleteListener {
                             if (it.isSuccessful) {
                                 //Toast.makeText(context, "Phone added!", Toast.LENGTH_SHORT).show()
-                                val mAuth = FirebaseAuth.getInstance()
+                                val mAuth = viewModel.mAuth
                                 val user = UserClass()
                                 user.user_id = mAuth.currentUser!!.uid
 
-                                viewModel!!.db.collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
+                                viewModel.db.collection("users").document(mAuth.currentUser!!.uid).set(user).addOnCompleteListener{ it ->
                                     if(it.isSuccessful){
                                         Log.d(TAG, "User added")
                                         val intent = Intent(activity, LauncherActivity::class.java).putExtra("anon", false)
