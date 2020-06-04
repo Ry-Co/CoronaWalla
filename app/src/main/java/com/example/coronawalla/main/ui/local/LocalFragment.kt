@@ -122,13 +122,23 @@ class LocalFragment : Fragment() {
 
     private fun recyclerHandling(){
         //if the list is null or empty, set an observer and wait for values. Otherwise use the one currently available
-        if(viewModel.localPostList.value == null || viewModel.localPostList.value!!.isEmpty()){
-            viewModel.localPostList.observe(viewLifecycleOwner, Observer{
-                posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
-            })
-        }else{
-            val list = viewModel.localPostList.value
-            posts_recyclerView.adapter = PostsRecyclerViewAdapter(list!!.toList(), findNavController())
+        when {
+            viewModel.localPostList.value == null -> {
+                viewModel.localPostList.observe(viewLifecycleOwner, Observer{
+                    posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
+                })
+            }
+            viewModel.localPostList.value!!.isEmpty() -> {
+                posts_recyclerView.adapter = PostsRecyclerViewAdapter(viewModel.localPostList.value!!, findNavController())
+                posts_recyclerView.visibility = View.INVISIBLE
+                empty_view_posts.visibility = View.VISIBLE
+            }
+            else -> {
+                val list = viewModel.localPostList.value
+                posts_recyclerView.visibility = View.VISIBLE
+                empty_view_posts.visibility = View.GONE
+                posts_recyclerView.adapter = PostsRecyclerViewAdapter(list!!.toList(), findNavController())
+            }
         }
         posts_refreshLayout.setOnRefreshListener {
             //This is a safe cast because of the fragment we are in

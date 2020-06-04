@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">CoronaWalla</string>
+    <string name="no_comments">No comments yet :(</string>
+    <string name="no_posts">A bit quiet around here…</string>
+    <string name="loc_rationale">Location permissions are required for core functionality!</string>
+    <string name="loc_rationale_perm_denied">Location permissions are needed for the core functionality of this app. Please enable these permissions to continue</string>
+
 
 </resources>

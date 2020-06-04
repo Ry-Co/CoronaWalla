@@ -36,27 +36,16 @@ class PostPreviewFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val postText = arguments?.get("postText") as String
         val db = viewModel.db
-
+        val postAsUserHandle = view.findViewById<TextView>(R.id.user_handle_tv)
         val postTextView = view.findViewById<TextView>(R.id.postTV)
-        val multiplierTV = view.findViewById<TextView>(R.id.multiplierTV)
-        val postAsText = view.findViewById<TextView>(R.id.postAsTV)
-        val postAsSwitch = view.findViewById<Switch>(R.id.postAsSwitch)
-        val postButton = view.findViewById<Button>(R.id.postButton)
+        val anonButton = view.findViewById<Button>(R.id.anon_post_button)
+        val namedButton = view.findViewById<Button>(R.id.named_post_button)
         val currentGeoPoint = GeoPoint(viewModel.currentLocation.value!!.latitude, viewModel.currentLocation.value!!.longitude)
         postTextView.text = postText
+        postAsUserHandle.text = "Post as "+viewModel.currentUser.value!!.handle
 
-        postAsSwitch.setOnClickListener {
-            if(postAsSwitch.isChecked){
-                postAsText.text = "Post as: User Name"
-                multiplierTV.text = "2x"
-            }else{
-                postAsText.text = "Post as: Anonymous"
-                multiplierTV.text = "1x"
-            }
-        }
-
-        postButton.setOnClickListener {
-            val post = getPostMap(postText)
+        namedButton.setOnClickListener {
+            val post = getPostMap(postText, 2)
             Log.e(TAG, "Server Call: Adding post to collection")
             db.collection("posts").add(post).addOnCompleteListener{ postTask ->
                 if (postTask.isSuccessful){
@@ -77,9 +66,33 @@ class PostPreviewFragment : Fragment() {
             }
             findNavController().navigate(R.id.action_postPreviewFragment_to_local)
         }
+
+        anonButton.setOnClickListener {
+            val post = getPostMap(postText, 1)
+            Log.e(TAG, "Server Call: Adding post to collection")
+            db.collection("posts").add(post).addOnCompleteListener{ postTask ->
+                if (postTask.isSuccessful){
+                    Log.d(TAG, "Post Sent!")
+                    val geoFirestore = GeoFirestore(db.collection("posts"))
+                    Log.e(TAG, "Server Call: adding post ID number to post document")
+                    db.collection("posts").document(postTask.result!!.id).update("post_id", postTask.result!!.id).addOnCompleteListener{
+                        if(it.isSuccessful){
+                            Log.i(TAG, "Updated mPostID")
+                        }else{
+                            Log.e(TAG, it.exception.toString())
+                        }
+                    }
+                    geoFirestore.setLocation(postTask.result!!.id,currentGeoPoint)
+                }else{
+                    Log.e(TAG, "Error:: "+postTask.exception.toString())
+                }
+            }
+            findNavController().navigate(R.id.action_postPreviewFragment_to_local)
+
+        }
     }
 
-    private fun getPostMap(postText:String): PostClass{
+    private fun getPostMap(postText:String, multiplier:Int): PostClass{
         val mAuth = viewModel.mAuth
         val currentGeoPoint = GeoPoint(viewModel.currentLocation.value!!.latitude, viewModel.currentLocation.value!!.longitude)
         val postTime = System.currentTimeMillis()
@@ -92,7 +105,7 @@ class PostPreviewFragment : Fragment() {
             active = true,
             post_geo_point = currentGeoPoint,
             post_date_long = postTime,
-            post_multiplier = 1,
+            post_multiplier = multiplier,
             payout_date_long = postTime + 3600000*24,
             votes_map = mVotes
         )

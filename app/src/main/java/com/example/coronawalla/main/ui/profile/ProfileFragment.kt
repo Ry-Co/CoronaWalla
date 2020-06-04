@@ -45,11 +45,9 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navigation()
-
         val uid = viewModel.mAuth.currentUser!!.uid
         val act = activity as MainActivity
         act.updateVMUserValues(uid)
-
         //get the users values
         //plug them into the profile
         viewModel.currentUser.observe(viewLifecycleOwner, Observer{

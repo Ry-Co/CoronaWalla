@@ -39,16 +39,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var locationCallback: LocationCallback
     private lateinit var viewModel:MainActivityViewModel
     private lateinit var mAuth : FirebaseAuth
+    private lateinit var storage :FirebaseStorage
     private val permOptions = QuickPermissionsOptions(
         handleRationale = true,
-        rationaleMessage = "Location permissions are required for core functionality!",
+        rationaleMessage = R.string.loc_rationale.toString(),
         handlePermanentlyDenied = true,
-        permanentlyDeniedMessage = "Location permissions are needed for the core functionality of this app. Please enable these permissions to continue")
+        permanentlyDeniedMessage = R.string.loc_rationale_perm_denied.toString())
 
-    //todo profile to local seems to not update posts vote counts?
     //todo post preview and settings page
-    //todo make share text view implication
+    //todo make share textview functional
+    //todo account for post multipliers
     //todo profile stats
+    //todo custom shaped toolbar?
 
     override fun onResume() {
         super.onResume()
@@ -68,6 +70,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         viewModel =  ViewModelProvider(this).get(MainActivityViewModel::class.java)
         mAuth = viewModel.mAuth
+        storage = viewModel.storage
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar_main))
         val tb = ToolbarWorker(this)
@@ -116,7 +119,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getBitmapFromUID(uid:String, callback:(Bitmap)->Unit){
-        val profRef = FirebaseStorage.getInstance().reference.child("images/$uid")
+        val profRef = storage.reference.child("images/$uid")
         val ONE_MEGABYTE: Long = 1024 * 1024
         profRef.getBytes(ONE_MEGABYTE).addOnCompleteListener {
             if (it.isSuccessful) {
@@ -195,7 +198,7 @@ class MainActivity : AppCompatActivity() {
         when (resultCode) {
             Activity.RESULT_OK -> {
                 val uid = viewModel.currentUser.value!!.user_id
-                val storageRef = FirebaseStorage.getInstance().reference.child("images/$uid")
+                val storageRef = storage.reference.child("images/$uid")
                 val fileUri = data?.data
                 try{
                     fileUri?.let {

@@ -47,8 +47,8 @@ class DiscussionFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel =  ViewModelProvider(this.requireActivity()).get(MainActivityViewModel::class.java)
-    }
 
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
@@ -243,7 +243,16 @@ class DiscussionFragment : Fragment() {
     private fun recyclerHandling(){
         getCommentsFromServer(currentPost){commentsList->
             //recycler handeling
-            comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
+            if(commentsList.isEmpty()){
+                comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
+                comments_recyclerView.visibility = View.INVISIBLE
+                empty_view.visibility = View.VISIBLE
+            }else{
+                comments_recyclerView.visibility = View.VISIBLE
+                empty_view.visibility = View.GONE
+                comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
+            }
+
         }
         comments_recyclerView.layoutManager = LinearLayoutManager(requireContext())
         comments_refreshLayout.setOnRefreshListener {
@@ -253,7 +262,6 @@ class DiscussionFragment : Fragment() {
                     //recycler handeling
                     comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
                     comments_refreshLayout.isRefreshing = false
-
                 }
             }
 
