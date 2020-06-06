@@ -81,7 +81,7 @@
             app:layout_constraintTop_toBottomOf="@+id/postText_TV" />
 
         <TextView
-            android:id="@+id/duration_TV2"
+            android:id="@+id/post_share_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
@@ -105,7 +105,7 @@
             android:layout_marginBottom="4dp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/duration_TV2"
+            app:layout_constraintEnd_toStartOf="@+id/post_share_tv"
             app:layout_constraintHorizontal_bias=".5"
             app:layout_constraintStart_toEndOf="@+id/duration_TV"
             app:layout_constraintTop_toBottomOf="@+id/postText_TV"

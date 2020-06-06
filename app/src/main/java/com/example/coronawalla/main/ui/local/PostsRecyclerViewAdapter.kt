@@ -1,5 +1,6 @@
 package com.example.coronawalla.main.ui.local
 
+import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -15,7 +16,9 @@ import com.example.coronawalla.main.MainActivityViewModel
 import com.example.coronawalla.main.VoteWorker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.android.synthetic.main.fragment_discussion.view.*
 import kotlinx.android.synthetic.main.list_item.view.*
+import kotlinx.android.synthetic.main.list_item.view.post_karma_tv
 
 class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private val navController:NavController) : RecyclerView.Adapter<PostsRecyclerViewAdapter.PostsRecyclerViewHolder>() {
     private val changedPosts = ArrayList<PostClass>()
@@ -53,6 +56,7 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
         val postTextTV: TextView = itemView.postText_TV
         val postKarma: TextView = itemView.post_karma_tv
         val postAgeTV: TextView = itemView.duration_TV
+        val postShare: TextView = itemView.post_share_tv
         val upvoteIV: ImageView = itemView.upvote_IV
         val downvoteIV: ImageView = itemView.downvote_IV
         val posterHandleTV:TextView = itemView.posters_handle_tv
@@ -92,6 +96,21 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
             prevVote = usersVote
             changedPosts.add(currentPost)
         }
+
+        holder.postShare.setOnClickListener {
+            //abbreviate post text, put it as title
+            //put quotes around post text
+            val shareIntent = Intent(Intent.ACTION_SEND)
+            shareIntent.type = "text/plain"
+            val shareBody = "'"+currentPost.post_text+"'"+"- posted on soapBox, join the conversation @ [playstoreLink]"
+            val abbrString = currentPost.post_text.take(38) + "..."
+            val shareSubject = abbrString
+            shareIntent.putExtra(Intent.EXTRA_TEXT, shareBody)
+            shareIntent.putExtra(Intent.EXTRA_SUBJECT, shareSubject)
+            holder.itemView.context.startActivity(Intent.createChooser(shareIntent, "Share this post"))
+        }
+
+
     }
 
     private fun navigation(holder:PostsRecyclerViewHolder){

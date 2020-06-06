@@ -46,9 +46,9 @@ class MainActivity : AppCompatActivity() {
         handlePermanentlyDenied = true,
         permanentlyDeniedMessage = R.string.loc_rationale_perm_denied.toString())
 
-    //todo post preview and settings page
-    //todo make share textview functional
+    //todo handle the ava.lang.RuntimeException: Parcel: unable to marshal value GeoPoint { latitude=33.1826614, longitude=-96.8540217 } error on app close
     //todo account for post multipliers
+    //todo on posting of post/comment update the recyclerview
     //todo profile stats
     //todo custom shaped toolbar?
 
