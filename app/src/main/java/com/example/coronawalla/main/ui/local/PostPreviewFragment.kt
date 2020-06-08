@@ -45,7 +45,7 @@ class PostPreviewFragment : Fragment() {
         postAsUserHandle.text = "Post as "+viewModel.currentUser.value!!.handle
 
         namedButton.setOnClickListener {
-            val post = getPostMap(postText, 2)
+            val post = getPostMap(postText, 2, false)
             Log.e(TAG, "Server Call: Adding post to collection")
             db.collection("posts").add(post).addOnCompleteListener{ postTask ->
                 if (postTask.isSuccessful){
@@ -68,7 +68,7 @@ class PostPreviewFragment : Fragment() {
         }
 
         anonButton.setOnClickListener {
-            val post = getPostMap(postText, 1)
+            val post = getPostMap(postText, 1, true)
             Log.e(TAG, "Server Call: Adding post to collection")
             db.collection("posts").add(post).addOnCompleteListener{ postTask ->
                 if (postTask.isSuccessful){
@@ -92,9 +92,11 @@ class PostPreviewFragment : Fragment() {
         }
     }
 
-    private fun getPostMap(postText:String, multiplier:Int): PostClass{
+    private fun getPostMap(postText:String, multiplier:Int, anon:Boolean): PostClass{
         val mAuth = viewModel.mAuth
-        val currentGeoPoint = GeoPoint(viewModel.currentLocation.value!!.latitude, viewModel.currentLocation.value!!.longitude)
+        //val currentGeoPoint = GeoPoint(viewModel.currentLocation.value!!.latitude, viewModel.currentLocation.value!!.longitude)
+        val latitude = viewModel.currentLocation.value!!.latitude
+        val longitude = viewModel.currentLocation.value!!.longitude
         val postTime = System.currentTimeMillis()
         val mVotes = mutableMapOf<String, Boolean?>()
         mVotes[mAuth.currentUser!!.uid] = true
@@ -103,7 +105,10 @@ class PostPreviewFragment : Fragment() {
             post_text = postText,
             poster_id = mAuth.currentUser!!.uid,
             active = true,
-            post_geo_point = currentGeoPoint,
+            post_longitude = longitude,
+            post_latitude = latitude,
+            post_anon = anon,
+            //post_geo_point = currentGeoPoint,
             post_date_long = postTime,
             post_multiplier = multiplier,
             payout_date_long = postTime + 3600000*24,

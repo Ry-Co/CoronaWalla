@@ -2,10 +2,78 @@ package com.example.coronawalla.main
 
 import android.widget.ImageView
 import com.example.coronawalla.R
+import com.example.coronawalla.main.ui.discussion.CommentClass
 import com.example.coronawalla.main.ui.local.PostClass
 import kotlin.math.round
 
 class VoteWorker() {
+    val postComparator =  Comparator<PostClass> { a, b ->
+        var aMult = 1
+        var bMult = 1
+        if(!a.post_anon){
+            aMult = 2
+        }
+        if(!b.post_anon){
+            bMult = 2
+        }
+        val vw = VoteWorker()
+        val tic = System.currentTimeMillis()
+        val aVoteCount = vw.getVoteCount(a.votes_map!!, aMult)
+        val bVoteCount = vw.getVoteCount(b.votes_map!!, bMult)
+        val aAgeHours  = (tic - a.post_date_long) / 3600000.0
+        val aRate = aVoteCount/aAgeHours
+        val bAgeHours  = (tic - b.post_date_long) / 3600000.0
+        val bRate = bVoteCount/bAgeHours
+        //Log.e(TAG, "a ="+a.post_id+" b ="+b.post_id+" aRate= $aRate  bRate= $bRate")
+        when {
+            aRate == bRate -> {
+                //Log.e(TAG, "EQUAL")
+                0
+            }
+            aRate < bRate -> {
+                //Log.e(TAG, "a < b")
+                1
+            }
+            else -> {
+                //Log.e(TAG, "a > b")
+                -1
+            }
+        }
+    }
+    val commentComparator =  Comparator<CommentClass> { a, b ->
+        var aMult = 1
+        var bMult = 1
+        if(!a.comment_anon){
+            aMult = 2
+        }
+        if(!b.comment_anon){
+            bMult = 2
+        }
+        val vw = VoteWorker()
+        val tic = System.currentTimeMillis()
+        val aVoteCount = vw.getVoteCount(a.votes_map!!, aMult)
+        val bVoteCount = vw.getVoteCount(b.votes_map!!, bMult)
+        val aAgeHours  = (tic - a.comment_date_long) / 3600000.0
+        val aRate = aVoteCount/aAgeHours
+        val bAgeHours  = (tic - b.comment_date_long) / 3600000.0
+        val bRate = bVoteCount/bAgeHours
+        //Log.e(TAG, "a ="+a.post_id+" b ="+b.post_id+" aRate= $aRate  bRate= $bRate")
+        when {
+            aRate == bRate -> {
+                //Log.e(TAG, "EQUAL")
+                0
+            }
+            aRate < bRate -> {
+                //Log.e(TAG, "a < b")
+                1
+            }
+            else -> {
+                //Log.e(TAG, "a > b")
+                -1
+            }
+        }
+    }
+
     fun updateVoteMap(usersVote: Boolean?, uid: String, votes_map: MutableMap<String, Boolean?>): MutableMap<String, Boolean?> {
         return when (usersVote) {
             null -> {
@@ -86,7 +154,7 @@ class VoteWorker() {
         }
     }
 
-    fun getVoteCount(votes_map: MutableMap<String, Boolean?>): Int {
+    fun getVoteCount(votes_map: MutableMap<String, Boolean?>, multiplier:Int): Int {
         return if (votes_map.isEmpty()) {
             //do nothing
             0
@@ -108,7 +176,7 @@ class VoteWorker() {
                     }
                 }
             }
-            counter
+            counter*multiplier
         }
     }
 

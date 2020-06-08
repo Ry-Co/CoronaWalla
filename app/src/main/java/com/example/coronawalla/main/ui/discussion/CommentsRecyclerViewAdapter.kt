@@ -1,5 +1,6 @@
 package com.example.coronawalla.main.ui.discussion
 
+import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -32,6 +33,18 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
             holder.commentersHandleTV.text = "@"+it.get("handle")
             currentItem.commenter_handle = it.get("handle").toString()
         }
+        holder.commentShareTV.setOnClickListener {
+            //comment share
+            //abbreviate post text, put it as title
+            //put quotes around post text
+            val shareIntent = Intent(Intent.ACTION_SEND)
+            shareIntent.type = "text/plain"
+            val shareBody = "'"+currentItem.comment_text+"'"+"- posted on soapBox, join the conversation @ [playstoreLink]"
+            val abbrString = currentItem.comment_text.take(38) + "..."
+            shareIntent.putExtra(Intent.EXTRA_TEXT, shareBody)
+            shareIntent.putExtra(Intent.EXTRA_SUBJECT, abbrString)
+            holder.itemView.context.startActivity(Intent.createChooser(shareIntent, "Share this post"))
+        }
     }
 
     override fun getItemCount() = commentList.size
@@ -42,6 +55,7 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
         val commentKarmaTV: TextView = itemView.comment_karma_tv
         val upvoteIV:ImageView = itemView.comment_upvote_iv
         val downvoteIV : ImageView = itemView.comment_downvote_iv
+        val commentShareTV : TextView = itemView.comment_share_tv
     }
 
     fun getChangedList(): ArrayList<CommentClass>{
@@ -50,8 +64,12 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
 
     private fun voting(holder:CommentsRecyclerViewHolder, uid:String, currentComment:CommentClass){
         val voteWorker = VoteWorker()
+        var commentMult = 1
+        if(!currentComment.comment_anon){
+            commentMult = 2
+        }
         var prevVote = voteWorker.getPrevVote(uid, currentComment.votes_map!!)
-        var voteCount = voteWorker.getVoteCount(currentComment.votes_map!!)
+        var voteCount = voteWorker.getVoteCount(currentComment.votes_map!!, commentMult)
 
         voteWorker.voteVisual(holder.upvoteIV, holder.downvoteIV, prevVote)
         holder.commentKarmaTV.text = voteCount.toString()
@@ -59,7 +77,7 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
         holder.upvoteIV.setOnClickListener {
             usersVote = voteWorker.vote(usersVote, true, holder.upvoteIV, holder.downvoteIV)
             currentComment.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentComment.votes_map!!)
-            val voteCountString = voteWorker.getVoteCount(currentComment.votes_map!!).toString()
+            val voteCountString = voteWorker.getVoteCount(currentComment.votes_map!!, commentMult).toString()
             holder.commentKarmaTV.text = voteCountString
             voteCount = voteCountString.toInt()
             prevVote = usersVote
@@ -68,7 +86,7 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
         holder.downvoteIV.setOnClickListener {
             usersVote = voteWorker.vote(usersVote, false,holder.upvoteIV, holder.downvoteIV)
             currentComment.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentComment.votes_map!!)
-            val voteCountString = voteWorker.getVoteCount(currentComment.votes_map!!).toString()
+            val voteCountString = voteWorker.getVoteCount(currentComment.votes_map!!, commentMult).toString()
             holder.commentKarmaTV.text = voteCountString
             voteCount = voteCountString.toInt()
             prevVote = usersVote

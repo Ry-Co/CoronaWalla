@@ -126,11 +126,13 @@ class LocalFragment : Fragment() {
             viewModel.localPostList.value == null -> {
                 viewModel.localPostList.observe(viewLifecycleOwner, Observer{
                     posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
+                    posts_recyclerView.visibility = View.VISIBLE
+                    empty_view_posts.visibility = View.GONE
                 })
             }
             viewModel.localPostList.value!!.isEmpty() -> {
                 posts_recyclerView.adapter = PostsRecyclerViewAdapter(viewModel.localPostList.value!!, findNavController())
-                posts_recyclerView.visibility = View.INVISIBLE
+                posts_recyclerView.visibility = View.GONE
                 empty_view_posts.visibility = View.VISIBLE
             }
             else -> {
@@ -147,6 +149,8 @@ class LocalFragment : Fragment() {
                     val mA:MainActivity = activity as MainActivity
                     mA.getPostsFromServer(){
                         posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
+                        posts_recyclerView.visibility = View.VISIBLE
+                        empty_view_posts.visibility = View.GONE
                     }
                     posts_refreshLayout.isRefreshing = false
                 }

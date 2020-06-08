@@ -8,15 +8,12 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.os.bundleOf
-import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coronawalla.R
-import com.example.coronawalla.main.MainActivityViewModel
 import com.example.coronawalla.main.VoteWorker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.android.synthetic.main.fragment_discussion.view.*
 import kotlinx.android.synthetic.main.list_item.view.*
 import kotlinx.android.synthetic.main.list_item.view.post_karma_tv
 
@@ -43,7 +40,11 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
         db.collection("users").document(currentItem.poster_id).get().addOnCompleteListener {
             if(it.isSuccessful){
                 val userDoc = it.result
-                holder.posterHandleTV.text = "@"+userDoc!!.get("handle").toString()
+                if(currentItem.post_anon){
+                    holder.posterHandleTV.text = "@Anonymous"
+                }else{
+                    holder.posterHandleTV.text = "@"+userDoc!!.get("handle").toString()
+                }
             }else{
                 Log.e(TAG, it.exception.toString())
             }
@@ -68,8 +69,10 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
 
     private fun voting(holder:PostsRecyclerViewHolder, uid:String, currentPost:PostClass){
         val voteWorker = VoteWorker()
+        var mult = 1
+        if(!currentPost.post_anon){mult = 2}
         var prevVote = voteWorker.getPrevVote(uid, currentPost.votes_map!!)
-        var voteCount = voteWorker.getVoteCount(currentPost.votes_map!!)
+        var voteCount = voteWorker.getVoteCount(currentPost.votes_map!!, mult)
 
 
         holder.postAgeTV.text = voteWorker.getAgeString(currentPost.post_date_long)
@@ -81,7 +84,7 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
         holder.upvoteIV.setOnClickListener {
             usersVote = voteWorker.vote(usersVote, true, holder.upvoteIV, holder.downvoteIV)
             currentPost.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentPost.votes_map!!)
-            val voteCountString = voteWorker.getVoteCount(currentPost.votes_map!!).toString()
+            val voteCountString = voteWorker.getVoteCount(currentPost.votes_map!!,mult).toString()
             holder.postKarma.text = voteCountString
             voteCount = voteCountString.toInt()
             prevVote = usersVote
@@ -90,7 +93,7 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
         holder.downvoteIV.setOnClickListener {
             usersVote = voteWorker.vote(usersVote, false,holder.upvoteIV, holder.downvoteIV)
             currentPost.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentPost.votes_map!!)
-            val voteCountString = voteWorker.getVoteCount(currentPost.votes_map!!).toString()
+            val voteCountString = voteWorker.getVoteCount(currentPost.votes_map!!,mult).toString()
             holder.postKarma.text = voteCountString
             voteCount = voteCountString.toInt()
             prevVote = usersVote
@@ -104,9 +107,8 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
             shareIntent.type = "text/plain"
             val shareBody = "'"+currentPost.post_text+"'"+"- posted on soapBox, join the conversation @ [playstoreLink]"
             val abbrString = currentPost.post_text.take(38) + "..."
-            val shareSubject = abbrString
             shareIntent.putExtra(Intent.EXTRA_TEXT, shareBody)
-            shareIntent.putExtra(Intent.EXTRA_SUBJECT, shareSubject)
+            shareIntent.putExtra(Intent.EXTRA_SUBJECT, abbrString)
             holder.itemView.context.startActivity(Intent.createChooser(shareIntent, "Share this post"))
         }
 
@@ -126,7 +128,7 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
         Log.e(TAG, "Go to discussion")
         //add bundles
         //https://medium.com/incwell-innovations/passing-data-in-android-navigation-architecture-component-part-2-5f1ebc466935
-        val postReference = db.collection("posts").document(postList[position].post_id)
+        //val postReference = db.collection("posts").document(postList[position].post_id)
         val bundle = bundleOf("post" to postList[position], "posterHandle" to posterHandle)
         navController.navigate(R.id.action_local_to_discussionFragment, bundle)
     }

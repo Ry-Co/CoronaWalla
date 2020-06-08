@@ -2,6 +2,7 @@ package com.example.coronawalla.main.ui.discussion
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -68,10 +69,23 @@ class DiscussionFragment : Fragment() {
         voting(v)
         commenting(v)
         //declare and set post values
+        val postShareTV = v.findViewById<TextView>(R.id.share_tv)
         val postText = v.findViewById<TextView>(R.id.post_text_tv)
         val posterHandle = v.findViewById<TextView>(R.id.disc_posters_handle_tv)
         posterHandle.text = ph
         postText.text = currentPost.post_text
+
+        postShareTV.setOnClickListener {
+            //abbreviate post text, put it as title
+            //put quotes around post text
+            val shareIntent = Intent(Intent.ACTION_SEND)
+            shareIntent.type = "text/plain"
+            val shareBody = "'"+currentPost.post_text+"'"+"- posted on soapBox, join the conversation @ [playstoreLink]"
+            val abbrString = currentPost.post_text.take(38) + "..."
+            shareIntent.putExtra(Intent.EXTRA_TEXT, shareBody)
+            shareIntent.putExtra(Intent.EXTRA_SUBJECT, abbrString)
+            startActivity(Intent.createChooser(shareIntent, "Share this post"))
+        }
     }
 
     private fun updateCommentsServer(callback:(Boolean) -> Unit){
@@ -104,27 +118,9 @@ class DiscussionFragment : Fragment() {
                     val comment = item.toObject(CommentClass::class.java)
                     commentList.add(comment)
                 }
-                val myCustomComparator =  Comparator<CommentClass> { a, b ->
-                    val vw = VoteWorker()
-                    val aRate = vw.getVoteCount(a.votes_map!!)
-                    val bRate = vw.getVoteCount(b.votes_map!!)
-                    //Log.e(TAG, "a ="+a.post_id+" b ="+b.post_id+" aRate= $aRate  bRate= $bRate")
-                    when {
-                        aRate == bRate -> {
-                            //Log.e(TAG, "EQUAL")
-                            0
-                        }
-                        aRate < bRate -> {
-                            //Log.e(TAG, "a < b")
-                            1
-                        }
-                        else -> {
-                            //Log.e(TAG, "a > b")
-                            -1
-                        }
-                    }
-                }
-                val commentsSorted = commentList.sortedWith(myCustomComparator)
+                val vw = VoteWorker()
+
+                val commentsSorted = commentList.sortedWith(vw.commentComparator)
 
                 callback.invoke(commentsSorted.toMutableList())
             }else{
@@ -138,12 +134,14 @@ class DiscussionFragment : Fragment() {
         val mVotes = mutableMapOf<String, Boolean?>()
         val uid = viewModel.currentUser.value!!.user_id
         val handle = viewModel.currentUser.value!!.handle.toString()
+        val post_long = System.currentTimeMillis()
         mVotes[uid] = true
 
         return CommentClass(
             comment_id = "",
             comment_text = postText,
             votes_map = mVotes,
+            comment_date_long = post_long,
             commenter_id = uid,
             commenter_handle = handle
         )
@@ -177,9 +175,13 @@ class DiscussionFragment : Fragment() {
         val postKarma = v.findViewById<TextView>(R.id.post_karma_tv)
         //including postDuration here because it uses the voteWorker util function getAgeString()
         val postDuration = v.findViewById<TextView>(R.id.post_duration_tv)
+        var mult = 1
+        if(!currentPost.post_anon){
+            mult = 2
+        }
 
 
-        var voteCount = voteWorker.getVoteCount(currentPost.votes_map!!)
+        var voteCount = voteWorker.getVoteCount(currentPost.votes_map!!,mult)
         postKarma.text = voteCount.toString()
         var prevVote = voteWorker.getPrevVote(uid, currentPost.votes_map!!)
         voteWorker.voteVisual(upvoteIV, downvoteIV, prevVote)
@@ -189,7 +191,7 @@ class DiscussionFragment : Fragment() {
         upvoteIV.setOnClickListener {
             usersVote = voteWorker.vote(usersVote, true, upvoteIV, downvoteIV)
             currentPost.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentPost.votes_map!!)
-            val voteCountString = voteWorker.getVoteCount(currentPost.votes_map!!).toString()
+            val voteCountString = voteWorker.getVoteCount(currentPost.votes_map!!, mult).toString()
             postKarma.text = voteCountString
             voteCount = voteCountString.toInt()
             prevVote = usersVote
@@ -198,7 +200,7 @@ class DiscussionFragment : Fragment() {
         downvoteIV.setOnClickListener {
             usersVote = voteWorker.vote(usersVote, false,upvoteIV,downvoteIV)
             currentPost.votes_map = voteWorker.updateVoteMap(usersVote, uid, currentPost.votes_map!!)
-            val voteCountString = voteWorker.getVoteCount(currentPost.votes_map!!).toString()
+            val voteCountString = voteWorker.getVoteCount(currentPost.votes_map!!, mult).toString()
             postKarma.text = voteCountString
             voteCount = voteCountString.toInt()
             prevVote = usersVote

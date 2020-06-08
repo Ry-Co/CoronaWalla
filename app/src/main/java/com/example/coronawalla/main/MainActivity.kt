@@ -46,8 +46,6 @@ class MainActivity : AppCompatActivity() {
         handlePermanentlyDenied = true,
         permanentlyDeniedMessage = R.string.loc_rationale_perm_denied.toString())
 
-    //todo handle the ava.lang.RuntimeException: Parcel: unable to marshal value GeoPoint { latitude=33.1826614, longitude=-96.8540217 } error on app close
-    //todo account for post multipliers
     //todo on posting of post/comment update the recyclerview
     //todo profile stats
     //todo custom shaped toolbar?
@@ -257,30 +255,8 @@ class MainActivity : AppCompatActivity() {
             getLocalDocs(viewModel.currentLocation.value!!){ docs ->
                 val posts = buildPostList(docs)
                 //sorting posts by upvotes/hour
-                val myCustomComparator =  Comparator<PostClass> { a, b ->
-                    val vw = VoteWorker()
-                    val tic = System.currentTimeMillis()
-                    val aAgeHours  = (tic - a.post_date_long) / 3600000.0
-                    val aRate = vw.getVoteCount(a.votes_map!!)/aAgeHours
-                    val bAgeHours  = (tic - b.post_date_long) / 3600000.0
-                    val bRate = vw.getVoteCount(b.votes_map!!)/bAgeHours
-                    //Log.e(TAG, "a ="+a.post_id+" b ="+b.post_id+" aRate= $aRate  bRate= $bRate")
-                    when {
-                        aRate == bRate -> {
-                            //Log.e(TAG, "EQUAL")
-                            0
-                        }
-                        aRate < bRate -> {
-                            //Log.e(TAG, "a < b")
-                            1
-                        }
-                        else -> {
-                            //Log.e(TAG, "a > b")
-                            -1
-                        }
-                    }
-                }
-                val postsSorted = posts.sortedWith(myCustomComparator)
+                val vw = VoteWorker()
+                val postsSorted = posts.sortedWith(vw.postComparator)
                 callback.invoke(postsSorted.toMutableList())
             }
         }else{
@@ -289,30 +265,9 @@ class MainActivity : AppCompatActivity() {
                 getLocalDocs(viewModel.currentLocation.value!!){ docs ->
                     val posts = buildPostList(docs)
                     //sorting posts by upvotes/hour
-                    val myCustomComparator =  Comparator<PostClass> { a, b ->
-                        val vw = VoteWorker()
-                        val tic = System.currentTimeMillis()
-                        val aAgeHours  = (tic - a.post_date_long) / 3600000.0
-                        val aRate = vw.getVoteCount(a.votes_map!!)/aAgeHours
-                        val bAgeHours  = (tic - b.post_date_long) / 3600000.0
-                        val bRate = vw.getVoteCount(b.votes_map!!)/bAgeHours
-                        //Log.e(TAG, "a ="+a.post_id+" b ="+b.post_id+" aRate= $aRate  bRate= $bRate")
-                        when {
-                            aRate == bRate -> {
-                                //Log.e(TAG, "EQUAL")
-                                0
-                            }
-                            aRate < bRate -> {
-                                //Log.e(TAG, "a < b")
-                                1
-                            }
-                            else -> {
-                                //Log.e(TAG, "a > b")
-                                -1
-                            }
-                        }
-                    }
-                    val postsSorted = posts.sortedWith(myCustomComparator)
+                    val vw = VoteWorker()
+
+                    val postsSorted = posts.sortedWith(vw.postComparator)
                     callback.invoke(postsSorted.toMutableList())
                 }
             })
