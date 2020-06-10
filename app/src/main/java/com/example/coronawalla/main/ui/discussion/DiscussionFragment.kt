@@ -1,6 +1,7 @@
 package com.example.coronawalla.main.ui.discussion
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -15,9 +16,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.coronawalla.R
+import com.example.coronawalla.main.MainActivity
 import com.example.coronawalla.main.MainActivityViewModel
 import com.example.coronawalla.main.VoteWorker
 import com.example.coronawalla.main.ui.local.PostClass
+import kotlinx.android.synthetic.main.anon_named_dialog.*
 import kotlinx.android.synthetic.main.fragment_discussion.*
 
 /***
@@ -62,12 +65,23 @@ class DiscussionFragment : Fragment() {
         ph = arguments?.get("posterHandle") as String
         recyclerHandling()
         setViewValues(view)
+
     }
 
     private fun setViewValues(v:View){
         navigation(v)
         voting(v)
-        commenting(v)
+        //commenting
+        val commentConfirmIV = v.findViewById<LinearLayout>(R.id.comment_confirm_iv)
+        commentConfirmIV.setOnClickListener {
+            val currentCommentET = v.findViewById<EditText>(R.id.current_comment_et)
+            val commentText = currentCommentET.text.toString()
+            if(commentText.isEmpty()){
+                Toast.makeText(context, "Comments can't be empty!", Toast.LENGTH_SHORT).show()
+            }else{
+                anonDialogHandeling(v)
+            }
+        }
         //declare and set post values
         val postShareTV = v.findViewById<TextView>(R.id.share_tv)
         val postText = v.findViewById<TextView>(R.id.post_text_tv)
@@ -130,18 +144,19 @@ class DiscussionFragment : Fragment() {
         }
     }
 
-    private fun getCommentMap(postText:String):CommentClass{
+    private fun getCommentMap(postText:String, anon:Boolean):CommentClass{
         val mVotes = mutableMapOf<String, Boolean?>()
         val uid = viewModel.currentUser.value!!.user_id
         val handle = viewModel.currentUser.value!!.handle.toString()
-        val post_long = System.currentTimeMillis()
+        val commentLong = System.currentTimeMillis()
         mVotes[uid] = true
 
         return CommentClass(
             comment_id = "",
             comment_text = postText,
+            comment_anon = anon,
             votes_map = mVotes,
-            comment_date_long = post_long,
+            comment_date_long = commentLong,
             commenter_id = uid,
             commenter_handle = handle
         )
@@ -209,38 +224,6 @@ class DiscussionFragment : Fragment() {
 
     }
 
-    private fun commenting(v:View){
-        val commentConfirmIV = v.findViewById<LinearLayout>(R.id.comment_confirm_iv)
-        val currentCommentET = v.findViewById<EditText>(R.id.current_comment_et)
-        commentConfirmIV.setOnClickListener {
-            val commentText = currentCommentET.text.toString()
-            val postRef =viewModel.db.collection("posts").document(currentPost.post_id)
-            if(commentText.isEmpty()){
-                Toast.makeText(context, "Comments can't be empty!", Toast.LENGTH_SHORT).show()
-            }else{
-                // build comment and send text to server and refresh the layout after
-                val commentMap = getCommentMap(commentText)
-                postRef.collection("comments").add(commentMap).addOnCompleteListener { commentTask ->
-                    if(commentTask.isSuccessful){
-                        postRef.collection("comments").document(commentTask.result!!.id).update("comment_id", commentTask.result!!.id).addOnCompleteListener {
-                            if(it.isSuccessful){
-                                Log.d(TAG, "comment_id updated")
-                                Toast.makeText(context, "Comments Sent!", Toast.LENGTH_SHORT).show()
-                                currentCommentET.setText("")
-                                hideKeyboard()
-                                //todo refresh list
-                            }else{
-                                Log.e(TAG, it.exception.toString())
-                            }
-                        }
-                    }else{
-                        Log.e(TAG, commentTask.exception.toString())
-                    }
-                }
-
-            }
-        }
-    }
 
     private fun recyclerHandling(){
         getCommentsFromServer(currentPost){commentsList->
@@ -271,6 +254,83 @@ class DiscussionFragment : Fragment() {
     }
 
 
+    private fun anonDialogHandeling(v:View){
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.anon_named_dialog, null)
+        val mBuilder = AlertDialog.Builder(requireContext()).setView(dialogView).setTitle("Post as...")
+        val alertDialog = mBuilder.show()
+        alertDialog.anon_circ_iv.setImageResource(R.drawable.ic_person_black_24dp)
+        alertDialog.named_circ_iv.setImageBitmap(viewModel.currentProfileBitmap.value)
+        alertDialog.users_handle_tv_dialog.text = viewModel.currentUser.value!!.username
+        alertDialog.anon_circ_iv.setOnClickListener {
+            commentAnon(v)
+            alertDialog.dismiss()
+        }
+        alertDialog.named_circ_iv.setOnClickListener {
+            commentNamed(v)
+            alertDialog.dismiss()
+        }
+    }
+
+    private fun commentNamed(v:View){
+        val currentCommentET = v.findViewById<EditText>(R.id.current_comment_et)
+        val commentText = currentCommentET.text.toString()
+        val postRef =viewModel.db.collection("posts").document(currentPost.post_id)
+        val commentMap = getCommentMap(commentText, false)
+        postRef.collection("comments").add(commentMap).addOnCompleteListener { commentTask ->
+            if(commentTask.isSuccessful){
+                postRef.collection("comments").document(commentTask.result!!.id).update("comment_id", commentTask.result!!.id).addOnCompleteListener {
+                    if(it.isSuccessful){
+                        Log.d(TAG, "comment_id updated")
+                        Toast.makeText(context, "Comments Sent!", Toast.LENGTH_SHORT).show()
+                        currentCommentET.setText("")
+                        hideKeyboard()
+                        getCommentsFromServer(currentPost){commentsList->
+                            //recycler handeling
+                            comments_recyclerView.visibility = View.VISIBLE
+                            empty_view.visibility = View.GONE
+                            comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
+                            //comments_refreshLayout.isRefreshing = false
+                        }
+                    }else{
+                        Log.e(TAG, it.exception.toString())
+                    }
+                }
+            }else{
+                Log.e(TAG, commentTask.exception.toString())
+            }
+        }
+    }
+
+    private fun commentAnon(v:View){
+        val currentCommentET = v.findViewById<EditText>(R.id.current_comment_et)
+        val commentText = currentCommentET.text.toString()
+        val postRef =viewModel.db.collection("posts").document(currentPost.post_id)
+        // build comment and send text to server and refresh the layout after
+        val commentMap = getCommentMap(commentText, true)
+        postRef.collection("comments").add(commentMap).addOnCompleteListener { commentTask ->
+            if(commentTask.isSuccessful){
+                postRef.collection("comments").document(commentTask.result!!.id).update("comment_id", commentTask.result!!.id).addOnCompleteListener {
+                    if(it.isSuccessful){
+                        Log.d(TAG, "comment_id updated")
+                        Toast.makeText(context, "Comments Sent!", Toast.LENGTH_SHORT).show()
+                        currentCommentET.setText("")
+                        hideKeyboard()
+                        getCommentsFromServer(currentPost){commentsList->
+                            //recycler handeling
+                            comments_recyclerView.visibility = View.VISIBLE
+                            empty_view.visibility = View.GONE
+                            comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
+                            //comments_refreshLayout.isRefreshing = false
+                        }
+                    }else{
+                        Log.e(TAG, it.exception.toString())
+                    }
+                }
+            }else{
+                Log.e(TAG, commentTask.exception.toString())
+            }
+        }
+    }
 
     // function triplet copy/paste for hiding keyboard functionality
     fun Fragment.hideKeyboard() {

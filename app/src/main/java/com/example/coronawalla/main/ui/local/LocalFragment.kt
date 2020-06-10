@@ -47,9 +47,23 @@ class LocalFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val flag = arguments?.get("refresh")
         posts_recyclerView.layoutManager = LinearLayoutManager(requireContext())
         navigation()
         recyclerHandling()
+        if(flag != null && flag as Boolean){
+            updatePostsServer {
+                if(it){
+                    val mA:MainActivity = activity as MainActivity
+                    mA.getPostsFromServer(){
+                        posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
+                        posts_recyclerView.visibility = View.VISIBLE
+                        empty_view_posts.visibility = View.GONE
+                    }
+                    posts_refreshLayout.isRefreshing = false
+                }
+            }
+        }
     }
 
     private fun updatePostsServer(callback:(Boolean) -> Unit ){
@@ -148,6 +162,7 @@ class LocalFragment : Fragment() {
                 if(it){
                     val mA:MainActivity = activity as MainActivity
                     mA.getPostsFromServer(){
+
                         posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
                         posts_recyclerView.visibility = View.VISIBLE
                         empty_view_posts.visibility = View.GONE

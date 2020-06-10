@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Switch
 import android.widget.TextView
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -64,7 +65,8 @@ class PostPreviewFragment : Fragment() {
                     Log.e(TAG, "Error:: "+postTask.exception.toString())
                 }
             }
-            findNavController().navigate(R.id.action_postPreviewFragment_to_local)
+            val bundle = bundleOf("refresh" to true)
+            findNavController().navigate(R.id.action_postPreviewFragment_to_local, bundle)
         }
 
         anonButton.setOnClickListener {
@@ -78,6 +80,8 @@ class PostPreviewFragment : Fragment() {
                     db.collection("posts").document(postTask.result!!.id).update("post_id", postTask.result!!.id).addOnCompleteListener{
                         if(it.isSuccessful){
                             Log.i(TAG, "Updated mPostID")
+                            val bundle = bundleOf("refresh" to true)
+                            findNavController().navigate(R.id.action_postPreviewFragment_to_local, bundle)
                         }else{
                             Log.e(TAG, it.exception.toString())
                         }
@@ -87,7 +91,7 @@ class PostPreviewFragment : Fragment() {
                     Log.e(TAG, "Error:: "+postTask.exception.toString())
                 }
             }
-            findNavController().navigate(R.id.action_postPreviewFragment_to_local)
+
 
         }
     }

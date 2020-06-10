@@ -46,7 +46,6 @@ class MainActivity : AppCompatActivity() {
         handlePermanentlyDenied = true,
         permanentlyDeniedMessage = R.string.loc_rationale_perm_denied.toString())
 
-    //todo on posting of post/comment update the recyclerview
     //todo profile stats
     //todo custom shaped toolbar?
 
