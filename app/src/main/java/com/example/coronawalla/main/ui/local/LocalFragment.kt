@@ -1,6 +1,7 @@
 package com.example.coronawalla.main.ui.local
 
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -19,16 +20,27 @@ import com.example.coronawalla.R
 import com.example.coronawalla.login.LoginActivity
 import com.example.coronawalla.main.MainActivity
 import com.example.coronawalla.main.MainActivityViewModel
+import com.example.coronawalla.main.ServerWorker
 import kotlinx.android.synthetic.main.fragment_local.*
 
 class LocalFragment : Fragment() {
     private lateinit var viewModel:MainActivityViewModel
     private val TAG: String? = LocalFragment::class.simpleName
+    //private val sw = ServerWorker(this.requireActivity())
+
+    private lateinit var sw :ServerWorker
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        sw = ServerWorker(this.requireActivity())
+    }
 
     override fun onPause() {
         super.onPause()
         if(posts_recyclerView.adapter != null){
-            updatePostsServer {}
+            //updatePostsServer {}
+            val t = posts_recyclerView.adapter as PostsRecyclerViewAdapter
+            sw.updatePostsOnServer(t.getChangedList()){}
         }
     }
 
@@ -52,41 +64,57 @@ class LocalFragment : Fragment() {
         navigation()
         recyclerHandling()
         if(flag != null && flag as Boolean){
-            updatePostsServer {
-                if(it){
-                    val mA:MainActivity = activity as MainActivity
-                    mA.getPostsFromServer(){
-                        posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
+            val t = posts_recyclerView.adapter as PostsRecyclerViewAdapter
+            sw.updatePostsOnServer(t.getChangedList()){successful ->
+                if(successful){
+                    if(viewModel.currentLocation.value != null){
+                        sw.getPostsFromLocation(viewModel.currentLocation.value){
+                            posts_recyclerView.adapter = PostsRecyclerViewAdapter(it!!.toList(), findNavController())
                         posts_recyclerView.visibility = View.VISIBLE
                         empty_view_posts.visibility = View.GONE
+                        }
+                    }else{
+                        // todo start a location lookup and then rety
                     }
-                    posts_refreshLayout.isRefreshing = false
+
                 }
             }
+
+//            updatePostsServer {
+//                if(it){
+//                    val mA:MainActivity = activity as MainActivity
+//                    mA.getPostsFromServer(){
+//                        posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
+//                        posts_recyclerView.visibility = View.VISIBLE
+//                        empty_view_posts.visibility = View.GONE
+//                    }
+//                    posts_refreshLayout.isRefreshing = false
+//                }
+//            }
         }
     }
 
-    private fun updatePostsServer(callback:(Boolean) -> Unit ){
-        val t = posts_recyclerView.adapter as PostsRecyclerViewAdapter
-        t.getChangedList()
-        val db = viewModel.db
-        val oldPostList = t.getChangedList()
-        val batch = db.batch()
-        val colRef = db.collection("posts")
-        for(post in oldPostList){
-            val docRef = colRef.document(post.post_id)
-            batch.update(docRef,"votes_map",post.votes_map)
-        }
-
-        batch.commit().addOnCompleteListener{
-            if(it.isSuccessful){
-                Log.i(TAG,"Posts updated!")
-                callback.invoke(true)
-            }else{
-                Log.e(TAG,it.exception.toString())
-            }
-        }
-    }
+//    private fun updatePostsServer(callback:(Boolean) -> Unit ){
+//        val t = posts_recyclerView.adapter as PostsRecyclerViewAdapter
+//        t.getChangedList()
+//        val db = viewModel.db
+//        val oldPostList = t.getChangedList()
+//        val batch = db.batch()
+//        val colRef = db.collection("posts")
+//        for(post in oldPostList){
+//            val docRef = colRef.document(post.post_id)
+//            batch.update(docRef,"votes_map",post.votes_map)
+//        }
+//
+//        batch.commit().addOnCompleteListener{
+//            if(it.isSuccessful){
+//                Log.i(TAG,"Posts updated!")
+//                callback.invoke(true)
+//            }else{
+//                Log.e(TAG,it.exception.toString())
+//            }
+//        }
+//    }
 
     private fun showSignInDialog(){
         AlertDialog.Builder(activity)
@@ -109,7 +137,7 @@ class LocalFragment : Fragment() {
     }
 
     private fun navigation(){
-        val anon = viewModel.mAuth.currentUser!!.isAnonymous
+        val anon = sw.mAuth.currentUser!!.isAnonymous
         val postImageButton = requireActivity().findViewById<ImageView>(R.id.right_button_iv)
         val profileImageButton = requireActivity().findViewById<ImageView>(R.id.left_button_iv)
         val townTextView = requireActivity().findViewById<TextView>(R.id.toolbar_title_tv)
@@ -158,18 +186,33 @@ class LocalFragment : Fragment() {
         }
         posts_refreshLayout.setOnRefreshListener {
             //This is a safe cast because of the fragment we are in
-            updatePostsServer {
-                if(it){
-                    val mA:MainActivity = activity as MainActivity
-                    mA.getPostsFromServer(){
-
-                        posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
-                        posts_recyclerView.visibility = View.VISIBLE
-                        empty_view_posts.visibility = View.GONE
+            val t = posts_recyclerView.adapter as PostsRecyclerViewAdapter
+            sw.updatePostsOnServer(t.getChangedList()){successful ->
+                if(successful){
+                    if(viewModel.currentLocation.value != null){
+                        sw.getPostsFromLocation(viewModel.currentLocation.value){
+                            posts_recyclerView.adapter = PostsRecyclerViewAdapter(it!!.toList(), findNavController())
+                            posts_recyclerView.visibility = View.VISIBLE
+                            empty_view_posts.visibility = View.GONE
+                            posts_refreshLayout.isRefreshing = false
+                        }
+                    }else{
+                        // todo start a location lookup and then rety
                     }
-                    posts_refreshLayout.isRefreshing = false
+
                 }
             }
+//            updatePostsServer {
+//                if(it){
+//                    val mA:MainActivity = activity as MainActivity
+//                    mA.getPostsFromServer(){
+//                        posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
+//                        posts_recyclerView.visibility = View.VISIBLE
+//                        empty_view_posts.visibility = View.GONE
+//                    }
+//                    posts_refreshLayout.isRefreshing = false
+//                }
+//            }
 
         }
     }

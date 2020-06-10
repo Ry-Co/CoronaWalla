@@ -1,5 +1,6 @@
 package com.example.coronawalla.main.ui.profile
 
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -15,9 +16,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivityViewModel
+import com.example.coronawalla.main.ServerWorker
 import com.github.dhaval2404.imagepicker.ImagePicker
 import java.util.*
-import kotlin.collections.HashSet
 
 //add background color selection?
 
@@ -26,8 +27,12 @@ class ProfileEditFragment : Fragment() {
     private lateinit var viewModel: MainActivityViewModel
     private var takenHandles = hashSetOf<String>()
     private var prevHandle:String? = null
+    private lateinit var sw: ServerWorker
 
-
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        sw = ServerWorker(this.requireActivity())
+    }
     override fun onResume() {
         super.onResume()
         viewModel.toolbarMode.value = -2
@@ -51,9 +56,19 @@ class ProfileEditFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         //set current values
         setCurrentUserVals(view, viewModel.currentUser.value!!)
-        getHandles {
-            Log.d(TAG, "Taken handels retrived")
-            takenHandles = it
+        val currentUID = viewModel.currentUser.value!!.user_id
+//        getHandles {
+//            Log.d(TAG, "Taken handels retrived")
+//            takenHandles = it
+//        }
+
+        sw.getTakenHandleDocs(currentUID){docArrayList ->
+            for(doc in docArrayList){
+                if(doc.get("user_id") == currentUID){
+                        prevHandle = doc.id
+                }
+            }
+            takenHandles = sw.getTakenHandleHashSetFromDocs(docArrayList)
         }
 
         //handle image
@@ -130,31 +145,31 @@ class ProfileEditFragment : Fragment() {
         })
     }
 
-    private fun getHandles(callback:(HashSet<String>) ->Unit ){
-        val takenHandleSet = hashSetOf<String>()
-        viewModel.db.collection("handles").get().addOnCompleteListener{
-            if(it.isSuccessful){
-                for(doc in it.result!!){
-                    if(doc.get("user_id") == viewModel.currentUser.value!!.user_id){
-                        prevHandle = doc.id
-                    }
-                }
-                for(doc in it.result!!){
-                    takenHandleSet.add(doc.id)
-                }
-                callback.invoke(takenHandleSet)
-            }else{
-                Log.e(TAG,it.exception.toString() )
-            }
-        }
-    }
+//    private fun getHandles(callback:(HashSet<String>) ->Unit ){
+//        val takenHandleSet = hashSetOf<String>()
+//        viewModel.db.collection("handles").get().addOnCompleteListener{
+//            if(it.isSuccessful){
+//                for(doc in it.result!!){
+//                    if(doc.get("user_id") == viewModel.currentUser.value!!.user_id){
+//                        prevHandle = doc.id
+//                    }
+//                }
+//                for(doc in it.result!!){
+//                    takenHandleSet.add(doc.id)
+//                }
+//                callback.invoke(takenHandleSet)
+//            }else{
+//                Log.e(TAG,it.exception.toString() )
+//            }
+//        }
+//    }
 
     private fun updateUserVals(view:View){
         val handleET: EditText = view.findViewById(R.id.handle_et)
         val usernameET:EditText = view.findViewById(R.id.username_et)
         val username = usernameET.text.toString()
         val handle = handleET.text.toString()
-        val db = viewModel.db
+        val db = sw.db
         Log.e(TAG, "Server Call: Updating user vals")
         db.collection("users").document(viewModel.currentUser.value!!.user_id).update(
             "username", username,

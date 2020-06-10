@@ -40,6 +40,7 @@ class VoteWorker() {
             }
         }
     }
+    //sorting posts by upvotes/hour
     val commentComparator =  Comparator<CommentClass> { a, b ->
         var aMult = 1
         var bMult = 1

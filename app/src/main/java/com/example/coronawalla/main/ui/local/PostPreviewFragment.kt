@@ -8,12 +8,14 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Switch
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivityViewModel
+import com.example.coronawalla.main.ServerWorker
 import com.google.firebase.firestore.GeoPoint
 import org.imperiumlabs.geofirestore.GeoFirestore
 
@@ -21,6 +23,7 @@ import org.imperiumlabs.geofirestore.GeoFirestore
 class PostPreviewFragment : Fragment() {
     private val TAG: String? = PostPreviewFragment::class.simpleName
     private lateinit var viewModel:MainActivityViewModel
+    private val sw = ServerWorker(this.requireActivity())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +39,6 @@ class PostPreviewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val postText = arguments?.get("postText") as String
-        val db = viewModel.db
         val postAsUserHandle = view.findViewById<TextView>(R.id.user_handle_tv)
         val postTextView = view.findViewById<TextView>(R.id.postTV)
         val anonButton = view.findViewById<Button>(R.id.anon_post_button)
@@ -48,56 +50,70 @@ class PostPreviewFragment : Fragment() {
         namedButton.setOnClickListener {
             val post = getPostMap(postText, 2, false)
             Log.e(TAG, "Server Call: Adding post to collection")
-            db.collection("posts").add(post).addOnCompleteListener{ postTask ->
-                if (postTask.isSuccessful){
-                    Log.d(TAG, "Post Sent!")
-                    val geoFirestore = GeoFirestore(db.collection("posts"))
-                    Log.e(TAG, "Server Call: adding post ID number to post document")
-                    db.collection("posts").document(postTask.result!!.id).update("post_id", postTask.result!!.id).addOnCompleteListener{
-                        if(it.isSuccessful){
-                            Log.i(TAG, "Updated mPostID")
-                        }else{
-                            Log.e(TAG, it.exception.toString())
-                        }
-                    }
-                    geoFirestore.setLocation(postTask.result!!.id,currentGeoPoint)
+            sw.addPostToServer(post){
+                if(it){
+                    val bundle = bundleOf("refresh" to true)
+                    findNavController().navigate(R.id.action_postPreviewFragment_to_local, bundle)
                 }else{
-                    Log.e(TAG, "Error:: "+postTask.exception.toString())
+                    Toast.makeText(this.requireContext(), "There was an error", Toast.LENGTH_SHORT).show()
                 }
             }
-            val bundle = bundleOf("refresh" to true)
-            findNavController().navigate(R.id.action_postPreviewFragment_to_local, bundle)
+//            db.collection("posts").add(post).addOnCompleteListener{ postTask ->
+//                if (postTask.isSuccessful){
+//                    Log.d(TAG, "Post Sent!")
+//                    val geoFirestore = GeoFirestore(db.collection("posts"))
+//                    Log.e(TAG, "Server Call: adding post ID number to post document")
+//                    db.collection("posts").document(postTask.result!!.id).update("post_id", postTask.result!!.id).addOnCompleteListener{
+//                        if(it.isSuccessful){
+//                            Log.i(TAG, "Updated mPostID")
+//                        }else{
+//                            Log.e(TAG, it.exception.toString())
+//                        }
+//                    }
+//                    geoFirestore.setLocation(postTask.result!!.id,currentGeoPoint)
+//                }else{
+//                    Log.e(TAG, "Error:: "+postTask.exception.toString())
+//                }
+//            }
         }
 
         anonButton.setOnClickListener {
             val post = getPostMap(postText, 1, true)
             Log.e(TAG, "Server Call: Adding post to collection")
-            db.collection("posts").add(post).addOnCompleteListener{ postTask ->
-                if (postTask.isSuccessful){
-                    Log.d(TAG, "Post Sent!")
-                    val geoFirestore = GeoFirestore(db.collection("posts"))
-                    Log.e(TAG, "Server Call: adding post ID number to post document")
-                    db.collection("posts").document(postTask.result!!.id).update("post_id", postTask.result!!.id).addOnCompleteListener{
-                        if(it.isSuccessful){
-                            Log.i(TAG, "Updated mPostID")
-                            val bundle = bundleOf("refresh" to true)
-                            findNavController().navigate(R.id.action_postPreviewFragment_to_local, bundle)
-                        }else{
-                            Log.e(TAG, it.exception.toString())
-                        }
-                    }
-                    geoFirestore.setLocation(postTask.result!!.id,currentGeoPoint)
+            sw.addPostToServer(post){
+                if(it){
+                    val bundle = bundleOf("refresh" to true)
+                    findNavController().navigate(R.id.action_postPreviewFragment_to_local, bundle)
                 }else{
-                    Log.e(TAG, "Error:: "+postTask.exception.toString())
+                    Toast.makeText(this.requireContext(), "There was an error", Toast.LENGTH_SHORT).show()
                 }
             }
+//            db.collection("posts").add(post).addOnCompleteListener{ postTask ->
+//                if (postTask.isSuccessful){
+//                    Log.d(TAG, "Post Sent!")
+//                    val geoFirestore = GeoFirestore(db.collection("posts"))
+//                    Log.e(TAG, "Server Call: adding post ID number to post document")
+//                    db.collection("posts").document(postTask.result!!.id).update("post_id", postTask.result!!.id).addOnCompleteListener{
+//                        if(it.isSuccessful){
+//                            Log.i(TAG, "Updated mPostID")
+//                            val bundle = bundleOf("refresh" to true)
+//                            findNavController().navigate(R.id.action_postPreviewFragment_to_local, bundle)
+//                        }else{
+//                            Log.e(TAG, it.exception.toString())
+//                        }
+//                    }
+//                    geoFirestore.setLocation(postTask.result!!.id,currentGeoPoint)
+//                }else{
+//                    Log.e(TAG, "Error:: "+postTask.exception.toString())
+//                }
+//            }
 
 
         }
     }
 
     private fun getPostMap(postText:String, multiplier:Int, anon:Boolean): PostClass{
-        val mAuth = viewModel.mAuth
+        val mAuth = sw.mAuth
         //val currentGeoPoint = GeoPoint(viewModel.currentLocation.value!!.latitude, viewModel.currentLocation.value!!.longitude)
         val latitude = viewModel.currentLocation.value!!.latitude
         val longitude = viewModel.currentLocation.value!!.longitude

@@ -14,8 +14,8 @@ import com.google.firebase.storage.FirebaseStorage
 
 class MainActivityViewModel: ViewModel() {
     private val TAG: String? = MainActivityViewModel::class.simpleName
-    val db = FirebaseFirestore.getInstance()
-    val mAuth = FirebaseAuth.getInstance()
+   // val db = FirebaseFirestore.getInstance()
+   // val mAuth = FirebaseAuth.getInstance()
     val storage = FirebaseStorage.getInstance()
     var toolbarMode = MutableLiveData<Int>()
     var currentLocation = MutableLiveData<Location>()

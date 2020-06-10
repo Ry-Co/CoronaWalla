@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var locationCallback: LocationCallback
     private lateinit var viewModel:MainActivityViewModel
     private lateinit var mAuth : FirebaseAuth
+    private val sw = ServerWorker(this)
     private lateinit var storage :FirebaseStorage
     private val permOptions = QuickPermissionsOptions(
         handleRationale = true,
@@ -46,8 +47,11 @@ class MainActivity : AppCompatActivity() {
         handlePermanentlyDenied = true,
         permanentlyDeniedMessage = R.string.loc_rationale_perm_denied.toString())
 
+
+    //TODO ADDD FIRESTORE INCREMNTS
     //todo profile stats
     //todo custom shaped toolbar?
+    //todo should named posts only have 2x upvotes or 2x upvotes and downvotes?
 
     override fun onResume() {
         super.onResume()
@@ -66,7 +70,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel =  ViewModelProvider(this).get(MainActivityViewModel::class.java)
-        mAuth = viewModel.mAuth
+        //mAuth = viewModel.mAuth
         storage = viewModel.storage
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar_main))
@@ -74,13 +78,21 @@ class MainActivity : AppCompatActivity() {
         flp = LocationServices.getFusedLocationProviderClient(this)
 
         getLocationUpdates()
-        if(!mAuth.currentUser!!.isAnonymous){
-            val uid = mAuth.currentUser!!.uid
-            updateVMUserValues(uid)
+//        if(!mAuth.currentUser!!.isAnonymous){
+//            val uid = mAuth.currentUser!!.uid
+//            updateVMUserValues(uid)
+//        }
+        if(!sw.mAuth.currentUser!!.isAnonymous){
+            updateVMUserValues(sw.mAuth.currentUser!!.uid)
         }
 
-        viewModel.currentLocation.observe(this, Observer{
-            getPostsFromServer {posts ->
+//        viewModel.currentLocation.observe(this, Observer{
+//            getPostsFromServer {posts ->
+//                viewModel.localPostList.value = posts as ArrayList<PostClass>
+//            }
+//        })
+        viewModel.currentLocation.observe(this, Observer {
+            sw.getPostsFromLocation(it){posts ->
                 viewModel.localPostList.value = posts as ArrayList<PostClass>
             }
         })
@@ -92,41 +104,41 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun updateVMUserValues(uid:String){
-        getUserClassFromUID(uid){user->
+        sw.getUserClassFromUID(uid){user->
             viewModel.currentUser.value = user
             if(user.profile_image_url != null){
-                getBitmapFromUID(uid){bmp ->
+                sw.getBitmapFromUID(uid){bmp ->
                     viewModel.currentProfileBitmap.value = bmp
                 }
             }
         }
     }
 
-    private fun getUserClassFromUID(uid:String, callback:(UserClass)->Unit){
-        Log.e(TAG, "Server Call: ")
-        viewModel.db.collection("users").document(uid).get().addOnCompleteListener {
-            if (it.isSuccessful) {
-                val uidUserClass = it.result!!.toObject(UserClass::class.java)
-                callback.invoke(uidUserClass!!)
-            } else {
-                Log.d(TAG, "Error:: " + it.exception)
-            }
-        }
+//    private fun getUserClassFromUID(uid:String, callback:(UserClass)->Unit){
+//        Log.e(TAG, "Server Call: ")
+//        viewModel.db.collection("users").document(uid).get().addOnCompleteListener {
+//            if (it.isSuccessful) {
+//                val uidUserClass = it.result!!.toObject(UserClass::class.java)
+//                callback.invoke(uidUserClass!!)
+//            } else {
+//                Log.d(TAG, "Error:: " + it.exception)
+//            }
+//        }
+//
+//    }
 
-    }
-
-    private fun getBitmapFromUID(uid:String, callback:(Bitmap)->Unit){
-        val profRef = storage.reference.child("images/$uid")
-        val ONE_MEGABYTE: Long = 1024 * 1024
-        profRef.getBytes(ONE_MEGABYTE).addOnCompleteListener {
-            if (it.isSuccessful) {
-                val bmp = BitmapFactory.decodeByteArray(it.result, 0, it.result!!.size)
-                callback.invoke(bmp)
-            } else {
-                Log.e(TAG, it.exception.toString())
-            }
-        }
-    }
+//    private fun getBitmapFromUID(uid:String, callback:(Bitmap)->Unit){
+//        val profRef = storage.reference.child("images/$uid")
+//        val ONE_MEGABYTE: Long = 1024 * 1024
+//        profRef.getBytes(ONE_MEGABYTE).addOnCompleteListener {
+//            if (it.isSuccessful) {
+//                val bmp = BitmapFactory.decodeByteArray(it.result, 0, it.result!!.size)
+//                callback.invoke(bmp)
+//            } else {
+//                Log.e(TAG, it.exception.toString())
+//            }
+//        }
+//    }
 
     private fun getLocationUpdates() = runWithPermissions(Manifest.permission.ACCESS_FINE_LOCATION, options = permOptions){
         locReq = LocationRequest()
@@ -162,35 +174,35 @@ class MainActivity : AppCompatActivity() {
         flp.removeLocationUpdates(locationCallback)
     }
 
-    private fun getLocalDocs(loc:Location, callback: (List<DocumentSnapshot>) -> Unit){
-        val usersGP = GeoPoint(loc.latitude, loc.longitude)
-        val radiusInKm = 5 * 1.60934 //5 miles
-        val geoFirestore = GeoFirestore(viewModel.db.collection("posts"))
-        geoFirestore.getAtLocation(usersGP,radiusInKm){ docs, ex ->
-            if(ex != null){
-                Log.e(TAG, "Error:: "+ex.message)
-                return@getAtLocation
-            }else{
-                callback.invoke(docs!!)
-            }
+//    private fun getLocalDocs(loc:Location, callback: (List<DocumentSnapshot>) -> Unit){
+//        val usersGP = GeoPoint(loc.latitude, loc.longitude)
+//        val radiusInKm = 5 * 1.60934 //5 miles
+//        val geoFirestore = GeoFirestore(viewModel.db.collection("posts"))
+//        geoFirestore.getAtLocation(usersGP,radiusInKm){ docs, ex ->
+//            if(ex != null){
+//                Log.e(TAG, "Error:: "+ex.message)
+//                return@getAtLocation
+//            }else{
+//                callback.invoke(docs!!)
+//            }
+//        }
+//
+//    }
 
-        }
-
-    }
-
-    private fun buildPostList(input:List<DocumentSnapshot>): ArrayList<PostClass>{
-        val out = ArrayList<PostClass>()
-        for(d in input){
-            val p = d.toObject(PostClass::class.java)
-            if(p != null){
-                out.add(p)
-            }
-        }
-        return out
-    }
+//    private fun buildPostList(input:List<DocumentSnapshot>): ArrayList<PostClass>{
+//        val out = ArrayList<PostClass>()
+//        for(d in input){
+//            val p = d.toObject(PostClass::class.java)
+//            if(p != null){
+//                out.add(p)
+//            }
+//        }
+//        return out
+//    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        val sw = ServerWorker(this)
         //we are only using on activity result for the image so we just dont bother with request code
         when (resultCode) {
             Activity.RESULT_OK -> {
@@ -201,12 +213,18 @@ class MainActivity : AppCompatActivity() {
                     fileUri?.let {
                         if(Build.VERSION.SDK_INT<28){
                             val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, fileUri)
-                            uploadBitmap(bitmap,storageRef)
+                            sw.uploadBitmapToReference(bitmap,storageRef){
+                                //update profileImageURL
+                                viewModel.currentUser.value!!.profile_image_url = it
+                            }
                             viewModel.currentProfileBitmap.value = bitmap
                         }else{
                             val source = ImageDecoder.createSource(this.contentResolver, fileUri)
                             val bitmap = ImageDecoder.decodeBitmap(source)
-                            uploadBitmap(bitmap,storageRef)
+                            sw.uploadBitmapToReference(bitmap,storageRef){
+                                //update profileImageURL
+                                viewModel.currentUser.value!!.profile_image_url = it
+                            }
                             viewModel.currentProfileBitmap.value = bitmap
                             Log.e(TAG, "main-activity- bitmap uploaded and viewmodel changed")
                         }
@@ -224,53 +242,52 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun uploadBitmap(bitmap: Bitmap, storageRef:StorageReference){
-        val baos = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-        val data = baos.toByteArray()
-        val uploadTask = storageRef.putBytes(data)
+//    private fun uploadBitmap(bitmap: Bitmap, storageRef:StorageReference){
+//        val baos = ByteArrayOutputStream()
+//        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
+//        val data = baos.toByteArray()
+//        val uploadTask = storageRef.putBytes(data)
+//
+//        uploadTask.addOnCompleteListener{
+//            if (it.isSuccessful){
+//                storageRef.downloadUrl.addOnCompleteListener{ dlURL ->
+//                    if(dlURL.isSuccessful){
+//                        val downloadURL = dlURL.result.toString()
+//                        viewModel.currentUser.value!!.profile_image_url = downloadURL.toString()
+//                        viewModel.db.collection("users").document(viewModel.currentUser.value!!.user_id).update("profile_image_url", downloadURL.toString())
+//                    }else{
+//                        Log.e(TAG, dlURL.exception.toString())
+//                    }
+//                }
+//            }else{
+//                Toast.makeText(this,it.exception.toString(),Toast.LENGTH_LONG).show()
+//            }
+//        }
+//
+//    }
 
-        uploadTask.addOnCompleteListener{
-            if (it.isSuccessful){
-                storageRef.downloadUrl.addOnCompleteListener{ dlURL ->
-                    if(dlURL.isSuccessful){
-                        val downloadURL = dlURL.result.toString()
-                        viewModel.currentUser.value!!.profile_image_url = downloadURL.toString()
-                        viewModel.db.collection("users").document(viewModel.currentUser.value!!.user_id).update("profile_image_url", downloadURL.toString())
-                    }else{
-                        Log.e(TAG, dlURL.exception.toString())
-                    }
-                }
-            }else{
-                Toast.makeText(this,it.exception.toString(),Toast.LENGTH_LONG).show()
-            }
-        }
-
-    }
-
-    fun getPostsFromServer(callback: (MutableList<PostClass>) -> Unit){
-        Log.e(TAG, "contacting server for post List")
-        if(viewModel.currentLocation.value != null){
-            getLocalDocs(viewModel.currentLocation.value!!){ docs ->
-                val posts = buildPostList(docs)
-                //sorting posts by upvotes/hour
-                val vw = VoteWorker()
-                val postsSorted = posts.sortedWith(vw.postComparator)
-                callback.invoke(postsSorted.toMutableList())
-            }
-        }else{
-            getLocationUpdates()
-            viewModel.currentLocation.observe(this, Observer {
-                getLocalDocs(viewModel.currentLocation.value!!){ docs ->
-                    val posts = buildPostList(docs)
-                    //sorting posts by upvotes/hour
-                    val vw = VoteWorker()
-
-                    val postsSorted = posts.sortedWith(vw.postComparator)
-                    callback.invoke(postsSorted.toMutableList())
-                }
-            })
-        }
-
-    }
+//    fun getPostsFromServer(callback: (MutableList<PostClass>) -> Unit){
+//        Log.e(TAG, "contacting server for post List")
+//        if(viewModel.currentLocation.value != null){
+//            getLocalDocs(viewModel.currentLocation.value!!){ docs ->
+//                val posts = buildPostList(docs)
+//                //sorting posts by upvotes/hour
+//                val vw = VoteWorker()
+//                val postsSorted = posts.sortedWith(vw.postComparator)
+//                callback.invoke(postsSorted.toMutableList())
+//            }
+//        }else{
+//            getLocationUpdates()
+//            viewModel.currentLocation.observe(this, Observer {
+//                getLocalDocs(viewModel.currentLocation.value!!){ docs ->
+//                    val posts = buildPostList(docs)
+//                    //sorting posts by upvotes/hour
+//                    val vw = VoteWorker()
+//
+//                    val postsSorted = posts.sortedWith(vw.postComparator)
+//                    callback.invoke(postsSorted.toMutableList())
+//                }
+//            })
+//        }
+//    }
 }

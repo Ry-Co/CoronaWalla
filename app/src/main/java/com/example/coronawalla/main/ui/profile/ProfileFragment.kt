@@ -1,5 +1,6 @@
 package com.example.coronawalla.main.ui.profile
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -16,12 +17,17 @@ import com.example.coronawalla.LauncherActivity
 import com.example.coronawalla.R
 import com.example.coronawalla.main.MainActivity
 import com.example.coronawalla.main.MainActivityViewModel
+import com.example.coronawalla.main.ServerWorker
 
 class ProfileFragment : Fragment() {
     private val TAG: String? = ProfileFragment::class.simpleName
-
+    private lateinit var sw :ServerWorker
     private lateinit var viewModel:MainActivityViewModel
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        sw = ServerWorker(this.requireActivity())
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel =  ViewModelProvider(this.requireActivity()).get(MainActivityViewModel::class.java)
@@ -30,7 +36,6 @@ class ProfileFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         viewModel.toolbarMode.value = -1
-
         val profImg:ImageView = requireView().findViewById(R.id.profile_iv)
         if(viewModel.currentProfileBitmap.value!=null){
             profImg.setImageBitmap(viewModel.currentProfileBitmap.value)
@@ -45,7 +50,7 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navigation()
-        val uid = viewModel.mAuth.currentUser!!.uid
+        val uid = sw.mAuth.currentUser!!.uid
         val act = activity as MainActivity
         act.updateVMUserValues(uid)
         //get the users values
@@ -86,7 +91,7 @@ class ProfileFragment : Fragment() {
     private fun util_sign_out_prof_Img(){
         val profpic = requireActivity().findViewById<ImageView>(R.id.profile_iv)
         profpic.setOnClickListener {
-            viewModel.mAuth.signOut()
+            sw.mAuth.signOut()
             val intent = Intent(context, LauncherActivity::class.java)
             startActivity(intent)
         }
