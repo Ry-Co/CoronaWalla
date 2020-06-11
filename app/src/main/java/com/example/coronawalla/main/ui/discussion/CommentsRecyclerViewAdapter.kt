@@ -9,6 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coronawalla.R
+import com.example.coronawalla.main.ServerWorker
 import com.example.coronawalla.main.VoteWorker
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.comment.view.*
@@ -17,6 +18,7 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
     private val changedComments = ArrayList<CommentClass>()
     private val TAG: String? = CommentsRecyclerViewAdapter::class.simpleName
     private var usersVote:Boolean? = null
+    private val sw = ServerWorker()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentsRecyclerViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.comment, parent, false)
@@ -31,10 +33,9 @@ class CommentsRecyclerViewAdapter(private val commentList: List<CommentClass>) :
         if(currentItem.comment_anon){
             holder.commentersHandleTV.text = "@Anonymous"
         }else{
-            Log.e(TAG, "Server Call: getting commenters doc")
-            FirebaseFirestore.getInstance().collection("users").document(currentItem.commenter_id).get().addOnSuccessListener {
-                holder.commentersHandleTV.text = "@"+it.get("handle")
-                currentItem.commenter_handle = it.get("handle").toString()
+            sw.getUserClassFromUID(currentItem.commenter_id){
+                holder.commentersHandleTV.text = "@"+it.handle
+                currentItem.commenter_handle = it.handle.toString()
             }
         }
 

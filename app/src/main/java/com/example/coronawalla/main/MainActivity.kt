@@ -3,6 +3,7 @@ package com.example.coronawalla.main
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
@@ -13,6 +14,7 @@ import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.coronawalla.R
@@ -38,8 +40,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var locReq: LocationRequest
     private lateinit var locationCallback: LocationCallback
     private lateinit var viewModel:MainActivityViewModel
-    private lateinit var mAuth : FirebaseAuth
-    private val sw = ServerWorker(this)
+    private val sw = ServerWorker()
     private lateinit var storage :FirebaseStorage
     private val permOptions = QuickPermissionsOptions(
         handleRationale = true,
@@ -52,6 +53,9 @@ class MainActivity : AppCompatActivity() {
     //todo profile stats
     //todo custom shaped toolbar?
     //todo should named posts only have 2x upvotes or 2x upvotes and downvotes?
+    //todo animate the local/discussion tabs together, make posts votable by swipe
+    //https://proandroiddev.com/complex-ui-animations-on-android-featuring-motionlayout-aa82d83b8660
+    //https://github.com/nikhilpanju/FabFilter/blob/master/app/src/main/java/com/nikhilpanju/fabfilter/filter/FiltersLayout.kt
 
     override fun onResume() {
         super.onResume()
@@ -71,26 +75,17 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         viewModel =  ViewModelProvider(this).get(MainActivityViewModel::class.java)
         //mAuth = viewModel.mAuth
-        storage = viewModel.storage
+        storage = sw.storage
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar_main))
         val tb = ToolbarWorker(this)
         flp = LocationServices.getFusedLocationProviderClient(this)
 
         getLocationUpdates()
-//        if(!mAuth.currentUser!!.isAnonymous){
-//            val uid = mAuth.currentUser!!.uid
-//            updateVMUserValues(uid)
-//        }
         if(!sw.mAuth.currentUser!!.isAnonymous){
             updateVMUserValues(sw.mAuth.currentUser!!.uid)
         }
 
-//        viewModel.currentLocation.observe(this, Observer{
-//            getPostsFromServer {posts ->
-//                viewModel.localPostList.value = posts as ArrayList<PostClass>
-//            }
-//        })
         viewModel.currentLocation.observe(this, Observer {
             sw.getPostsFromLocation(it){posts ->
                 viewModel.localPostList.value = posts as ArrayList<PostClass>
@@ -113,32 +108,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
-//    private fun getUserClassFromUID(uid:String, callback:(UserClass)->Unit){
-//        Log.e(TAG, "Server Call: ")
-//        viewModel.db.collection("users").document(uid).get().addOnCompleteListener {
-//            if (it.isSuccessful) {
-//                val uidUserClass = it.result!!.toObject(UserClass::class.java)
-//                callback.invoke(uidUserClass!!)
-//            } else {
-//                Log.d(TAG, "Error:: " + it.exception)
-//            }
-//        }
-//
-//    }
-
-//    private fun getBitmapFromUID(uid:String, callback:(Bitmap)->Unit){
-//        val profRef = storage.reference.child("images/$uid")
-//        val ONE_MEGABYTE: Long = 1024 * 1024
-//        profRef.getBytes(ONE_MEGABYTE).addOnCompleteListener {
-//            if (it.isSuccessful) {
-//                val bmp = BitmapFactory.decodeByteArray(it.result, 0, it.result!!.size)
-//                callback.invoke(bmp)
-//            } else {
-//                Log.e(TAG, it.exception.toString())
-//            }
-//        }
-//    }
 
     private fun getLocationUpdates() = runWithPermissions(Manifest.permission.ACCESS_FINE_LOCATION, options = permOptions){
         locReq = LocationRequest()
@@ -164,6 +133,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
     private fun startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return
+        }
         flp.requestLocationUpdates(
             locReq,
             locationCallback,
@@ -174,35 +146,9 @@ class MainActivity : AppCompatActivity() {
         flp.removeLocationUpdates(locationCallback)
     }
 
-//    private fun getLocalDocs(loc:Location, callback: (List<DocumentSnapshot>) -> Unit){
-//        val usersGP = GeoPoint(loc.latitude, loc.longitude)
-//        val radiusInKm = 5 * 1.60934 //5 miles
-//        val geoFirestore = GeoFirestore(viewModel.db.collection("posts"))
-//        geoFirestore.getAtLocation(usersGP,radiusInKm){ docs, ex ->
-//            if(ex != null){
-//                Log.e(TAG, "Error:: "+ex.message)
-//                return@getAtLocation
-//            }else{
-//                callback.invoke(docs!!)
-//            }
-//        }
-//
-//    }
-
-//    private fun buildPostList(input:List<DocumentSnapshot>): ArrayList<PostClass>{
-//        val out = ArrayList<PostClass>()
-//        for(d in input){
-//            val p = d.toObject(PostClass::class.java)
-//            if(p != null){
-//                out.add(p)
-//            }
-//        }
-//        return out
-//    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        val sw = ServerWorker(this)
+        val sw = ServerWorker()
         //we are only using on activity result for the image so we just dont bother with request code
         when (resultCode) {
             Activity.RESULT_OK -> {
@@ -241,53 +187,4 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
-//    private fun uploadBitmap(bitmap: Bitmap, storageRef:StorageReference){
-//        val baos = ByteArrayOutputStream()
-//        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-//        val data = baos.toByteArray()
-//        val uploadTask = storageRef.putBytes(data)
-//
-//        uploadTask.addOnCompleteListener{
-//            if (it.isSuccessful){
-//                storageRef.downloadUrl.addOnCompleteListener{ dlURL ->
-//                    if(dlURL.isSuccessful){
-//                        val downloadURL = dlURL.result.toString()
-//                        viewModel.currentUser.value!!.profile_image_url = downloadURL.toString()
-//                        viewModel.db.collection("users").document(viewModel.currentUser.value!!.user_id).update("profile_image_url", downloadURL.toString())
-//                    }else{
-//                        Log.e(TAG, dlURL.exception.toString())
-//                    }
-//                }
-//            }else{
-//                Toast.makeText(this,it.exception.toString(),Toast.LENGTH_LONG).show()
-//            }
-//        }
-//
-//    }
-
-//    fun getPostsFromServer(callback: (MutableList<PostClass>) -> Unit){
-//        Log.e(TAG, "contacting server for post List")
-//        if(viewModel.currentLocation.value != null){
-//            getLocalDocs(viewModel.currentLocation.value!!){ docs ->
-//                val posts = buildPostList(docs)
-//                //sorting posts by upvotes/hour
-//                val vw = VoteWorker()
-//                val postsSorted = posts.sortedWith(vw.postComparator)
-//                callback.invoke(postsSorted.toMutableList())
-//            }
-//        }else{
-//            getLocationUpdates()
-//            viewModel.currentLocation.observe(this, Observer {
-//                getLocalDocs(viewModel.currentLocation.value!!){ docs ->
-//                    val posts = buildPostList(docs)
-//                    //sorting posts by upvotes/hour
-//                    val vw = VoteWorker()
-//
-//                    val postsSorted = posts.sortedWith(vw.postComparator)
-//                    callback.invoke(postsSorted.toMutableList())
-//                }
-//            })
-//        }
-//    }
 }

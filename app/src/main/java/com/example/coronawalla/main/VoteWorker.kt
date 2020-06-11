@@ -1,5 +1,6 @@
 package com.example.coronawalla.main
 
+import android.util.Log
 import android.widget.ImageView
 import com.example.coronawalla.R
 import com.example.coronawalla.main.ui.discussion.CommentClass
@@ -7,6 +8,8 @@ import com.example.coronawalla.main.ui.local.PostClass
 import kotlin.math.round
 
 class VoteWorker() {
+    private val TAG: String? = VoteWorker::class.simpleName
+
     val postComparator =  Comparator<PostClass> { a, b ->
         var aMult = 1
         var bMult = 1
@@ -182,7 +185,7 @@ class VoteWorker() {
     }
 
     fun voteVisual(upvoteIV: ImageView, downvoteIV: ImageView, vote: Boolean?) {
-        println("Vote status:: " + vote)
+        Log.v(TAG,"Vote status:: " + vote)
         when (vote) {
             null -> {
                 upvoteIV.setImageResource(R.drawable.ic_arrow_upward_black_24dp)

@@ -41,7 +41,7 @@ class DiscussionFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        sw = ServerWorker(this.requireActivity())
+        sw = ServerWorker()
     }
 
     override fun onResume() {
@@ -118,47 +118,6 @@ class DiscussionFragment : Fragment() {
         }
     }
 
-//    private fun updateCommentsServer(callback:(Boolean) -> Unit){
-//        val t = comments_recyclerView.adapter as CommentsRecyclerViewAdapter
-//        t.getChangedList()
-//        val db = viewModel.db
-//        val oldCommentList = t.getChangedList()
-//        val batch = db.batch()
-//        val commentsColRef = db.collection("posts").document(currentPost.post_id).collection("comments")
-//        for(comment in oldCommentList){
-//            val docRef = commentsColRef.document(comment.comment_id)
-//            batch.update(docRef, "votes_map", comment.votes_map)
-//        }
-//        batch.commit().addOnCompleteListener{
-//            if(it.isSuccessful){
-//                Log.i(TAG,"comments updated!")
-//                callback.invoke(true)
-//            }else{
-//                Log.e(TAG,it.exception.toString())
-//            }
-//        }
-//    }
-
-//    private fun getCommentsFromServer(currentPost: PostClass , callback:(MutableList<CommentClass>) -> Unit){
-//        val commentList = mutableListOf<CommentClass>()
-//        viewModel.db.collection("posts").document(currentPost.post_id).collection("comments").get().addOnCompleteListener {
-//            if(it.isSuccessful){
-//                for(item in it.result!!){
-//                    val comment = item.toObject(CommentClass::class.java)
-//                    commentList.add(comment)
-//                }
-//                val vw = VoteWorker()
-//
-//                val commentsSorted = commentList.sortedWith(vw.commentComparator)
-//
-//                callback.invoke(commentsSorted.toMutableList())
-//            }else{
-//                Log.e(TAG, it.exception.toString())
-//                return@addOnCompleteListener
-//            }
-//        }
-//    }
-
     private fun getCommentMap(postText:String, anon:Boolean):CommentClass{
         val mVotes = mutableMapOf<String, Boolean?>()
         val uid = viewModel.currentUser.value!!.user_id
@@ -176,14 +135,6 @@ class DiscussionFragment : Fragment() {
             commenter_handle = handle
         )
     }
-
-//    private fun updatePostServer(){
-//        if(changedPosts.size > 0){
-//            val post = changedPosts[0]
-//            Log.e(TAG, "Server Call: Updating Votes Map")
-//            viewModel.db.collection("posts").document(post.post_id).update("votes_map", post.votes_map)
-//        }
-//    }
 
     private fun navigation(v:View){
         val shareTV = v.findViewById<TextView>(R.id.share_tv)
@@ -263,14 +214,6 @@ class DiscussionFragment : Fragment() {
                     comments_refreshLayout.isRefreshing = false
                 }
             }
-//            updateCommentsServer {
-//                getCommentsFromServer(currentPost){commentsList->
-//                    //recycler handeling
-//                    comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
-//                    comments_refreshLayout.isRefreshing = false
-//                }
-//            }
-
         }
     }
 
@@ -294,7 +237,6 @@ class DiscussionFragment : Fragment() {
     private fun commentNamed(v:View){
         val currentCommentET = v.findViewById<EditText>(R.id.current_comment_et)
         val commentText = currentCommentET.text.toString()
-        //val postRef = viewModel.db.collection("posts").document(currentPost.post_id)
         val commentMap = getCommentMap(commentText, false)
         sw.updateCommentsOnPost(currentPost.post_id, commentMap){
             Toast.makeText(context, "Comments Sent!", Toast.LENGTH_SHORT).show()
@@ -308,35 +250,11 @@ class DiscussionFragment : Fragment() {
             }
 
         }
-//        postRef.collection("comments").add(commentMap).addOnCompleteListener { commentTask ->
-//            if(commentTask.isSuccessful){
-//                postRef.collection("comments").document(commentTask.result!!.id).update("comment_id", commentTask.result!!.id).addOnCompleteListener {
-//                    if(it.isSuccessful){
-//                        Log.d(TAG, "comment_id updated")
-//                        Toast.makeText(context, "Comments Sent!", Toast.LENGTH_SHORT).show()
-//                        currentCommentET.setText("")
-//                        hideKeyboard()
-//                        getCommentsFromServer(currentPost){commentsList->
-//                            //recycler handeling
-//                            comments_recyclerView.visibility = View.VISIBLE
-//                            empty_view.visibility = View.GONE
-//                            comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
-//                            //comments_refreshLayout.isRefreshing = false
-//                        }
-//                    }else{
-//                        Log.e(TAG, it.exception.toString())
-//                    }
-//                }
-//            }else{
-//                Log.e(TAG, commentTask.exception.toString())
-//            }
-//        }
     }
 
     private fun commentAnon(v:View){
         val currentCommentET = v.findViewById<EditText>(R.id.current_comment_et)
         val commentText = currentCommentET.text.toString()
-        //val postRef =viewModel.db.collection("posts").document(currentPost.post_id)
         // build comment and send text to server and refresh the layout after
         val commentMap = getCommentMap(commentText, true)
         sw.updateCommentsOnPost(currentPost.post_id, commentMap){
@@ -351,29 +269,6 @@ class DiscussionFragment : Fragment() {
             }
 
         }
-//        postRef.collection("comments").add(commentMap).addOnCompleteListener { commentTask ->
-//            if(commentTask.isSuccessful){
-//                postRef.collection("comments").document(commentTask.result!!.id).update("comment_id", commentTask.result!!.id).addOnCompleteListener {
-//                    if(it.isSuccessful){
-//                        Log.d(TAG, "comment_id updated")
-//                        Toast.makeText(context, "Comments Sent!", Toast.LENGTH_SHORT).show()
-//                        currentCommentET.setText("")
-//                        hideKeyboard()
-//                        getCommentsFromServer(currentPost){commentsList->
-//                            //recycler handeling
-//                            comments_recyclerView.visibility = View.VISIBLE
-//                            empty_view.visibility = View.GONE
-//                            comments_recyclerView.adapter = CommentsRecyclerViewAdapter(commentsList)
-//                            //comments_refreshLayout.isRefreshing = false
-//                        }
-//                    }else{
-//                        Log.e(TAG, it.exception.toString())
-//                    }
-//                }
-//            }else{
-//                Log.e(TAG, commentTask.exception.toString())
-//            }
-//        }
     }
 
     // function triplet copy/paste for hiding keyboard functionality

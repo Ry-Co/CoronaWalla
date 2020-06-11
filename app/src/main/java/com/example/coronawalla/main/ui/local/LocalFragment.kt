@@ -32,7 +32,7 @@ class LocalFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        sw = ServerWorker(this.requireActivity())
+        sw = ServerWorker()
     }
 
     override fun onPause() {
@@ -79,42 +79,8 @@ class LocalFragment : Fragment() {
 
                 }
             }
-
-//            updatePostsServer {
-//                if(it){
-//                    val mA:MainActivity = activity as MainActivity
-//                    mA.getPostsFromServer(){
-//                        posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
-//                        posts_recyclerView.visibility = View.VISIBLE
-//                        empty_view_posts.visibility = View.GONE
-//                    }
-//                    posts_refreshLayout.isRefreshing = false
-//                }
-//            }
         }
     }
-
-//    private fun updatePostsServer(callback:(Boolean) -> Unit ){
-//        val t = posts_recyclerView.adapter as PostsRecyclerViewAdapter
-//        t.getChangedList()
-//        val db = viewModel.db
-//        val oldPostList = t.getChangedList()
-//        val batch = db.batch()
-//        val colRef = db.collection("posts")
-//        for(post in oldPostList){
-//            val docRef = colRef.document(post.post_id)
-//            batch.update(docRef,"votes_map",post.votes_map)
-//        }
-//
-//        batch.commit().addOnCompleteListener{
-//            if(it.isSuccessful){
-//                Log.i(TAG,"Posts updated!")
-//                callback.invoke(true)
-//            }else{
-//                Log.e(TAG,it.exception.toString())
-//            }
-//        }
-//    }
 
     private fun showSignInDialog(){
         AlertDialog.Builder(activity)
@@ -202,18 +168,6 @@ class LocalFragment : Fragment() {
 
                 }
             }
-//            updatePostsServer {
-//                if(it){
-//                    val mA:MainActivity = activity as MainActivity
-//                    mA.getPostsFromServer(){
-//                        posts_recyclerView.adapter = PostsRecyclerViewAdapter(it, findNavController())
-//                        posts_recyclerView.visibility = View.VISIBLE
-//                        empty_view_posts.visibility = View.GONE
-//                    }
-//                    posts_refreshLayout.isRefreshing = false
-//                }
-//            }
-
         }
     }
 

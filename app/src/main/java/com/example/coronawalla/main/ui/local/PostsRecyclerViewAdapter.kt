@@ -11,6 +11,7 @@ import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coronawalla.R
+import com.example.coronawalla.main.ServerWorker
 import com.example.coronawalla.main.VoteWorker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -21,7 +22,7 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
     private val changedPosts = ArrayList<PostClass>()
     private var usersVote:Boolean? = null
     private val TAG: String? = PostsRecyclerViewAdapter::class.simpleName
-    private val db = FirebaseFirestore.getInstance()
+    private val sw = ServerWorker()
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostsRecyclerViewHolder {
@@ -37,16 +38,11 @@ class PostsRecyclerViewAdapter(private val postList: List<PostClass>, private va
         navigation(holder)
         voting(holder, uid, currentItem)
         holder.postTextTV.text = currentItem.post_text
-        db.collection("users").document(currentItem.poster_id).get().addOnCompleteListener {
-            if(it.isSuccessful){
-                val userDoc = it.result
-                if(currentItem.post_anon){
-                    holder.posterHandleTV.text = "@Anonymous"
-                }else{
-                    holder.posterHandleTV.text = "@"+userDoc!!.get("handle").toString()
-                }
+        sw.getUserClassFromUID(currentItem.poster_id){
+            if(currentItem.post_anon){
+                holder.posterHandleTV.text = "@Anonymous"
             }else{
-                Log.e(TAG, it.exception.toString())
+                holder.posterHandleTV.text = "@"+it.handle
             }
         }
     }

@@ -23,7 +23,7 @@ import org.imperiumlabs.geofirestore.GeoFirestore
 class PostPreviewFragment : Fragment() {
     private val TAG: String? = PostPreviewFragment::class.simpleName
     private lateinit var viewModel:MainActivityViewModel
-    private val sw = ServerWorker(this.requireActivity())
+    private val sw = ServerWorker()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,13 +43,11 @@ class PostPreviewFragment : Fragment() {
         val postTextView = view.findViewById<TextView>(R.id.postTV)
         val anonButton = view.findViewById<Button>(R.id.anon_post_button)
         val namedButton = view.findViewById<Button>(R.id.named_post_button)
-        val currentGeoPoint = GeoPoint(viewModel.currentLocation.value!!.latitude, viewModel.currentLocation.value!!.longitude)
         postTextView.text = postText
         postAsUserHandle.text = "Post as "+viewModel.currentUser.value!!.handle
 
         namedButton.setOnClickListener {
             val post = getPostMap(postText, 2, false)
-            Log.e(TAG, "Server Call: Adding post to collection")
             sw.addPostToServer(post){
                 if(it){
                     val bundle = bundleOf("refresh" to true)
@@ -58,28 +56,10 @@ class PostPreviewFragment : Fragment() {
                     Toast.makeText(this.requireContext(), "There was an error", Toast.LENGTH_SHORT).show()
                 }
             }
-//            db.collection("posts").add(post).addOnCompleteListener{ postTask ->
-//                if (postTask.isSuccessful){
-//                    Log.d(TAG, "Post Sent!")
-//                    val geoFirestore = GeoFirestore(db.collection("posts"))
-//                    Log.e(TAG, "Server Call: adding post ID number to post document")
-//                    db.collection("posts").document(postTask.result!!.id).update("post_id", postTask.result!!.id).addOnCompleteListener{
-//                        if(it.isSuccessful){
-//                            Log.i(TAG, "Updated mPostID")
-//                        }else{
-//                            Log.e(TAG, it.exception.toString())
-//                        }
-//                    }
-//                    geoFirestore.setLocation(postTask.result!!.id,currentGeoPoint)
-//                }else{
-//                    Log.e(TAG, "Error:: "+postTask.exception.toString())
-//                }
-//            }
         }
 
         anonButton.setOnClickListener {
             val post = getPostMap(postText, 1, true)
-            Log.e(TAG, "Server Call: Adding post to collection")
             sw.addPostToServer(post){
                 if(it){
                     val bundle = bundleOf("refresh" to true)
@@ -88,27 +68,6 @@ class PostPreviewFragment : Fragment() {
                     Toast.makeText(this.requireContext(), "There was an error", Toast.LENGTH_SHORT).show()
                 }
             }
-//            db.collection("posts").add(post).addOnCompleteListener{ postTask ->
-//                if (postTask.isSuccessful){
-//                    Log.d(TAG, "Post Sent!")
-//                    val geoFirestore = GeoFirestore(db.collection("posts"))
-//                    Log.e(TAG, "Server Call: adding post ID number to post document")
-//                    db.collection("posts").document(postTask.result!!.id).update("post_id", postTask.result!!.id).addOnCompleteListener{
-//                        if(it.isSuccessful){
-//                            Log.i(TAG, "Updated mPostID")
-//                            val bundle = bundleOf("refresh" to true)
-//                            findNavController().navigate(R.id.action_postPreviewFragment_to_local, bundle)
-//                        }else{
-//                            Log.e(TAG, it.exception.toString())
-//                        }
-//                    }
-//                    geoFirestore.setLocation(postTask.result!!.id,currentGeoPoint)
-//                }else{
-//                    Log.e(TAG, "Error:: "+postTask.exception.toString())
-//                }
-//            }
-
-
         }
     }
 

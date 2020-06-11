@@ -31,7 +31,7 @@ class ProfileEditFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        sw = ServerWorker(this.requireActivity())
+        sw = ServerWorker()
     }
     override fun onResume() {
         super.onResume()
@@ -57,12 +57,8 @@ class ProfileEditFragment : Fragment() {
         //set current values
         setCurrentUserVals(view, viewModel.currentUser.value!!)
         val currentUID = viewModel.currentUser.value!!.user_id
-//        getHandles {
-//            Log.d(TAG, "Taken handels retrived")
-//            takenHandles = it
-//        }
 
-        sw.getTakenHandleDocs(currentUID){docArrayList ->
+        sw.getTakenHandleDocs(){docArrayList ->
             for(doc in docArrayList){
                 if(doc.get("user_id") == currentUID){
                         prevHandle = doc.id
@@ -145,68 +141,13 @@ class ProfileEditFragment : Fragment() {
         })
     }
 
-//    private fun getHandles(callback:(HashSet<String>) ->Unit ){
-//        val takenHandleSet = hashSetOf<String>()
-//        viewModel.db.collection("handles").get().addOnCompleteListener{
-//            if(it.isSuccessful){
-//                for(doc in it.result!!){
-//                    if(doc.get("user_id") == viewModel.currentUser.value!!.user_id){
-//                        prevHandle = doc.id
-//                    }
-//                }
-//                for(doc in it.result!!){
-//                    takenHandleSet.add(doc.id)
-//                }
-//                callback.invoke(takenHandleSet)
-//            }else{
-//                Log.e(TAG,it.exception.toString() )
-//            }
-//        }
-//    }
-
     private fun updateUserVals(view:View){
         val handleET: EditText = view.findViewById(R.id.handle_et)
         val usernameET:EditText = view.findViewById(R.id.username_et)
-        val username = usernameET.text.toString()
-        val handle = handleET.text.toString()
-        val db = sw.db
-        Log.e(TAG, "Server Call: Updating user vals")
-        db.collection("users").document(viewModel.currentUser.value!!.user_id).update(
-            "username", username,
-            "handle", handle).addOnCompleteListener{
-            if(it.isSuccessful){
-                Log.d(TAG, "User updated!")
-            }else{
-                Log.e(TAG, it.exception.toString())
-            }
-        }
-        //updating handles
-        if(prevHandle != null){
-            val update = hashMapOf("user_id" to viewModel.currentUser.value!!.user_id)
-            Log.e(TAG, "Server Call: Deleting Users previous handle")
-            db.collection("handles").document(prevHandle.toString()).delete()
-            Log.e(TAG, "Server Call: Adding Users new handle to collection")
-            db.collection("handles").document(handle.toLowerCase(Locale.getDefault())).set(update).addOnCompleteListener{
-                if(it.isSuccessful){
-                    Log.d(TAG, "handles updated")
-                }else{
-                    Log.e(TAG, it.exception.toString())
-                }
-            }
-        }else{
-            val update = hashMapOf("user_id" to viewModel.currentUser.value!!.user_id)
-            Log.e(TAG, "Server Call: Adding users handle to collection")
-            db.collection("handles").document(handle.toLowerCase(Locale.getDefault())).set(update).addOnCompleteListener{
-                if(it.isSuccessful){
-                    Log.d(TAG, "handles updated")
-                }else{
-                    Log.e(TAG, it.exception.toString())
-                }
-            }
-
-        }
-
-        viewModel.currentUser.value!!.username = username
-        viewModel.currentUser.value!!.handle= handle
+        val newUsername = usernameET.text.toString()
+        val newHandle = handleET.text.toString()
+        sw.updateUserValues(viewModel.currentUser.value!!, prevHandle,newHandle,newUsername )
+        viewModel.currentUser.value!!.username = newUsername
+        viewModel.currentUser.value!!.handle= newHandle
     }
 }
